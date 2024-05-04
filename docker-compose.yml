@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  waymore-mongodb:
+    container_name: waymore-mongodb
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - waymore-mongodb-data:/data/db
+      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+    networks:
+      - waymore-network
+
+  waymore-api:
+    container_name: waymore-api
+    build: 
+      context: .
+      dockerfile: ./docker/local/Dockerfile
+    restart: always
+    env_file: .env
+    expose:
+      - ${PORT}
+    ports:
+      - ${PORT}:${PORT}
+    environment: 
+      - MONGODB_URL=${MONGODB_URL}
+      - CLIENT_URL=${CLIENT_URL}
+    links: 
+      - waymore-mongodb
+    depends_on:
+      - waymore-mongodb
+    volumes:
+      - ./.env:/app/.env
+      - ./package.json:/app/package.json
+      - ./yarn.lock:/app/yarn.lock
+      - ./src:/app/src
+    networks:
+      - waymore-network
+
+networks:
+  waymore-network:
+    driver: bridge    
+
+volumes:
+  waymore-mongodb-data:

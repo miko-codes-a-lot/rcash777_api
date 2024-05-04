@@ -1,29 +1,25 @@
-# README #
+## Running the project
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Clone the project
 
-### What is this repository for? ###
+```bash
+  git clone git@bitbucket.org:the-firm/waymore-backend.git
+```
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+Move into the project directory
 
-### How do I get set up? ###
+```bash
+  cd waymore-backend
+```
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+Install dependencies
 
-### Contribution guidelines ###
+```bash
+  yarn
+```
 
-* Writing tests
-* Code review
-* Other guidelines
+Spin up the backend
 
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+```bash
+  yarn up -d
+```
