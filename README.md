@@ -25,6 +25,10 @@
 - Go to `Terminal` tab
 - run `yarn migration:run`
 
+#### All Done!
+
+---
+
 #### To access pgadmin
 
 - go to http://localhost:5050/
@@ -35,10 +39,6 @@
   - Go to Connection tab
   - Add Host, Username and Password from .env
   - Click Save
-
-#### All Done!
-
----
 
 #### To access api documentation:
 
