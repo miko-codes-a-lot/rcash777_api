@@ -1,51 +1,66 @@
 version: '3'
 
 services:
-  waymore-mongodb:
-    container_name: waymore-mongodb
-    image: mongo:latest
+  waymore-postgresdb:
+    container_name: ${POSTGRES_HOST}
+    image: postgres
     restart: always
-    ports:
-      - 27017:27017
-    volumes:
-      - waymore-mongodb-data:/data/db
-      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
-      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /data/postgres
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    volumes:
+      - waymore-postgres-data:/data/postgres
+    ports:
+      - '5432:5432'
     networks:
       - waymore-network
 
-  waymore-api:
-    container_name: waymore-api
-    build: 
+  waymore_api:
+    container_name: waymore_api
+    build:
       context: .
-      dockerfile: ./docker/local/Dockerfile
+      dockerfile: Dockerfile
     restart: always
     env_file: .env
     expose:
       - ${PORT}
     ports:
       - ${PORT}:${PORT}
-    environment: 
-      - MONGODB_URL=${MONGODB_URL}
+    environment:
+      - PORT=${PORT}
       - CLIENT_URL=${CLIENT_URL}
-    links: 
-      - waymore-mongodb
+    links:
+      - waymore-postgresdb
     depends_on:
-      - waymore-mongodb
+      - waymore-postgresdb
     volumes:
       - ./.env:/app/.env
       - ./package.json:/app/package.json
       - ./yarn.lock:/app/yarn.lock
       - ./src:/app/src
+      - ./db:/app/db
+    networks:
+      - waymore-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: waymore-pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    ports:
+      - '5050:80'
+    depends_on:
+      - waymore-postgresdb
     networks:
       - waymore-network
 
 networks:
   waymore-network:
-    driver: bridge    
+    driver: bridge
 
 volumes:
-  waymore-mongodb-data:
+  waymore-postgres-data:

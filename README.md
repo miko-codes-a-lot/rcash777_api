@@ -1,25 +1,55 @@
 ## Running the project
 
-Clone the project
-
-```bash
-  git clone git@bitbucket.org:the-firm/waymore-backend.git
-```
-
-Move into the project directory
-
-```bash
-  cd waymore-backend
-```
-
-Install dependencies
+1. Install dependencies
 
 ```bash
   yarn
 ```
 
-Spin up the backend
+2. Create .env by copying exising env sample
+
+```bash
+  cp .env.example .env
+```
+
+3. Spin up the backend
 
 ```bash
   yarn up -d
 ```
+
+#### To restore default db migration data (needed on first install)
+
+- Go to Docker -> Containers
+- Click `waymore_api`
+- Go to `Terminal` tab
+- run `yarn migration:run`
+
+#### To access pgadmin
+
+- go to http://localhost:5050/
+- authenticate using the creds from .env
+- If server is not yet connected
+  - Click Add new server
+  - Add any name eg: pg_waymore
+  - Go to Connection tab
+  - Add Host, Username and Password from .env
+  - Click Save
+
+#### All Done!
+
+---
+
+#### To access api documentation:
+
+- Navigate to http://localhost:5001/api/swagger
+
+#### To test the API, generate token first using the following info:
+
+- POST:http://localhost:5001/api/auth/login
+- email: admin@thefirm.tech
+- password: admin123
+
+#### To generate new migration data
+
+- `yarn migration:generate -- db/migrations/{MigrationName}`

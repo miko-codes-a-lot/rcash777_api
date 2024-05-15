@@ -1,54 +1,20 @@
-import * as authService from './auth.service'
+import { Controller, Post, Body, UsePipes } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { ValidateRequest } from 'src/pipes/validate-request';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { joiToSwagger } from 'src/utils/joi-to-swagger';
+import { PostAuthLoginRequest } from './dto/post-auth-login-request';
+import { IPostAuthLoginRequest, IPostAuthLoginResponse } from './interfaces/post-auth.interface';
 
-import { Request, Response } from 'express'
+@Controller('auth')
+@ApiTags('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
 
-import catchAsync from '../utils/catchAsync'
-import { emailService } from '../email'
-import httpStatus from 'http-status'
-import { tokenService } from '../token'
-import { userService } from '../user'
-
-export const register = catchAsync(async (req: Request, res: Response) => {
-  const user = await userService.registerUser(req.body)
-  const tokens = await tokenService.generateAuthTokens(user)
-  res.status(httpStatus.CREATED).send({ user, tokens })
-})
-
-export const login = catchAsync(async (req: Request, res: Response) => {
-  const { email, password } = req.body
-  const user = await authService.loginUserWithEmailAndPassword(email, password)
-  const tokens = await tokenService.generateAuthTokens(user)
-  res.send({ user, tokens })
-})
-
-export const logout = catchAsync(async (req: Request, res: Response) => {
-  await authService.logout(req.body.refreshToken)
-  res.status(httpStatus.NO_CONTENT).send()
-})
-
-export const refreshTokens = catchAsync(async (req: Request, res: Response) => {
-  const userWithTokens = await authService.refreshAuth(req.body.refreshToken)
-  res.send({ ...userWithTokens })
-})
-
-export const forgotPassword = catchAsync(async (req: Request, res: Response) => {
-  const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email)
-  await emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken)
-  res.status(httpStatus.NO_CONTENT).send()
-})
-
-export const resetPassword = catchAsync(async (req: Request, res: Response) => {
-  await authService.resetPassword(req.query['token'], req.body.password)
-  res.status(httpStatus.NO_CONTENT).send()
-})
-
-export const sendVerificationEmail = catchAsync(async (req: Request, res: Response) => {
-  const verifyEmailToken = await tokenService.generateVerifyEmailToken(req.user)
-  await emailService.sendVerificationEmail(req.user.email, verifyEmailToken, req.user.name)
-  res.status(httpStatus.NO_CONTENT).send()
-})
-
-export const verifyEmail = catchAsync(async (req: Request, res: Response) => {
-  await authService.verifyEmail(req.query['token'])
-  res.status(httpStatus.NO_CONTENT).send()
-})
+  @Post('login')
+  @ApiBody({ schema: joiToSwagger(PostAuthLoginRequest) })
+  @UsePipes(new ValidateRequest(PostAuthLoginRequest))
+  async authenticate(@Body() request: IPostAuthLoginRequest): Promise<IPostAuthLoginResponse> {
+    return await this.authService.authenticate(request);
+  }
+}
