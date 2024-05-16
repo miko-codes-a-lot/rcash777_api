@@ -6,11 +6,15 @@ import config from './config/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const options = new DocumentBuilder().setTitle('Waymore Capital API').setDescription('Waymore Capital API').setVersion('1.0').build();
-  const document = SwaggerModule.createDocument(app, options);
+
+  app.setGlobalPrefix('api');
+
+  const swaggerConfig = new DocumentBuilder().setTitle('Waymore Capital API').setDescription('Waymore Capital API').setVersion('1.0').build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
 
   SwaggerModule.setup('api/swagger', app, document);
-  app.setGlobalPrefix('api');
+
   await app.listen(config.port);
 }
+
 bootstrap();
