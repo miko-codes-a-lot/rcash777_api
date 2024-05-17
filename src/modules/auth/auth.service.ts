@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from '../users/entities/user.entity';
+import { User } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { IPostAuthLoginRequest, IPostAuthLoginResponse } from './interfaces/post-auth.interface';
 import * as bcrypt from 'bcrypt';
@@ -10,12 +10,12 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    @InjectRepository(Users) private usersRepository: Repository<Users>,
+    @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
   async authenticate(data: IPostAuthLoginRequest): Promise<IPostAuthLoginResponse> {
     const { email, password } = data;
-    const userDetails = await this.usersRepository
+    const userDetails = await this.userRepository
       .createQueryBuilder('user')
       .where('user.email = :email', { email })
       .addSelect('user.password')
