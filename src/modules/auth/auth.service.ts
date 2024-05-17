@@ -15,7 +15,7 @@ export class AuthService {
 
   async authenticate(data: IPostAuthLoginRequest): Promise<IPostAuthLoginResponse> {
     const { email, password } = data;
-    const userDetails = await this.usersRepository.findOne({ where: { email } });
+    const userDetails = await this.usersRepository.createQueryBuilder('user').where('user.email = :email', { email }).addSelect('user.password').getOne();
     const isPasswordValid = bcrypt.compareSync(password, userDetails?.password || '');
 
     if (!userDetails || !isPasswordValid) {
