@@ -16,12 +16,12 @@ export class UserController {
 
   @Post()
   @Payload(PostUserNewRequest)
-  async create(@Body() req: IPostUserNewRequest) {
-    if (await this.userService.findByEmail(req.email)) {
+  async create(@Body() payload: IPostUserNewRequest) {
+    if (await this.userService.findByEmail(payload.email)) {
       throw new BadRequestException('Email already exist');
     }
 
-    await this.userService.create(req);
+    await this.userService.create(payload);
     return null;
   }
 
