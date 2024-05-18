@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Post, Body, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { PostAuthLoginRequest } from './dto/post-auth-login-request';

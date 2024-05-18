@@ -5,6 +5,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ERoles } from 'src/enums/roles.enum';
+import { IPostUserUpdateRequest } from './interfaces/put-user-update.interface';
 
 @Injectable()
 export class UserService {
@@ -26,6 +27,17 @@ export class UserService {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+  async update(id: number, payload: IPostUserUpdateRequest) {
+    const user = await this.findById(id);
+
+    user.first_name = payload.first_name;
+    user.last_name = payload.last_name;
+    user.phone_number = payload.phone_number;
+    user.address = payload.address;
+
+    return await this.userRepository.save(user);
   }
 
   async findByEmail(email: string) {
