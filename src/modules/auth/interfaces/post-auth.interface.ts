@@ -5,4 +5,5 @@ export interface IPostAuthLoginRequest {
 
 export interface IPostAuthLoginResponse {
   access_token: string;
+  refresh_token: string;
 }

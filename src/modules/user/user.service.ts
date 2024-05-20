@@ -11,6 +11,14 @@ import { IPostUserUpdateRequest } from './interfaces/put-user-update.interface';
 export class UserService {
   constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
 
+  get() {
+    return this.userRepository;
+  }
+
+  set(user: User) {
+    return this.userRepository.save(user);
+  }
+
   async create(data: IPostUserNewRequest) {
     const user = new User();
 

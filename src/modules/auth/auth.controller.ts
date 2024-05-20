@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req } from '@nestjs/common';
+import { Controller, Post, Body, Req, Delete } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { PostAuthLoginRequest } from './dto/post-auth-login-request';
@@ -9,6 +9,8 @@ import { IPostPasswordChangeRequest } from './interfaces/post-password-change.in
 import { IUser } from '../user/interfaces/user.interface';
 import { Request } from 'express';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
+import { PostRefreshTokenRequest } from './dto/post-refresh-token-request';
+import { IPostRefreshTokenRequest } from './interfaces/post-refresh-token.interface';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -29,5 +31,24 @@ export class AuthController {
     await this.authService.passwordChange(user.id, payload.old_password, payload.new_password);
 
     return null;
+  }
+
+  @Delete('logout')
+  @AuthRequired()
+  async logout(@Req() req: Request) {
+    const user = req.user as IUser;
+
+    await this.authService.delete(user.id);
+
+    return null;
+  }
+
+  @Post('refresh-token')
+  @AuthRequired()
+  @Payload(PostRefreshTokenRequest)
+  async refreshToken(@Body() payload: IPostRefreshTokenRequest, @Req() req: Request) {
+    const user = req.user as IUser;
+
+    return this.authService.refreshToken(user.id, payload.refresh_token, user.email);
   }
 }

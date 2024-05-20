@@ -1,20 +1,19 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../user/entities/user.entity';
-import { Repository } from 'typeorm';
 import { ERoles } from 'src/enums/roles.enum';
 import { IPostUserRoleRequest } from './interfaces/post-user-role.interface';
+import { Injectable } from '@nestjs/common';
+import { User } from '../user/entities/user.entity';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AdminService {
-  constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
+  constructor(private readonly userService: UserService) {}
 
   async findAllAdmin() {
-    return await this.userRepository.find({ where: { role: ERoles.ADMIN } });
+    return await this.userService.get().find({ where: { role: ERoles.ADMIN } });
   }
 
   async updateRole(user: User, payload: IPostUserRoleRequest) {
     user.role = payload.new_role;
-    return await this.userRepository.save(user);
+    return await this.userService.set(user);
   }
 }
