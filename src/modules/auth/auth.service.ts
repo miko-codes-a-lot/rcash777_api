@@ -118,19 +118,20 @@ export class AuthService {
     }
   }
 
-  async refreshToken(id: number, refreshToken: string, email: string): Promise<PostRefreshTokenResponse> {
-    const userDetails = await this.authRepository.findOne({ where: { user_id: id, refresh_token: refreshToken } });
-    const { iat, exp, id: _id } = this.jwtService.decode(refreshToken);
+  async refreshToken(refreshToken: string): Promise<PostRefreshTokenResponse> {
+    const { iat, exp, id } = this.jwtService.decode(refreshToken);
     const timeDiff = exp - iat;
+    const authDetails = await this.authRepository.findOne({ where: { user_id: id, refresh_token: refreshToken } });
+    const userDetails = await this.userService.findById(id);
 
-    if (id !== _id || !userDetails || timeDiff <= 0) {
+    if (!authDetails || !userDetails || timeDiff <= 0) {
       throw new UnauthorizedException('Invalid refresh_token');
     }
 
-    const { access_token } = this.generateToken(id, email);
+    const { access_token } = this.generateToken(id, userDetails.email);
 
-    userDetails.access_token = access_token;
-    await this.authRepository.save(userDetails);
+    authDetails.access_token = access_token;
+    await this.authRepository.save(authDetails);
 
     return {
       access_token,

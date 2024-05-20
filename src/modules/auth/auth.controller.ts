@@ -44,11 +44,8 @@ export class AuthController {
   }
 
   @Post('refresh-token')
-  @AuthRequired()
   @Payload(PostRefreshTokenRequest)
-  async refreshToken(@Body() payload: IPostRefreshTokenRequest, @Req() req: Request) {
-    const user = req.user as IUser;
-
-    return this.authService.refreshToken(user.id, payload.refresh_token, user.email);
+  async refreshToken(@Body() payload: IPostRefreshTokenRequest) {
+    return this.authService.refreshToken(payload.refresh_token);
   }
 }

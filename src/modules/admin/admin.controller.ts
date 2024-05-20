@@ -1,14 +1,16 @@
-import { Body, Controller, Get, NotFoundException, Param, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Put } from '@nestjs/common';
 
 import { AdminService } from './admin.service';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthAdminOnly } from 'src/decorators/auth-admin-only';
 import { Payload } from 'src/decorators/payload.decorator';
-import { PutUserRoleRequest } from './dto/put-user-role';
+import { PutUserRoleRequest } from './dto/put-user-role-request';
 import { IPutUserRoleRequest } from './interfaces/put-user-role.interface';
 import { UserService } from '../user/user.service';
-import { PutUserInfoRequest } from './dto/put-user-info';
+import { PutUserInfoRequest } from './dto/put-user-info-request';
 import { IPutUserInfoRequest } from './interfaces/put-user-info.interface';
+import { DeleteUserRequest } from './dto/delete-user-request';
+import { IDeleteUserRequest } from './interfaces/delete-user.interface';
 
 @Controller('admin')
 @ApiTags('admin')
@@ -64,6 +66,20 @@ export class AdminController {
     }
 
     await this.adminService.updateUserRole(user, payload);
+
+    return null;
+  }
+
+  @Delete('admin/user')
+  @Payload(DeleteUserRequest)
+  async deleteUser(@Body() payload: IDeleteUserRequest) {
+    const user = await this.userService.findById(payload.user_id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.adminService.deleteUser(user);
 
     return null;
   }

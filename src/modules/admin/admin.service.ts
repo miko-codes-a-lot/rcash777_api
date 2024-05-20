@@ -26,4 +26,8 @@ export class AdminService {
     user.role = payload.new_role;
     return await this.userService.set(user);
   }
+
+  async deleteUser(user: User) {
+    return await this.userService.get().remove(user);
+  }
 }
