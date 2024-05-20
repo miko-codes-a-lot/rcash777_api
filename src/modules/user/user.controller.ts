@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req, Param, BadRequestException, NotFoundException, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, BadRequestException, Put } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags } from '@nestjs/swagger';
 import { PostUserNewRequest } from './dto/post-user-new-request.dto';
@@ -7,7 +7,6 @@ import { Payload } from 'src/decorators/payload.decorator';
 import { Request } from 'express';
 import { IUser } from './interfaces/user.interface';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
-import { AuthAdminOnly } from 'src/decorators/auth-admin-only';
 import { PutUserUpdateRequest } from './dto/put-user-update-request.dto';
 import { IPostUserUpdateRequest } from './interfaces/put-user-update.interface';
 
@@ -41,23 +40,5 @@ export class UserController {
   getUser(@Req() req: Request) {
     const { id } = req.user as IUser;
     return this.userService.findById(id);
-  }
-
-  @Get('/list')
-  @AuthAdminOnly()
-  getUsers() {
-    return this.userService.findAll();
-  }
-
-  @Get(':id')
-  @AuthAdminOnly()
-  async getUserById(@Param('id') id: string) {
-    const user = await this.userService.findById(+id);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return user;
   }
 }

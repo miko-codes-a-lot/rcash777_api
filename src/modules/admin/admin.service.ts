@@ -1,5 +1,6 @@
 import { ERoles } from 'src/enums/roles.enum';
-import { IPostUserRoleRequest } from './interfaces/post-user-role.interface';
+import { IPutUserInfoRequest } from './interfaces/put-user-info.interface';
+import { IPutUserRoleRequest } from './interfaces/put-user-role.interface';
 import { Injectable } from '@nestjs/common';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
@@ -12,7 +13,16 @@ export class AdminService {
     return await this.userService.get().find({ where: { role: ERoles.ADMIN } });
   }
 
-  async updateRole(user: User, payload: IPostUserRoleRequest) {
+  async updateUserInfo(user: User, payload: IPutUserInfoRequest) {
+    user.email = payload.email;
+    user.first_name = payload.first_name;
+    user.last_name = payload.last_name;
+    user.address = payload.address;
+
+    return await this.userService.set(user);
+  }
+
+  async updateUserRole(user: User, payload: IPutUserRoleRequest) {
     user.role = payload.new_role;
     return await this.userService.set(user);
   }
