@@ -6,17 +6,14 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ERoles } from 'src/enums/roles.enum';
 import { IPostUserUpdateRequest } from './interfaces/put-user-update.interface';
+import { Pagination, PaginationResponse } from 'src/schemas/pagination.schema';
+import { BaseService } from 'src/services/base.service';
 
 @Injectable()
-export class UserService {
-  constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
-
-  get() {
-    return this.userRepository;
-  }
-
-  set(user: User) {
-    return this.userRepository.save(user);
+export class UserService extends BaseService<User> {
+  constructor(@InjectRepository(User) private userRepository: Repository<User>) {
+    super();
+    this.repository = userRepository;
   }
 
   async create(data: IPostUserNewRequest) {
@@ -52,11 +49,9 @@ export class UserService {
     return await this.userRepository.findOne({ where: { email } });
   }
 
-  async findById(id: number) {
-    return await this.userRepository.findOne({ where: { id } });
-  }
-
-  async findAll() {
-    return await this.userRepository.find();
+  async findAllUserPaginate(pagination: Pagination): Promise<PaginationResponse<User>> {
+    return await super.findAllPaginate(pagination, {
+      fields: ['phone_number', 'address'],
+    });
   }
 }

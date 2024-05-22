@@ -10,31 +10,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import config from 'src/config/config';
 import { PostRefreshTokenResponse } from './interfaces/post-refresh-token.interface';
+import { BaseService } from 'src/services/base.service';
 
 @Injectable()
-export class AuthService {
+export class AuthService extends BaseService<Auth> {
   constructor(
     @InjectRepository(Auth) private authRepository: Repository<Auth>,
     private jwtService: JwtService,
     private readonly userService: UserService,
-  ) {}
-
-  get() {
-    return this.authRepository;
-  }
-
-  set(auth: Auth) {
-    return this.authRepository.save(auth);
-  }
-
-  async findByUserId(id: number) {
-    return await this.authRepository.findOne({ where: { user_id: id } });
-  }
-
-  async delete(id: number) {
-    const auth = await this.findByUserId(id);
-
-    return this.authRepository.remove(auth);
+  ) {
+    super();
+    this.repository = authRepository;
   }
 
   generateToken(id, email) {

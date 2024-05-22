@@ -3,7 +3,7 @@ import { UserService } from './user.service';
 import { ApiTags } from '@nestjs/swagger';
 import { PostUserNewRequest } from './dto/post-user-new-request.dto';
 import { IPostUserNewRequest } from './interfaces/post-user-new.interface';
-import { Payload } from 'src/decorators/payload.decorator';
+import { Validate } from 'src/decorators/validate.decorator';
 import { Request } from 'express';
 import { IUser } from './interfaces/user.interface';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
@@ -16,7 +16,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @Payload(PostUserNewRequest)
+  @Validate({ body: PostUserNewRequest })
   async addUser(@Body() payload: IPostUserNewRequest) {
     if (await this.userService.findByEmail(payload.email)) {
       throw new BadRequestException('Email already exist');
@@ -28,7 +28,7 @@ export class UserController {
 
   @Put()
   @AuthRequired()
-  @Payload(PutUserUpdateRequest)
+  @Validate({ body: PutUserUpdateRequest })
   async updateUser(@Body() payload: IPostUserUpdateRequest, @Req() req: Request) {
     const { id } = req.user as IUser;
     await this.userService.update(id, payload);

@@ -2,6 +2,7 @@ import { ERoles } from 'src/enums/roles.enum';
 import { IPutUserInfoRequest } from './interfaces/put-user-info.interface';
 import { IPutUserRoleRequest } from './interfaces/put-user-role.interface';
 import { Injectable } from '@nestjs/common';
+import { Pagination } from 'src/schemas/pagination.schema';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 
@@ -9,8 +10,12 @@ import { UserService } from '../user/user.service';
 export class AdminService {
   constructor(private readonly userService: UserService) {}
 
-  async findAllAdmin() {
-    return await this.userService.get().find({ where: { role: ERoles.ADMIN } });
+  async findAllAdminPaginate(pagination: Pagination) {
+    return await this.userService.findAllPaginate(pagination, {
+      where: {
+        role: ERoles.ADMIN,
+      },
+    });
   }
 
   async updateUserInfo(user: User, payload: IPutUserInfoRequest) {

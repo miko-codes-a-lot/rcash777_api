@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { PostAuthLoginRequest } from './dto/post-auth-login-request';
 import { IPostAuthLoginRequest, IPostAuthLoginResponse } from './interfaces/post-auth.interface';
-import { Payload } from 'src/decorators/payload.decorator';
+import { Validate } from 'src/decorators/validate.decorator';
 import { PostPasswordChangeRequest } from './dto/post-password-change-request';
 import { IPostPasswordChangeRequest } from './interfaces/post-password-change.interface';
 import { IUser } from '../user/interfaces/user.interface';
@@ -18,14 +18,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @Payload(PostAuthLoginRequest)
+  @Validate({ body: PostAuthLoginRequest })
   async authenticate(@Body() payload: IPostAuthLoginRequest): Promise<IPostAuthLoginResponse> {
     return await this.authService.authenticate(payload);
   }
 
   @Post('password-change')
   @AuthRequired()
-  @Payload(PostPasswordChangeRequest)
+  @Validate({ body: PostPasswordChangeRequest })
   async passwordChange(@Body() payload: IPostPasswordChangeRequest, @Req() req: Request) {
     const user = req.user as IUser;
     await this.authService.passwordChange(user.id, payload.old_password, payload.new_password);
@@ -44,7 +44,7 @@ export class AuthController {
   }
 
   @Post('refresh-token')
-  @Payload(PostRefreshTokenRequest)
+  @Validate({ body: PostRefreshTokenRequest })
   async refreshToken(@Body() payload: IPostRefreshTokenRequest) {
     return this.authService.refreshToken(payload.refresh_token);
   }

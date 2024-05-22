@@ -18,4 +18,4 @@ export class RolesGuard implements CanActivate {
   }
 }
 
-export const AuthAdminOnly = () => applyDecorators(UseGuards(AuthGuard('jwt'), RolesGuard) as PropertyDecorator);
+export const AuthAdminOnly = () => applyDecorators(UseGuards(AuthGuard('jwt'), RolesGuard));

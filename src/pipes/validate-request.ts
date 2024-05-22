@@ -1,19 +1,23 @@
 import * as Joi from 'joi';
 
-import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
+import { ArgumentMetadata, BadRequestException, Injectable, Paramtype, PipeTransform } from '@nestjs/common';
 
 @Injectable()
-export class ValidateRequest implements PipeTransform {
-  constructor(private readonly schema: Joi.ObjectSchema) {}
+export class ValidateRequest<T> implements PipeTransform {
+  constructor(
+    private readonly schema: Joi.ObjectSchema,
+    private readonly type: Paramtype,
+  ) {}
 
-  transform(value: any) {
-    const { error } = this.schema.validate(value, { abortEarly: false });
-
-    if (error) {
-      throw new BadRequestException({
-        error: 'Invalid request',
-        message: error.message.replace(/(\"|\[|\d\])/g, ''),
-      });
+  transform(value: T, metadata: ArgumentMetadata) {
+    if (metadata.type === this.type) {
+      const { error } = this.schema.validate(value, { abortEarly: false });
+      if (error) {
+        throw new BadRequestException({
+          error: 'Invalid request',
+          message: error.message.replace(/(\"|\d)/g, ''),
+        });
+      }
     }
 
     return value;
