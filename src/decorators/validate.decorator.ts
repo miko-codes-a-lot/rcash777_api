@@ -12,6 +12,10 @@ type ValidateTypes = {
 
 export const Validate = ({ body, query }: ValidateTypes) =>
   applyDecorators(
-    ...(body ? [ApiBody({ schema: joiToSwagger(body) }), UsePipes(new ValidateRequest(body, 'body'))] : []),
-    ...(query ? [ApiQuery({ schema: joiToSwagger(query) }), UsePipes(new ValidateRequest(query, 'query'))] : []),
+    ...(body
+      ? [ApiBody({ schema: joiToSwagger(body) }), UsePipes(new ValidateRequest(body, 'body'))]
+      : []),
+    ...(query
+      ? [ApiQuery({ schema: joiToSwagger(query) }), UsePipes(new ValidateRequest(query, 'query'))]
+      : []),
   );

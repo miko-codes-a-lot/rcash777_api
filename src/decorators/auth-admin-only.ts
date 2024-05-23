@@ -1,5 +1,10 @@
 import { CanActivate, Injectable } from '@nestjs/common';
-import { ExecutionContext, UnauthorizedException, UseGuards, applyDecorators } from '@nestjs/common';
+import {
+  ExecutionContext,
+  UnauthorizedException,
+  UseGuards,
+  applyDecorators,
+} from '@nestjs/common';
 
 import { AuthGuard } from '@nestjs/passport';
 import { ERoles } from 'src/enums/roles.enum';

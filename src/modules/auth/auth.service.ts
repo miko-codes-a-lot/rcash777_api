@@ -1,6 +1,12 @@
 import * as bcrypt from 'bcrypt';
 
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { IPostAuthLoginRequest, IPostAuthLoginResponse } from './interfaces/post-auth.interface';
 
 import { JwtService } from '@nestjs/jwt';
@@ -77,7 +83,7 @@ export class AuthService extends BaseService<Auth> {
     };
   }
 
-  async passwordChange(id: number, old_password: string, newPassword: string) {
+  async passwordChange(id: string, old_password: string, newPassword: string) {
     const userDetails = await this.userService
       .get()
       .createQueryBuilder('user')
@@ -107,7 +113,9 @@ export class AuthService extends BaseService<Auth> {
   async refreshToken(refreshToken: string): Promise<PostRefreshTokenResponse> {
     const { iat, exp, id } = this.jwtService.decode(refreshToken);
     const timeDiff = exp - iat;
-    const authDetails = await this.authRepository.findOne({ where: { user_id: id, refresh_token: refreshToken } });
+    const authDetails = await this.authRepository.findOne({
+      where: { user_id: id, refresh_token: refreshToken },
+    });
     const userDetails = await this.userService.findById(id);
 
     if (!authDetails || !userDetails || timeDiff <= 0) {

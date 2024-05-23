@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Put,
+  Query,
+  Res,
+} from '@nestjs/common';
 
 import { AdminService } from './admin.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -12,6 +23,8 @@ import { IPutUserInfoRequest } from './interfaces/put-user-info.interface';
 import { DeleteUserRequest } from './dto/delete-user-request';
 import { IDeleteUserRequest } from './interfaces/delete-user.interface';
 import { Pagination, PaginationSchema } from 'src/schemas/pagination.schema';
+import { Response } from 'express';
+import { EResponse } from 'src/enums/response.enum';
 
 @Controller('admin')
 @ApiTags('admin')
@@ -36,7 +49,7 @@ export class AdminController {
 
   @Get('user/:id')
   async getUserById(@Param('id') id: string) {
-    const user = await this.userService.findById(+id);
+    const user = await this.userService.findById(id);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -47,7 +60,11 @@ export class AdminController {
 
   @Put('user/:id/update-info')
   @Validate({ body: PutUserInfoRequest })
-  async updateUserInfo(@Body() payload: IPutUserInfoRequest, @Param('id', ParseIntPipe) id: number) {
+  async updateUserInfo(
+    @Body() payload: IPutUserInfoRequest,
+    @Param('id', ParseIntPipe) id: string,
+    @Res() res: Response,
+  ) {
     const user = await this.userService.findById(id);
 
     if (!user) {
@@ -56,12 +73,16 @@ export class AdminController {
 
     await this.adminService.updateUserInfo(user, payload);
 
-    return null;
+    res.status(EResponse.SUCCESS).send();
   }
 
   @Put('user/:id/update-role')
   @Validate({ body: PutUserRoleRequest })
-  async updateUserRole(@Body() payload: IPutUserRoleRequest, @Param('id', ParseIntPipe) id: number) {
+  async updateUserRole(
+    @Body() payload: IPutUserRoleRequest,
+    @Param('id', ParseIntPipe) id: string,
+    @Res() res: Response,
+  ) {
     const user = await this.userService.findById(id);
 
     if (!user) {
@@ -70,12 +91,12 @@ export class AdminController {
 
     await this.adminService.updateUserRole(user, payload);
 
-    return null;
+    res.status(EResponse.SUCCESS).send();
   }
 
   @Delete('admin/user')
   @Validate({ body: DeleteUserRequest })
-  async deleteUser(@Body() payload: IDeleteUserRequest) {
+  async deleteUser(@Body() payload: IDeleteUserRequest, @Res() res: Response) {
     const user = await this.userService.findById(payload.user_id);
 
     if (!user) {
@@ -84,6 +105,6 @@ export class AdminController {
 
     await this.adminService.deleteUser(user);
 
-    return null;
+    res.status(EResponse.SUCCESS).send();
   }
 }

@@ -27,7 +27,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (timeDiff <= 0) {
       throw new UnauthorizedException();
     } else {
-      const auth = await this.authService.get().findOne({ where: { user_id: id, access_token: rawToken } });
+      const auth = await this.authService
+        .get()
+        .findOne({ where: { user_id: id, access_token: rawToken } });
 
       if (!auth) {
         throw new UnauthorizedException();

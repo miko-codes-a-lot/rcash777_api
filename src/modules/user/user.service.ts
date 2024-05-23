@@ -34,7 +34,7 @@ export class UserService extends BaseService<User> {
     }
   }
 
-  async update(id: number, payload: IPostUserUpdateRequest) {
+  async update(id: string, payload: IPostUserUpdateRequest) {
     const user = await this.findById(id);
 
     user.first_name = payload.first_name;

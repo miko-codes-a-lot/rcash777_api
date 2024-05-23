@@ -20,11 +20,11 @@ export class BaseService<T> {
     return this.repository.save(value);
   }
 
-  async findById(id: number) {
+  async findById(id: string) {
     return await this.repository.findOne({ where: { id } as any });
   }
 
-  async findByUserId(id: number) {
+  async findByUserId(id: string) {
     return await this.repository.findOne({ where: { user_id: id } as any });
   }
 
@@ -32,7 +32,10 @@ export class BaseService<T> {
     return await this.repository.find();
   }
 
-  async findAllPaginate(pagination: Pagination, searchObj?: SearchType): Promise<PaginationResponse<T>> {
+  async findAllPaginate(
+    pagination: Pagination,
+    searchObj?: SearchType,
+  ): Promise<PaginationResponse<T>> {
     const { page, per_page, search, order_by, sort = 'desc' } = pagination;
     const { fields = [], where: _where = {} } = searchObj || {};
 
@@ -49,7 +52,7 @@ export class BaseService<T> {
     };
   }
 
-  async delete(id: number) {
+  async delete(id: string) {
     const data = await this.findByUserId(id);
 
     return this.repository.remove(data);
