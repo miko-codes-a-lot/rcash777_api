@@ -42,7 +42,12 @@ export class BaseService<T> {
     const [list, total] = await this.repository.findAndCount({
       skip: (page - 1) * per_page,
       take: per_page,
-      where: [_where, fields.map((field) => ({ [field]: Like('%' + search + '%') }))],
+      where: [
+        _where,
+        ...(fields.length && !!search
+          ? fields.map((field) => ({ [field]: Like('%' + search + '%') }))
+          : []),
+      ],
       ...(order_by ? { order: { [order_by]: sort } } : {}),
     } as any);
 
