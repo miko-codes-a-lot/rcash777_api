@@ -14,9 +14,9 @@ import { UserService } from '../user/user.service';
 import { Auth } from './entities/auth.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import config from 'src/config/config';
 import { PostRefreshTokenResponse } from './interfaces/post-refresh-token.interface';
 import { BaseService } from 'src/services/base.service';
+import { GenerateToken } from './providers/generate-token';
 
 @Injectable()
 export class AuthService extends BaseService<Auth> {
@@ -24,25 +24,10 @@ export class AuthService extends BaseService<Auth> {
     @InjectRepository(Auth) private authRepository: Repository<Auth>,
     private jwtService: JwtService,
     private readonly userService: UserService,
+    private generateToken: GenerateToken,
   ) {
     super();
     this.repository = authRepository;
-  }
-
-  generateToken(id, email) {
-    const generate = (expiresIn) => {
-      return this.jwtService.sign(
-        { id: id, email },
-        {
-          expiresIn,
-        },
-      );
-    };
-
-    return {
-      access_token: generate(config.jwt.accessExpirationMinutes + 'm'),
-      refresh_token: generate(config.jwt.refreshExpirationDays + 'd'),
-    };
   }
 
   async authenticate(data: IPostAuthLoginRequest): Promise<IPostAuthLoginResponse> {
@@ -60,7 +45,7 @@ export class AuthService extends BaseService<Auth> {
     if (!userDetails || !isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
     } else {
-      const tokens = this.generateToken(userDetails.id, email);
+      const tokens = this.generateToken.get(userDetails.id, email);
       let auth = await this.findByUserId(userDetails.id);
 
       accessToken = tokens.access_token;
@@ -122,7 +107,7 @@ export class AuthService extends BaseService<Auth> {
       throw new UnauthorizedException('Invalid refresh_token');
     }
 
-    const { access_token } = this.generateToken(id, userDetails.email);
+    const { access_token } = this.generateToken.get(id, userDetails.email);
 
     authDetails.access_token = access_token;
     await this.authRepository.save(authDetails);
