@@ -53,3 +53,8 @@
 #### To generate new migration data
 
 - `yarn migration:generate -- db/migrations/{MigrationName}`
+
+#### To generate seed data
+
+- `yarn seed`
+  - For generated users, the default password is `user123`
