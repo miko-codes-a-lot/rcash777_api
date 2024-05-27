@@ -2,14 +2,14 @@ version: '3'
 
 services:
   waymore-postgresdb:
-    container_name: ${DB_HOST}
+    container_name: ${POSTGRES_HOST}
     image: postgres
     restart: always
     environment:
-      DB_USER: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /data/postgres
-      DB_DB: ${DB_DATABASE}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
     volumes:
       - waymore-postgres-data:/data/postgres
     ports:
