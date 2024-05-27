@@ -8,6 +8,6 @@ import { ApiTags } from '@nestjs/swagger';
 export class HealthCheckController {
   @Get()
   get(@Res() res: Response) {
-    res.status(EResponse.SUCCESS).send();
+    res.status(EResponse.SUCCESS).json({ message: 'OK' });
   }
 }
