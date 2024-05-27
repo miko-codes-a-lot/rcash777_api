@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Delete, Res } from '@nestjs/common';
+import { Controller, Post, Body, Delete, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { PostAuthLoginRequest } from './dto/post-auth-login-request';
@@ -6,12 +6,13 @@ import { IPostAuthLoginRequest, IPostAuthLoginResponse } from './interfaces/post
 import { Validate } from 'src/decorators/validate.decorator';
 import { PostPasswordChangeRequest } from './dto/post-password-change-request';
 import { IPostPasswordChangeRequest } from './interfaces/post-password-change.interface';
-import { IUser } from '../user/interfaces/user.interface';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
 import { PostRefreshTokenRequest } from './dto/post-refresh-token-request';
 import { IPostRefreshTokenRequest } from './interfaces/post-refresh-token.interface';
 import { EResponse } from 'src/enums/response.enum';
+import { IUser } from '../user/interfaces/user.interface';
+import { RequestUser } from 'src/decorators/request-user.decorator';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -29,10 +30,9 @@ export class AuthController {
   @Validate({ body: PostPasswordChangeRequest })
   async passwordChange(
     @Body() payload: IPostPasswordChangeRequest,
-    @Req() req: Request,
+    @RequestUser() user: IUser,
     @Res() res: Response,
   ) {
-    const user = req.user as IUser;
     await this.authService.passwordChange(user.id, payload.old_password, payload.new_password);
 
     res.status(EResponse.SUCCESS).send();
@@ -40,8 +40,7 @@ export class AuthController {
 
   @Delete('logout')
   @AuthRequired()
-  async logout(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as IUser;
+  async logout(@RequestUser() user: IUser, @Res() res: Response) {
     await this.authService.delete(user.id);
 
     res.status(EResponse.SUCCESS).send();
