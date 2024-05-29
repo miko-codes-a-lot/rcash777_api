@@ -11,7 +11,7 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Waymore Capital API')
-    .setDescription('Waymore Capital API')
+    .setDescription('Waymore Capital API. [Get JSON](/api/swagger-json)')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
