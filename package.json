@@ -37,7 +37,6 @@
     "dotenv": "^16.4.5",
     "http-status": "^1.7.4",
     "joi": "^17.13.1",
-    "joi-to-swagger": "^6.2.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.11.5",

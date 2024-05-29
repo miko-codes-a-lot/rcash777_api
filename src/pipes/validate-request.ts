@@ -18,6 +18,7 @@ export class ValidateRequest<T> implements PipeTransform {
   transform(value: T, metadata: ArgumentMetadata) {
     if (metadata.type === this.type) {
       const { error } = this.schema.validate(value, { abortEarly: false });
+
       if (error) {
         throw new BadRequestException({
           error: 'Invalid request',
