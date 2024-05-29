@@ -18,6 +18,21 @@ async function bootstrap() {
 
   SwaggerModule.setup('api/swagger', app, document);
 
+  app.enableCors({
+    allowedHeaders: [
+      'cache-control',
+      'content-language',
+      'content-type',
+      'expires',
+      'last-modified',
+      'pragma',
+    ],
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
+    origin: true,
+    credentials: true,
+    maxAge: 90,
+  });
+
   await app.listen(config.port);
 }
 
