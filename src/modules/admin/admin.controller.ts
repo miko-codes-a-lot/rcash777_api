@@ -15,16 +15,13 @@ import { AdminService } from './admin.service';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthAdminOnly } from 'src/decorators/auth-admin-only';
 import { Validate } from 'src/decorators/validate.decorator';
-import { PutUserRoleRequest } from './dto/put-user-role-request';
-import { IPutUserRoleRequest } from './interfaces/put-user-role.interface';
 import { UserService } from '../user/user.service';
-import { PutUserInfoRequest } from './dto/put-user-info-request';
-import { IPutUserInfoRequest } from './interfaces/put-user-info.interface';
-import { DeleteUserRequest } from './dto/delete-user-request';
-import { IDeleteUserRequest } from './interfaces/delete-user.interface';
 import { Pagination, PaginationSchema } from 'src/schemas/pagination.schema';
 import { Response } from 'express';
 import { EResponse } from 'src/enums/response.enum';
+import { PutUserInfoRequest, PutUserInfoRequestSchema } from './schemas/put-user-info.schema';
+import { PutUserRoleRequest, PutUserRoleRequestSchema } from './schemas/put-user-role.schema';
+import { DeleteUserRequest, DeleteUserRequestSchema } from './schemas/delete-user.schema';
 
 @Controller('admin')
 @ApiTags('admin')
@@ -59,9 +56,9 @@ export class AdminController {
   }
 
   @Put('user/:id/update-info')
-  @Validate({ body: PutUserInfoRequest })
+  @Validate({ body: PutUserInfoRequestSchema })
   async updateUserInfo(
-    @Body() payload: IPutUserInfoRequest,
+    @Body() payload: PutUserInfoRequest,
     @Param('id', ParseIntPipe) id: string,
     @Res() res: Response,
   ) {
@@ -77,9 +74,9 @@ export class AdminController {
   }
 
   @Put('user/:id/update-role')
-  @Validate({ body: PutUserRoleRequest })
+  @Validate({ body: PutUserRoleRequestSchema })
   async updateUserRole(
-    @Body() payload: IPutUserRoleRequest,
+    @Body() payload: PutUserRoleRequest,
     @Param('id', ParseIntPipe) id: string,
     @Res() res: Response,
   ) {
@@ -95,8 +92,8 @@ export class AdminController {
   }
 
   @Delete('admin/user')
-  @Validate({ body: DeleteUserRequest })
-  async deleteUser(@Body() payload: IDeleteUserRequest, @Res() res: Response) {
+  @Validate({ body: DeleteUserRequestSchema })
+  async deleteUser(@Body() payload: DeleteUserRequest, @Res() res: Response) {
     const user = await this.userService.findById(payload.user_id);
 
     if (!user) {

@@ -1,8 +1,8 @@
 import { ERoles } from 'src/enums/roles.enum';
-import { IPutUserInfoRequest } from './interfaces/put-user-info.interface';
-import { IPutUserRoleRequest } from './interfaces/put-user-role.interface';
 import { Injectable } from '@nestjs/common';
 import { Pagination } from 'src/schemas/pagination.schema';
+import { PutUserInfoRequest } from './schemas/put-user-info.schema';
+import { PutUserRoleRequest } from './schemas/put-user-role.schema';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 
@@ -18,7 +18,7 @@ export class AdminService {
     });
   }
 
-  async updateUserInfo(user: User, payload: IPutUserInfoRequest) {
+  async updateUserInfo(user: User, payload: PutUserInfoRequest) {
     user.email = payload.email;
     user.first_name = payload.first_name;
     user.last_name = payload.last_name;
@@ -27,7 +27,7 @@ export class AdminService {
     return await this.userService.set(user);
   }
 
-  async updateUserRole(user: User, payload: IPutUserRoleRequest) {
+  async updateUserRole(user: User, payload: PutUserRoleRequest) {
     user.role = payload.new_role;
     return await this.userService.set(user);
   }

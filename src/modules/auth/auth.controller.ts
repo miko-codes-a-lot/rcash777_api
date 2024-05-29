@@ -1,18 +1,25 @@
 import { Controller, Post, Body, Delete, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
-import { PostAuthLoginRequest } from './dto/post-auth-login-request';
-import { IPostAuthLoginRequest, IPostAuthLoginResponse } from './interfaces/post-auth.interface';
 import { Validate } from 'src/decorators/validate.decorator';
-import { PostPasswordChangeRequest } from './dto/post-password-change-request';
-import { IPostPasswordChangeRequest } from './interfaces/post-password-change.interface';
 import { Response } from 'express';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
-import { PostRefreshTokenRequest } from './dto/post-refresh-token-request';
-import { IPostRefreshTokenRequest } from './interfaces/post-refresh-token.interface';
 import { EResponse } from 'src/enums/response.enum';
-import { IUser } from '../user/interfaces/user.interface';
 import { RequestUser } from 'src/decorators/request-user.decorator';
+import {
+  PostAuthLoginRequest,
+  PostAuthLoginRequestSchema,
+  PostAuthLoginResponse,
+} from './schemas/post-auth-login.schema';
+import {
+  PostPasswordChangeRequest,
+  PostPasswordChangeRequestSchema,
+} from './schemas/post-password-change.schema';
+import {
+  PostRefreshTokenRequest,
+  PostRefreshTokenRequestSchema,
+} from './schemas/post-refresh-token.schema';
+import { User } from '../user/entities/user.entity';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -20,17 +27,17 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @Validate({ body: PostAuthLoginRequest })
-  async authenticate(@Body() payload: IPostAuthLoginRequest): Promise<IPostAuthLoginResponse> {
+  @Validate({ body: PostAuthLoginRequestSchema })
+  async authenticate(@Body() payload: PostAuthLoginRequest): Promise<PostAuthLoginResponse> {
     return await this.authService.authenticate(payload);
   }
 
   @Post('password-change')
   @AuthRequired()
-  @Validate({ body: PostPasswordChangeRequest })
+  @Validate({ body: PostPasswordChangeRequestSchema })
   async passwordChange(
-    @Body() payload: IPostPasswordChangeRequest,
-    @RequestUser() user: IUser,
+    @Body() payload: PostPasswordChangeRequest,
+    @RequestUser() user: User,
     @Res() res: Response,
   ) {
     await this.authService.passwordChange(user.id, payload.old_password, payload.new_password);
@@ -40,15 +47,15 @@ export class AuthController {
 
   @Delete('logout')
   @AuthRequired()
-  async logout(@RequestUser() user: IUser, @Res() res: Response) {
+  async logout(@RequestUser() user: User, @Res() res: Response) {
     await this.authService.delete(user.id);
 
     res.status(EResponse.SUCCESS).send();
   }
 
   @Post('refresh-token')
-  @Validate({ body: PostRefreshTokenRequest })
-  async refreshToken(@Body() payload: IPostRefreshTokenRequest) {
+  @Validate({ body: PostRefreshTokenRequestSchema })
+  async refreshToken(@Body() payload: PostRefreshTokenRequest) {
     return this.authService.refreshToken(payload.refresh_token);
   }
 }

@@ -1,13 +1,13 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { IPostUserNewRequest } from './interfaces/post-user-new.interface';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ERoles } from 'src/enums/roles.enum';
-import { IPostUserUpdateRequest } from './interfaces/put-user-update.interface';
 import { Pagination, PaginationResponse } from 'src/schemas/pagination.schema';
 import { BaseService } from 'src/services/base.service';
+import { PostUserNewRequest } from './schemas/post-user-new.schema';
+import { PostUserUpdateRequest } from './schemas/put-user-update.schema';
 
 @Injectable()
 export class UserService extends BaseService<User> {
@@ -16,7 +16,7 @@ export class UserService extends BaseService<User> {
     this.repository = userRepository;
   }
 
-  async create(data: IPostUserNewRequest) {
+  async create(data: PostUserNewRequest) {
     const user = new User();
 
     user.email = data.email;
@@ -34,7 +34,7 @@ export class UserService extends BaseService<User> {
     }
   }
 
-  async update(id: string, payload: IPostUserUpdateRequest) {
+  async update(id: string, payload: PostUserUpdateRequest) {
     const user = await this.findById(id);
 
     user.first_name = payload.first_name;

@@ -7,16 +7,16 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { IPostAuthLoginRequest, IPostAuthLoginResponse } from './interfaces/post-auth.interface';
 
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { Auth } from './entities/auth.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PostRefreshTokenResponse } from './interfaces/post-refresh-token.interface';
 import { BaseService } from 'src/services/base.service';
 import { GenerateToken } from './providers/generate-token';
+import { PostAuthLoginRequest, PostAuthLoginResponse } from './schemas/post-auth-login.schema';
+import { PostRefreshTokenResponse } from './schemas/post-refresh-token.schema';
 
 @Injectable()
 export class AuthService extends BaseService<Auth> {
@@ -30,7 +30,7 @@ export class AuthService extends BaseService<Auth> {
     this.repository = authRepository;
   }
 
-  async authenticate(data: IPostAuthLoginRequest): Promise<IPostAuthLoginResponse> {
+  async authenticate(data: PostAuthLoginRequest): Promise<PostAuthLoginResponse> {
     const { email, password } = data;
     const userDetails = await this.userService
       .get()
