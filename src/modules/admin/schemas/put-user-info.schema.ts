@@ -2,16 +2,16 @@ import * as Joi from 'joi';
 
 export const PutUserInfoRequestSchema = Joi.object({
   email: Joi.string().email().required(),
-  first_name: Joi.string().required(),
-  last_name: Joi.string().required(),
-  phone_number: Joi.string().required(),
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
+  phoneNumber: Joi.string().required(),
   address: Joi.string().required(),
 });
 
 export interface PutUserInfoRequest {
   email: string;
-  first_name: string;
-  last_name: string;
-  phone_number: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
   address: string;
 }

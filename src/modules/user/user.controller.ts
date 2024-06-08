@@ -13,8 +13,9 @@ import {
   PutUserUpdateRequestSchema,
 } from './schemas/put-user-update.schema';
 
-@Controller('user')
+@AuthRequired()
 @ApiTags('user')
+@Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -31,7 +32,6 @@ export class UserController {
   }
 
   @Put()
-  @AuthRequired()
   @Validate({ body: PutUserUpdateRequestSchema })
   async updateUser(
     @Body() payload: PostUserUpdateRequest,
@@ -46,7 +46,6 @@ export class UserController {
   }
 
   @Get()
-  @AuthRequired()
   getUser(@RequestUser() user: User) {
     const { id } = user;
     return this.userService.findById(id);

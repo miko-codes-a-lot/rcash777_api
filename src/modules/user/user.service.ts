@@ -20,12 +20,12 @@ export class UserService extends BaseService<User> {
     const user = new User();
 
     user.email = data.email;
-    user.first_name = data.first_name;
-    user.last_name = data.last_name;
-    user.phone_number = data.phone_number;
+    user.firstName = data.firstName;
+    user.lastName = data.lastName;
+    user.phoneNumber = data.phoneNumber;
     user.address = data.address;
     user.password = bcrypt.hashSync(data.password, 10);
-    user.role = ERoles.USER;
+    // user.role = ERoles.USER;
 
     try {
       return await this.userRepository.save(user);
@@ -37,9 +37,9 @@ export class UserService extends BaseService<User> {
   async update(id: string, payload: PostUserUpdateRequest) {
     const user = await this.findById(id);
 
-    user.first_name = payload.first_name;
-    user.last_name = payload.last_name;
-    user.phone_number = payload.phone_number;
+    user.firstName = payload.firstName;
+    user.lastName = payload.lastName;
+    user.phoneNumber = payload.phoneNumber;
     user.address = payload.address;
 
     return await this.userRepository.save(user);
@@ -51,7 +51,7 @@ export class UserService extends BaseService<User> {
 
   async findAllUserPaginate(pagination: Pagination): Promise<PaginationResponse<User>> {
     return await super.findAllPaginate(pagination, {
-      fields: ['phone_number', 'address'],
+      fields: ['phoneNumber', 'address'],
     });
   }
 }

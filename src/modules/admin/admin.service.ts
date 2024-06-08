@@ -20,15 +20,15 @@ export class AdminService {
 
   async updateUserInfo(user: User, payload: PutUserInfoRequest) {
     user.email = payload.email;
-    user.first_name = payload.first_name;
-    user.last_name = payload.last_name;
+    user.firstName = payload.firstName;
+    user.lastName = payload.lastName;
     user.address = payload.address;
 
     return await this.userService.set(user);
   }
 
   async updateUserRole(user: User, payload: PutUserRoleRequest) {
-    user.role = payload.new_role;
+    // user.role = payload.new_role;
     return await this.userService.set(user);
   }
 

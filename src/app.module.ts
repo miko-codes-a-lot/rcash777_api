@@ -7,6 +7,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/user/user.module';
 import { dataSourceOptions } from 'db/data-source';
+import { PermissionModule } from './modules/permission/permission.module';
+import { RoleModule } from './modules/role/role.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { dataSourceOptions } from 'db/data-source';
     AuthModule,
     HealthCheckModule,
     UserModule,
+    RoleModule,
+    PermissionModule
   ],
   controllers: [],
   providers: [
@@ -24,4 +28,4 @@ import { dataSourceOptions } from 'db/data-source';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

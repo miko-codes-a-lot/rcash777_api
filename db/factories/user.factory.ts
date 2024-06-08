@@ -6,12 +6,12 @@ export default setSeederFactory(User, (faker) => {
   const user = new User();
 
   user.email = faker.internet.email();
-  user.first_name = faker.person.firstName();
-  user.last_name = faker.person.lastName();
-  user.phone_number = faker.phone.number();
+  user.firstName = faker.person.firstName();
+  user.lastName = faker.person.lastName();
+  user.phoneNumber = faker.phone.number();
   user.address = faker.location.streetAddress();
   user.password = '$2b$10$3rSxQ9Dg.WndZoW9zrZcmOGrih2I6BKWL81mwRmlSuRE6Upqviq4a'; // user123
-  user.role = ERoles.USER;
+  // user.role = ERoles.USER;
 
   return user;
 });
