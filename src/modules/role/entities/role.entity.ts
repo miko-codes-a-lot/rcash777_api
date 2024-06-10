@@ -5,7 +5,7 @@ import {
   JoinColumn,
   ManyToMany,
   ManyToOne,
-  OneToMany,
+  JoinTable,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -23,11 +23,25 @@ export class Role {
   @Column({ default: '' })
   description: string;
 
-  @OneToMany(() => Permission, permission => permission.role)
-  permissions: Permission[]
+  @ManyToMany(() => Permission, (permission) => permission.roles, {
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+  })
+  @JoinTable({
+    name: 'role_permission',
+    joinColumn: {
+      name: 'role_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'permission_id',
+      referencedColumnName: 'id',
+    },
+  })
+  permissions: Permission[];
 
   @ManyToMany(() => User, (user) => user.roles, { onDelete: 'NO ACTION', onUpdate: 'NO ACTION' })
-  users: User[]
+  users: User[];
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by_id' })
@@ -37,11 +51,18 @@ export class Role {
   @JoinColumn({ name: 'updated_by_id' })
   updatedBy: User;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)' })
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
   public createdAt: Date;
 
   @UpdateDateColumn({
-    name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)', onUpdate: 'CURRENT_TIMESTAMP(6)'
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;
 }

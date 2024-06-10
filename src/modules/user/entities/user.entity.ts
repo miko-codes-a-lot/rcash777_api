@@ -39,14 +39,14 @@ export class User {
     name: 'user_role',
     joinColumn: {
       name: 'user_id',
-      referencedColumnName: 'id'
+      referencedColumnName: 'id',
     },
     inverseJoinColumn: {
       name: 'role_id',
-      referencedColumnName: 'id'
-    }
+      referencedColumnName: 'id',
+    },
   })
-  roles: Role[]
+  roles: Role[];
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by_id' })
@@ -64,10 +64,19 @@ export class User {
   @JoinColumn({ name: 'activated_by_id' })
   activatedBy: User;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)' })
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
   public createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)', onUpdate: 'CURRENT_TIMESTAMP(6)' })
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
   public updatedAt: Date;
 
   @Column({ name: 'deactivated_at', type: 'timestamptz', nullable: true })

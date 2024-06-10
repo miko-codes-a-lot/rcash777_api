@@ -1,26 +1,87 @@
-import { Injectable } from '@nestjs/common';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { FormRoleDTO } from './dto/form-role.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../user/entities/user.entity';
+import { In, ILike, Not, Repository, DataSource } from 'typeorm';
+import { Permission } from '../permission/entities/permission.entity';
+import { Role } from './entities/role.entity';
+import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 
 @Injectable()
 export class RoleService {
-  create(createRoleDto: CreateRoleDto) {
-    return 'This action adds a new role';
+  constructor(
+    private dataSource: DataSource,
+
+    @InjectRepository(Role)
+    private roleRepo: Repository<Role>,
+  ) {}
+
+  update(user: User, formData: FormRoleDTO, roleId?: string) {
+    return this.dataSource.transaction(async (manager) => {
+      const permissionRepo = manager.getRepository(Permission);
+      const roleRepo = manager.getRepository(Role);
+
+      const role =
+        (await roleRepo.findOneBy([{ id: roleId }, { name: formData.name }])) || new Role();
+
+      const isDuplicate = await roleRepo.findOneBy({
+        ...((roleId || role.id) && { id: Not(roleId) }),
+        name: formData.name,
+      });
+      if (isDuplicate)
+        throw new ConflictException('Role name is already taken, please user a different one');
+
+      const permissions = await permissionRepo.find({
+        where: { id: In(formData.permissionIds) },
+        select: ['id'],
+      });
+      if (permissions.length !== formData.permissionIds.length)
+        throw new NotFoundException('Permissions not found, causing association failure.');
+
+      role.permissions = formData.permissionIds.map((id) => Permission.builder().id(id).build());
+      role.createdBy = role.createdBy || user;
+      role.updatedBy = user;
+
+      const roleData = roleRepo.merge(role, formData);
+
+      return roleRepo.save(roleData);
+    });
   }
 
-  findAll() {
-    return `This action returns all role`;
+  async findAllPaginated(config: PaginationDTO) {
+    const { page = 1, pageSize = 10, search, sortBy = 'createdAt', sortOrder = 'asc' } = config;
+
+    const [roles, count] = await this.roleRepo.findAndCount({
+      ...(search && {
+        where: { name: ILike(`%${search}%`) },
+      }),
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      order: { [sortBy]: sortOrder },
+      relations: ['permissions', 'createdBy', 'updatedBy'],
+    });
+
+    return {
+      total: count,
+      totalPages: Math.ceil(count / pageSize),
+      page,
+      pageSize,
+      items: roles,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} role`;
+  async findOne(id: string) {
+    const doc = await this.roleRepo.findOne({
+      where: { id },
+      relations: { permissions: true, createdBy: true, updatedBy: true },
+    });
+    if (!doc) throw new NotFoundException('Role not found');
+
+    return doc;
   }
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} role`;
+  async remove(id: string) {
+    const doc = await this.findOne(id);
+    return this.roleRepo.remove(doc);
   }
 }

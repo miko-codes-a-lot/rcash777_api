@@ -6,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -24,8 +25,11 @@ export class Permission {
   @Column({ default: '' })
   description: string;
 
-  @ManyToOne(() => Role, role => role.permissions)
-  role: Role
+  @ManyToMany(() => Role, (role) => role.permissions, {
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+  })
+  roles: Role[];
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by_id' })
@@ -35,11 +39,79 @@ export class Permission {
   @JoinColumn({ name: 'updated_by_id' })
   updatedBy: User;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)' })
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
   public createdAt: Date;
 
   @UpdateDateColumn({
-    name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)', onUpdate: 'CURRENT_TIMESTAMP(6)'
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;
+
+  static builder() {
+    return new PermissionBuilder();
+  }
+}
+
+class PermissionBuilder {
+  private readonly permission: Permission;
+
+  constructor() {
+    this.permission = new Permission();
+  }
+
+  id(id: string): PermissionBuilder {
+    this.permission.id = id;
+    return this;
+  }
+
+  name(name: string): PermissionBuilder {
+    this.permission.name = name;
+    return this;
+  }
+
+  code(code: string): PermissionBuilder {
+    this.permission.code = code;
+    return this;
+  }
+
+  description(description: string): PermissionBuilder {
+    this.permission.description = description;
+    return this;
+  }
+
+  roles(roles: Role[]): PermissionBuilder {
+    this.permission.roles = roles;
+    return this;
+  }
+
+  createdBy(user: User): PermissionBuilder {
+    this.permission.createdBy = user;
+    return this;
+  }
+
+  updatedBy(user: User): PermissionBuilder {
+    this.permission.updatedBy = user;
+    return this;
+  }
+
+  createdAt(createdAt: Date): PermissionBuilder {
+    this.permission.createdAt = createdAt;
+    return this;
+  }
+
+  updatedAt(updatedAt: Date): PermissionBuilder {
+    this.permission.updatedAt = updatedAt;
+    return this;
+  }
+
+  build(): Permission {
+    return this.permission;
+  }
 }
