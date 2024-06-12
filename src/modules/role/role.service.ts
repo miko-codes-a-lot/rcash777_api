@@ -16,7 +16,7 @@ export class RoleService {
     private roleRepo: Repository<Role>,
   ) {}
 
-  update(user: User, formData: FormRoleDTO, roleId?: string) {
+  createOrUpdate(user: User, formData: FormRoleDTO, roleId?: string) {
     return this.dataSource.transaction(async (manager) => {
       const permissionRepo = manager.getRepository(Permission);
       const roleRepo = manager.getRepository(Role);

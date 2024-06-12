@@ -9,6 +9,7 @@ import { UserModule } from './modules/user/user.module';
 import { dataSourceOptions } from 'db/data-source';
 import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
+import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { RoleModule } from './modules/role/role.module';
     HealthCheckModule,
     UserModule,
     RoleModule,
-    PermissionModule
+    PermissionModule,
+    PaymentChannelModule,
   ],
   controllers: [],
   providers: [
@@ -28,4 +30,4 @@ import { RoleModule } from './modules/role/role.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

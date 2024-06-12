@@ -19,7 +19,7 @@ export class RoleController {
   @Post()
   @Validate({ body: RoleSchema })
   async create(@RequestUser() user: User, @Body() formData: FormRoleDTO, @Res() res: Response) {
-    const doc = await this.roleService.update(user, formData);
+    const doc = await this.roleService.createOrUpdate(user, formData);
     return res.status(EResponse.CREATED).json(doc);
   }
 
@@ -46,12 +46,13 @@ export class RoleController {
     @Body() formData: FormRoleDTO,
     @Res() res: Response,
   ) {
-    const doc = await this.roleService.update(user, formData, id);
+    const doc = await this.roleService.createOrUpdate(user, formData, id);
     return res.status(EResponse.SUCCESS).json(doc);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.roleService.remove(id);
+  async remove(@Param('id') id: string, @Res() res: Response) {
+    await this.roleService.remove(id);
+    return res.status(EResponse.NOCONTENT).send();
   }
 }
