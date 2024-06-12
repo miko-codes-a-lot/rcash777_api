@@ -21,11 +21,10 @@ export class RoleService {
       const permissionRepo = manager.getRepository(Permission);
       const roleRepo = manager.getRepository(Role);
 
-      const role =
-        (await roleRepo.findOneBy([{ id: roleId }, { name: formData.name }])) || new Role();
+      const role = (await roleRepo.findOneBy({ id: roleId })) || new Role();
 
       const isDuplicate = await roleRepo.findOneBy({
-        ...((roleId || role.id) && { id: Not(roleId) }),
+        ...(roleId && { id: Not(roleId) }),
         name: formData.name,
       });
       if (isDuplicate)

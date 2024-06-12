@@ -17,28 +17,24 @@ export class PermissionService {
   ) {}
 
   async upsert(user: User, formData: FormPermissionDTO, permissionId?: string) {
-    const { prevPermission, isDuplicate } = permissionId
-      ? {
-          prevPermission: await this.permissionRepo.findOne({ where: { id: permissionId } }),
-          isDuplicate: await this.permissionRepo.findOne({
-            where: { id: Not(permissionId), code: formData.code },
-          }),
-        }
-      : { prevPermission: null, isDuplicate: null };
-
+    const isDuplicate = await this.permissionRepo.findOneBy({
+      ...(permissionId && { id: Not(permissionId) }),
+      code: formData.code,
+    });
     if (isDuplicate)
       throw new ConflictException('Permission code already in use, choose a different one');
 
     const createdBy = await this.userRepo.findOne({ where: { id: user.id } });
 
-    const permission = new Permission();
+    const permission =
+      (await this.permissionRepo.findOneBy({ id: permissionId })) || new Permission();
 
     permission.id = permissionId;
     permission.name = formData.name;
     permission.code = formData.code;
     permission.description = formData.description;
 
-    permission.createdBy = prevPermission?.createdBy || createdBy;
+    permission.createdBy = permission?.createdBy || createdBy;
     permission.updatedBy = user;
 
     const result = await this.permissionRepo.upsert(permission, ['code']);
