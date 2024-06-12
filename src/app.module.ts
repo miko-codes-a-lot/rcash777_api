@@ -10,6 +10,7 @@ import { dataSourceOptions } from 'db/data-source';
 import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
 import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module';
+import { CashTransactionModule } from './modules/cash-transaction/cash-transaction.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PaymentChannelModule } from './modules/payment-channel/payment-channel.
     RoleModule,
     PermissionModule,
     PaymentChannelModule,
+    CashTransactionModule,
   ],
   controllers: [],
   providers: [
