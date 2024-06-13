@@ -11,6 +11,7 @@ import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
 import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module';
 import { CashTransactionModule } from './modules/cash-transaction/cash-transaction.module';
+import { CoinTransactionModule } from './modules/coin-transaction/coin-transaction.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CashTransactionModule } from './modules/cash-transaction/cash-transacti
     PermissionModule,
     PaymentChannelModule,
     CashTransactionModule,
+    CoinTransactionModule,
   ],
   controllers: [],
   providers: [
