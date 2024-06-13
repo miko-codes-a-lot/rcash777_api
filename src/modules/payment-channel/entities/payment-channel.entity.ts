@@ -1,3 +1,4 @@
+import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -19,6 +21,9 @@ export class PaymentChannel {
 
   @Column({ default: '' })
   description: string;
+
+  @OneToMany(() => CashTransaction, (cointx) => cointx.paymentChannel)
+  cashTransactions: CashTransaction[];
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by_id' })
@@ -42,4 +47,55 @@ export class PaymentChannel {
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;
+
+  static builder() {
+    return new PaymentChannelBuilder();
+  }
+}
+
+class PaymentChannelBuilder {
+  private paymentChannel: PaymentChannel;
+
+  constructor() {
+    this.paymentChannel = new PaymentChannel();
+  }
+
+  id(id: string): PaymentChannelBuilder {
+    this.paymentChannel.id = id;
+    return this;
+  }
+
+  name(name: string): PaymentChannelBuilder {
+    this.paymentChannel.name = name;
+    return this;
+  }
+
+  description(description: string): PaymentChannelBuilder {
+    this.paymentChannel.description = description;
+    return this;
+  }
+
+  createdBy(createdBy: User): PaymentChannelBuilder {
+    this.paymentChannel.createdBy = createdBy;
+    return this;
+  }
+
+  updatedBy(updatedBy: User): PaymentChannelBuilder {
+    this.paymentChannel.updatedBy = updatedBy;
+    return this;
+  }
+
+  createdAt(createdAt: Date): PaymentChannelBuilder {
+    this.paymentChannel.createdAt = createdAt;
+    return this;
+  }
+
+  updatedAt(updatedAt: Date): PaymentChannelBuilder {
+    this.paymentChannel.updatedAt = updatedAt;
+    return this;
+  }
+
+  build(): PaymentChannel {
+    return this.paymentChannel;
+  }
 }

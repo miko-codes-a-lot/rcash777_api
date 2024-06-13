@@ -1,4 +1,5 @@
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
+import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 import { PaymentChannel } from 'src/modules/payment-channel/entities/payment-channel.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
@@ -7,7 +8,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -22,13 +23,15 @@ export class CashTransaction {
   @Column({
     type: 'enum',
     enum: TransactionType,
+    default: TransactionType.DEBIT,
   })
   type: string;
 
   @Column({
     type: 'enum',
-    enum: TransactionTypeCategory,
     name: 'type_category',
+    enum: TransactionTypeCategory,
+    default: TransactionTypeCategory.DEPOSIT,
   })
   typeCategory: string;
 
@@ -39,9 +42,14 @@ export class CashTransaction {
   })
   amount: number;
 
-  @OneToOne(() => PaymentChannel)
-  @JoinColumn({ name: 'payment_channel_id' })
+  @ManyToOne(() => User, (user) => user.cashTransactions)
+  user: User;
+
+  @ManyToOne(() => PaymentChannel, (channel) => channel.cashTransactions)
   paymentChannel: PaymentChannel;
+
+  @OneToMany(() => CoinTransaction, (cointx) => cointx.cashTransaction)
+  coinTransactions: CoinTransaction[];
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by_id' })

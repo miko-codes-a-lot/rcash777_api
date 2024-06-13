@@ -4,6 +4,12 @@ import { FormCashTransactionDTO } from './dto/form-cash-transaction.dto';
 import { DataSource, Repository } from 'typeorm';
 import { CashTransaction } from './entities/cash-transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.entity';
+import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
+import { PaymentChannel } from '../payment-channel/entities/payment-channel.entity';
+
+const CASH_TO_COINS_RATE = 10;
+const REBATE_PERCENT = 0.03;
 
 @Injectable()
 export class CashTransactionService {
@@ -14,17 +20,57 @@ export class CashTransactionService {
     private cashRepo: Repository<CashTransaction>,
   ) {}
 
-  create(user: User, formData: FormCashTransactionDTO) {
+  deposit(agent: User, formData: FormCashTransactionDTO) {
     return this.dataSource.transaction(async (manager) => {
       const cashRepo = manager.getRepository(CashTransaction);
-      // const coinRepo = manager.getRepository(CoinTransaction);
+      const coinRepo = manager.getRepository(CoinTransaction);
+
+      const user = User.builder().id(formData.userId).build();
 
       const cashTx = new CashTransaction();
-      cashTx.createdBy = user;
+      cashTx.user = user;
+      cashTx.paymentChannel = PaymentChannel.builder().id(formData.paymentChannelId).build();
+      cashTx.createdBy = agent;
 
       const cashTxData = cashRepo.merge(cashTx, formData);
 
-      return cashRepo.save(cashTxData);
+      const depositCount = await cashRepo.count({
+        where: {
+          user: { id: formData.userId },
+          type: TransactionType.DEBIT,
+          typeCategory: TransactionTypeCategory.DEPOSIT,
+        },
+      });
+
+      await cashRepo.save(cashTxData);
+
+      const coins = cashTxData.amount * CASH_TO_COINS_RATE;
+
+      const coinTx = CoinTransaction.builder()
+        .cashTransaction(cashTxData)
+        .user(user)
+        .type(TransactionType.DEBIT)
+        .typeCategory(TransactionTypeCategory.DEPOSIT)
+        .amount(coins)
+        .createdBy(agent)
+        .build();
+
+      await coinRepo.save(coinTx);
+
+      if (depositCount === 0) {
+        const coinRebateTx = CoinTransaction.builder()
+          .cashTransaction(cashTxData)
+          .user(user)
+          .type(TransactionType.DEBIT)
+          .typeCategory(TransactionTypeCategory.REBATE)
+          .amount(coins * REBATE_PERCENT)
+          .createdBy(user)
+          .build();
+
+        await coinRepo.save(coinRebateTx);
+      }
+
+      return cashTx;
     });
   }
 

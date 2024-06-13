@@ -7,6 +7,7 @@ import { User } from '../user/entities/user.entity';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { Response } from 'express';
 import { EResponse } from 'src/enums/response.enum';
+import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 
 @AuthRequired()
 @ApiTags('cash-transaction')
@@ -14,13 +15,16 @@ import { EResponse } from 'src/enums/response.enum';
 export class CashTransactionController {
   constructor(private readonly cashTransactionService: CashTransactionService) {}
 
-  @Post()
-  async create(
+  @Post('deposit')
+  async deposit(
     @RequestUser() user: User,
     @Body() FormData: FormCashTransactionDTO,
     @Res() res: Response,
   ) {
-    const doc = await this.cashTransactionService.create(user, FormData);
+    FormData.type = TransactionType.DEBIT;
+    FormData.typeCategory = TransactionTypeCategory.DEPOSIT;
+
+    const doc = await this.cashTransactionService.deposit(user, FormData);
     return res.status(EResponse.CREATED).json(doc);
   }
 

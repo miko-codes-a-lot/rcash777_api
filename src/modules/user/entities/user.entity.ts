@@ -1,3 +1,5 @@
+import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
+import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 import { Role } from 'src/modules/role/entities/role.entity';
 import {
   Column,
@@ -7,6 +9,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -48,6 +51,12 @@ export class User {
   })
   roles: Role[];
 
+  @OneToMany(() => CashTransaction, (cointx) => cointx.user)
+  cashTransactions: CashTransaction[];
+
+  @OneToMany(() => CoinTransaction, (cointx) => cointx.user)
+  coinTransactions: CoinTransaction[];
+
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by_id' })
   createdBy: User;
@@ -84,4 +93,100 @@ export class User {
 
   @Column({ name: 'activated_at', type: 'timestamptz', nullable: true })
   public activatedAt: Date;
+
+  static builder() {
+    return new UserBuilder();
+  }
+}
+
+class UserBuilder {
+  private user: User;
+
+  constructor() {
+    this.user = new User();
+  }
+
+  id(id: string): UserBuilder {
+    this.user.id = id;
+    return this;
+  }
+
+  email(email: string): UserBuilder {
+    this.user.email = email;
+    return this;
+  }
+
+  firstName(firstName: string): UserBuilder {
+    this.user.firstName = firstName;
+    return this;
+  }
+
+  lastName(lastName: string): UserBuilder {
+    this.user.lastName = lastName;
+    return this;
+  }
+
+  phoneNumber(phoneNumber: string): UserBuilder {
+    this.user.phoneNumber = phoneNumber;
+    return this;
+  }
+
+  address(address: string): UserBuilder {
+    this.user.address = address;
+    return this;
+  }
+
+  password(password: string): UserBuilder {
+    this.user.password = password;
+    return this;
+  }
+
+  roles(roles: Role[]): UserBuilder {
+    this.user.roles = roles;
+    return this;
+  }
+
+  createdBy(createdBy: User): UserBuilder {
+    this.user.createdBy = createdBy;
+    return this;
+  }
+
+  updatedBy(updatedBy: User): UserBuilder {
+    this.user.updatedBy = updatedBy;
+    return this;
+  }
+
+  deactivatedBy(deactivatedBy: User): UserBuilder {
+    this.user.deactivatedBy = deactivatedBy;
+    return this;
+  }
+
+  activatedBy(activatedBy: User): UserBuilder {
+    this.user.activatedBy = activatedBy;
+    return this;
+  }
+
+  createdAt(createdAt: Date): UserBuilder {
+    this.user.createdAt = createdAt;
+    return this;
+  }
+
+  updatedAt(updatedAt: Date): UserBuilder {
+    this.user.updatedAt = updatedAt;
+    return this;
+  }
+
+  deactivatedAt(deactivatedAt: Date): UserBuilder {
+    this.user.deactivatedAt = deactivatedAt;
+    return this;
+  }
+
+  activatedAt(activatedAt: Date): UserBuilder {
+    this.user.activatedAt = activatedAt;
+    return this;
+  }
+
+  build(): User {
+    return this.user;
+  }
 }
