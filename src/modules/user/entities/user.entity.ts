@@ -51,10 +51,10 @@ export class User {
   })
   roles: Role[];
 
-  @OneToMany(() => CashTransaction, (cointx) => cointx.user)
+  @OneToMany(() => CashTransaction, (cointx) => cointx.player)
   cashTransactions: CashTransaction[];
 
-  @OneToMany(() => CoinTransaction, (cointx) => cointx.user)
+  @OneToMany(() => CoinTransaction, (cointx) => cointx.player)
   coinTransactions: CoinTransaction[];
 
   @ManyToOne(() => User)

@@ -5,13 +5,13 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE "coin_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."coin_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."coin_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "game_id" character varying, "created_at" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "cashTransactionId" uuid, "userId" uuid, "created_by_id" uuid, CONSTRAINT "PK_038fe0990ab9f6c09993c7761ea" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "coin_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."coin_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."coin_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "game_id" character varying, "created_at" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "cash_transaction_id" uuid, "user_player_id" uuid, "created_by_id" uuid, CONSTRAINT "PK_038fe0990ab9f6c09993c7761ea" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "payment_channel" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "description" character varying NOT NULL DEFAULT '', "created_at" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "created_by_id" uuid, "updated_by_id" uuid, CONSTRAINT "UQ_197a99efb311a9f24706e33bfb2" UNIQUE ("name"), CONSTRAINT "PK_f280a94d71fb8ec321a3a7a1208" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "cash_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."cash_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."cash_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "userId" uuid, "paymentChannelId" uuid, "created_by_id" uuid, CONSTRAINT "PK_d4d82b6912d82a7f4f519bd0d86" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "cash_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."cash_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."cash_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "user_player_id" uuid, "payment_channel_id" uuid, "created_by_id" uuid, CONSTRAINT "PK_d4d82b6912d82a7f4f519bd0d86" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "permission" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "code" character varying NOT NULL, "description" character varying NOT NULL DEFAULT '', "created_at" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "created_by_id" uuid, "updated_by_id" uuid, CONSTRAINT "UQ_30e166e8c6359970755c5727a23" UNIQUE ("code"), CONSTRAINT "PK_3b8b97af9d9d8807e41e6f48362" PRIMARY KEY ("id"))`,
@@ -44,10 +44,10 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE INDEX "IDX_32a6fc2fcb019d8e3a8ace0f55" ON "user_role" ("role_id") `,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_transaction" ADD CONSTRAINT "FK_9a8f4ce0d3f00a5a6d19e8d849f" FOREIGN KEY ("cashTransactionId") REFERENCES "cash_transaction"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "coin_transaction" ADD CONSTRAINT "FK_7ba1299eb0d050da6b9f78971a6" FOREIGN KEY ("cash_transaction_id") REFERENCES "cash_transaction"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_transaction" ADD CONSTRAINT "FK_09cd6e36e2f52da0f9ddffb7434" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "coin_transaction" ADD CONSTRAINT "FK_9e13e6b1e1e3c8815de42aeed15" FOREIGN KEY ("user_player_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "coin_transaction" ADD CONSTRAINT "FK_becc40d1d633c36916da858e5b5" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -59,10 +59,10 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "payment_channel" ADD CONSTRAINT "FK_ec4b96ff769b6a4a469dd43a9de" FOREIGN KEY ("updated_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "cash_transaction" ADD CONSTRAINT "FK_475bd6081b66928ce493cc7dd75" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "cash_transaction" ADD CONSTRAINT "FK_79bf308e1f99c88834b943278f6" FOREIGN KEY ("user_player_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "cash_transaction" ADD CONSTRAINT "FK_0625d9281f351abc8996e898c51" FOREIGN KEY ("paymentChannelId") REFERENCES "payment_channel"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "cash_transaction" ADD CONSTRAINT "FK_612a340c4e61196646a71eafe25" FOREIGN KEY ("payment_channel_id") REFERENCES "payment_channel"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "cash_transaction" ADD CONSTRAINT "FK_d6a07ed6ba24ce4ee3523e1b942" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -103,7 +103,6 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "role_permission" ADD CONSTRAINT "FK_e3a3ba47b7ca00fd23be4ebd6cf" FOREIGN KEY ("permission_id") REFERENCES "permission"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
-
     await queryRunner.query(`
         INSERT INTO "user" 
         (
@@ -180,10 +179,10 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "cash_transaction" DROP CONSTRAINT "FK_d6a07ed6ba24ce4ee3523e1b942"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "cash_transaction" DROP CONSTRAINT "FK_0625d9281f351abc8996e898c51"`,
+      `ALTER TABLE "cash_transaction" DROP CONSTRAINT "FK_612a340c4e61196646a71eafe25"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "cash_transaction" DROP CONSTRAINT "FK_475bd6081b66928ce493cc7dd75"`,
+      `ALTER TABLE "cash_transaction" DROP CONSTRAINT "FK_79bf308e1f99c88834b943278f6"`,
     );
     await queryRunner.query(
       `ALTER TABLE "payment_channel" DROP CONSTRAINT "FK_ec4b96ff769b6a4a469dd43a9de"`,
@@ -195,10 +194,10 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "coin_transaction" DROP CONSTRAINT "FK_becc40d1d633c36916da858e5b5"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_transaction" DROP CONSTRAINT "FK_09cd6e36e2f52da0f9ddffb7434"`,
+      `ALTER TABLE "coin_transaction" DROP CONSTRAINT "FK_9e13e6b1e1e3c8815de42aeed15"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_transaction" DROP CONSTRAINT "FK_9a8f4ce0d3f00a5a6d19e8d849f"`,
+      `ALTER TABLE "coin_transaction" DROP CONSTRAINT "FK_7ba1299eb0d050da6b9f78971a6"`,
     );
     await queryRunner.query(`DROP INDEX "public"."IDX_32a6fc2fcb019d8e3a8ace0f55"`);
     await queryRunner.query(`DROP INDEX "public"."IDX_d0e5815877f7395a198a4cb0a4"`);

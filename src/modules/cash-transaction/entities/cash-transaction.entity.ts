@@ -43,9 +43,11 @@ export class CashTransaction {
   amount: number;
 
   @ManyToOne(() => User, (user) => user.cashTransactions)
-  user: User;
+  @JoinColumn({ name: 'user_player_id' })
+  player: User;
 
   @ManyToOne(() => PaymentChannel, (channel) => channel.cashTransactions)
+  @JoinColumn({ name: 'payment_channel_id' })
   paymentChannel: PaymentChannel;
 
   @OneToMany(() => CoinTransaction, (cointx) => cointx.cashTransaction)

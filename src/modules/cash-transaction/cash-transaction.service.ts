@@ -25,10 +25,10 @@ export class CashTransactionService {
       const cashRepo = manager.getRepository(CashTransaction);
       const coinRepo = manager.getRepository(CoinTransaction);
 
-      const user = User.builder().id(formData.userId).build();
+      const player = User.builder().id(formData.userId).build();
 
       const cashTx = new CashTransaction();
-      cashTx.user = user;
+      cashTx.player = player;
       cashTx.paymentChannel = PaymentChannel.builder().id(formData.paymentChannelId).build();
       cashTx.createdBy = agent;
 
@@ -36,7 +36,7 @@ export class CashTransactionService {
 
       const depositCount = await cashRepo.count({
         where: {
-          user: { id: formData.userId },
+          player: { id: formData.userId },
           type: TransactionType.DEBIT,
           typeCategory: TransactionTypeCategory.DEPOSIT,
         },
@@ -48,7 +48,7 @@ export class CashTransactionService {
 
       const coinTx = CoinTransaction.builder()
         .cashTransaction(cashTxData)
-        .user(user)
+        .player(player)
         .type(TransactionType.DEBIT)
         .typeCategory(TransactionTypeCategory.DEPOSIT)
         .amount(coins)
@@ -60,11 +60,11 @@ export class CashTransactionService {
       if (depositCount === 0) {
         const coinRebateTx = CoinTransaction.builder()
           .cashTransaction(cashTxData)
-          .user(user)
+          .player(player)
           .type(TransactionType.DEBIT)
           .typeCategory(TransactionTypeCategory.REBATE)
           .amount(coins * REBATE_PERCENT)
-          .createdBy(user)
+          .createdBy(player)
           .build();
 
         await coinRepo.save(coinRebateTx);

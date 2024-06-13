@@ -41,6 +41,7 @@ export class CoinTransaction {
   amount: number;
 
   @ManyToOne(() => CashTransaction, (cashtx) => cashtx.coinTransactions)
+  @JoinColumn({ name: 'cash_transaction_id' })
   cashTransaction: CashTransaction;
 
   /** @TODO: 2024-06-12 - Miko Chu >> transition later to Game FK */
@@ -48,7 +49,8 @@ export class CoinTransaction {
   gameId: string;
 
   @ManyToOne(() => User, (user) => user.coinTransactions)
-  user: User;
+  @JoinColumn({ name: 'user_player_id' })
+  player: User;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by_id' })
@@ -108,8 +110,8 @@ class CoinTransactionBuilder {
     return this;
   }
 
-  user(user: User): CoinTransactionBuilder {
-    this.coinTransaction.user = user;
+  player(player: User): CoinTransactionBuilder {
+    this.coinTransaction.player = player;
     return this;
   }
 
