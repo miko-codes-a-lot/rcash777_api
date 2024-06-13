@@ -22,10 +22,12 @@ export class CashTransactionService {
 
   deposit(agent: User, formData: FormCashTransactionDTO) {
     return this.dataSource.transaction(async (manager) => {
+      const userRepo = manager.getRepository(User);
       const cashRepo = manager.getRepository(CashTransaction);
       const coinRepo = manager.getRepository(CoinTransaction);
 
-      const player = User.builder().id(formData.playerId).build();
+      // const player = User.builder().id(formData.playerId).build();
+      const player = await userRepo.findOne({ where: { id: formData.playerId } });
 
       const cashTx = new CashTransaction();
       cashTx.player = player;
@@ -58,17 +60,25 @@ export class CashTransactionService {
       await coinRepo.save(coinTx);
 
       if (depositCount === 0) {
+        const coinRebate = coins * REBATE_PERCENT;
+
         const coinRebateTx = CoinTransaction.builder()
           .cashTransaction(cashTxData)
           .player(player)
           .type(TransactionType.DEBIT)
           .typeCategory(TransactionTypeCategory.REBATE)
-          .amount(coins * REBATE_PERCENT)
+          .amount(coinRebate)
           .createdBy(player)
           .build();
 
+        player.coinDeposit += coinRebate;
+
         await coinRepo.save(coinRebateTx);
       }
+
+      player.coinDeposit += coins;
+
+      await userRepo.save(player);
 
       return cashTx;
     });
