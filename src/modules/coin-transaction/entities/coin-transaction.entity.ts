@@ -1,4 +1,5 @@
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
+import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
 import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
@@ -37,6 +38,7 @@ export class CoinTransaction {
     type: 'decimal',
     precision: 18,
     scale: 8,
+    transformer: new DecimalColumnTransformer(),
   })
   amount: number;
 

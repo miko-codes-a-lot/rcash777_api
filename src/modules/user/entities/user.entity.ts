@@ -1,3 +1,4 @@
+import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
 import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
 import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 import { Role } from 'src/modules/role/entities/role.entity';
@@ -33,6 +34,16 @@ export class User {
 
   @Column()
   address: string;
+
+  @Column({
+    name: 'coin_deposit',
+    type: 'decimal',
+    precision: 18,
+    scale: 8,
+    default: 0,
+    transformer: new DecimalColumnTransformer(),
+  })
+  coinDeposit: number;
 
   @Column({ nullable: false, select: false })
   password: string;
