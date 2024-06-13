@@ -25,7 +25,7 @@ export class CashTransactionService {
       const cashRepo = manager.getRepository(CashTransaction);
       const coinRepo = manager.getRepository(CoinTransaction);
 
-      const player = User.builder().id(formData.userId).build();
+      const player = User.builder().id(formData.playerId).build();
 
       const cashTx = new CashTransaction();
       cashTx.player = player;
@@ -36,7 +36,7 @@ export class CashTransactionService {
 
       const depositCount = await cashRepo.count({
         where: {
-          player: { id: formData.userId },
+          player: { id: formData.playerId },
           type: TransactionType.DEBIT,
           typeCategory: TransactionTypeCategory.DEPOSIT,
         },
