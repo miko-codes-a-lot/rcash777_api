@@ -1,7 +1,5 @@
 import * as Joi from 'joi';
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
-import { PaymentChannel } from 'src/modules/payment-channel/entities/payment-channel.entity';
-import { User } from 'src/modules/user/entities/user.entity';
 
 export const CashTransactionSchema = Joi.object({
   note: Joi.string().default(''),
@@ -16,18 +14,6 @@ export class FormCashTransactionDTO {
   type: TransactionType;
   typeCategory: TransactionTypeCategory;
   amount: number;
-  userId: string;
+  playerId: string;
   paymentChannelId: string;
-
-  getUser(): User {
-    const user = new User();
-    user.id = this.userId;
-    return user;
-  }
-
-  getPaymentChannel(): PaymentChannel {
-    const channel = new PaymentChannel();
-    channel.id = this.paymentChannelId;
-    return channel;
-  }
 }
