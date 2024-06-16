@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { UpdateGameDto } from './dto/update-game.dto';
 import { GameDTO } from './dto/game.dto';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -89,23 +88,11 @@ export class GameService {
     });
   }
 
-  async create() {
-    return 'This action adds a new game';
-  }
-
   findAll() {
     return `This action returns all game`;
   }
 
   findOne(id: number) {
     return `This action returns a #${id} game`;
-  }
-
-  update(id: number, updateGameDto: UpdateGameDto) {
-    return `This action updates a #${id} game`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} game`;
   }
 }
