@@ -1,15 +1,18 @@
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
+import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
 import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+@Index('idx_coin_transaction_user_player_id_type_id', ['player', 'type'])
 @Entity('coin_transaction')
 export class CoinTransaction {
   @PrimaryGeneratedColumn('uuid')
@@ -37,6 +40,7 @@ export class CoinTransaction {
     type: 'decimal',
     precision: 18,
     scale: 8,
+    transformer: new DecimalColumnTransformer(),
   })
   amount: number;
 
@@ -58,7 +62,7 @@ export class CoinTransaction {
 
   @CreateDateColumn({
     name: 'created_at',
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   public createdAt: Date;

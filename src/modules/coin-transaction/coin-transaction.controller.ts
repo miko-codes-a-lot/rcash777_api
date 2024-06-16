@@ -26,4 +26,9 @@ export class CoinTransactionController {
   async findAll(@Query() query: PaginationDTO) {
     return await this.coinService.findAllPaginated(query);
   }
+
+  @Get('balance/:id')
+  async computeBalance(@Param('id') id: string) {
+    return await this.coinService.computeBalance(id);
+  }
 }

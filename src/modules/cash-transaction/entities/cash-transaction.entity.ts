@@ -1,4 +1,5 @@
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
+import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
 import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 import { PaymentChannel } from 'src/modules/payment-channel/entities/payment-channel.entity';
 import { User } from 'src/modules/user/entities/user.entity';
@@ -39,6 +40,7 @@ export class CashTransaction {
     type: 'decimal',
     precision: 18,
     scale: 8,
+    transformer: new DecimalColumnTransformer(),
   })
   amount: number;
 
@@ -59,7 +61,7 @@ export class CashTransaction {
 
   @CreateDateColumn({
     name: 'created_at',
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   public createdAt: Date;
