@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { GameDTO } from './dto/game.dto';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Game } from './entities/game.entity';
 import { GameImage } from './entities/game-image.entity';
+import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 
 @Injectable()
 export class GameService {
@@ -88,8 +89,23 @@ export class GameService {
     });
   }
 
-  findAll() {
-    return `This action returns all game`;
+  async findAllPaginated(config: PaginationDTO) {
+    const { page = 1, pageSize = 10, sortBy = 'name', sortOrder = 'asc' } = config;
+
+    const [tx, count] = await this.gameRepo.findAndCount({
+      relations: { images: true },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      order: { [sortBy]: sortOrder },
+    });
+
+    return {
+      total: count,
+      totalPages: Math.ceil(count / pageSize),
+      page,
+      pageSize,
+      items: tx,
+    };
   }
 
   findOne(id: number) {
