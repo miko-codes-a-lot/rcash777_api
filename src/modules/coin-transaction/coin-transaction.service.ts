@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { CoinTransaction } from './entities/coin-transaction.entity';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { TransactionType } from 'src/enums/transaction.enum';
 
 @Injectable()
 export class CoinTransactionService {
@@ -16,6 +17,24 @@ export class CoinTransactionService {
 
   create(createCoinTransactionDto: FormCoinTransactionDto) {
     return 'This action adds a new coinTransaction' + createCoinTransactionDto;
+  }
+
+  async computeBalance(playerId: string) {
+    const { debit } = await this.coinRepo
+      .createQueryBuilder('coin_transaction')
+      .select('SUM(coin_transaction.amount)', 'debit')
+      .where('coin_transaction.type = :type', { type: TransactionType.DEBIT })
+      .andWhere('coin_transaction.player = :playerId', { playerId })
+      .getRawOne();
+
+    const { credit } = await this.coinRepo
+      .createQueryBuilder('coin_transaction')
+      .select('SUM(coin_transaction.amount)', 'credit')
+      .where('coin_transaction.type = :type', { type: TransactionType.CREDIT })
+      .andWhere('coin_transaction.player = :playerId', { playerId })
+      .getRawOne();
+
+    return debit - credit;
   }
 
   async findAllPaginated(config: PaginationDTO, playerId?: string) {
