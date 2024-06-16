@@ -1,6 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { GameImage } from './game-image.entity';
 
+@Index('idx_game_code', ['code'])
 @Entity('game')
 export class Game {
   @PrimaryGeneratedColumn('uuid')

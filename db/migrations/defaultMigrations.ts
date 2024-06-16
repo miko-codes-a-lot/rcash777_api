@@ -29,15 +29,16 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE TABLE "user_role" ("user_id" uuid NOT NULL, "role_id" uuid NOT NULL, CONSTRAINT "PK_f634684acb47c1a158b83af5150" PRIMARY KEY ("user_id", "role_id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "game" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "code" character varying NOT NULL, "category" character varying NOT NULL, "provider_code" character varying NOT NULL, "is_provider_in_maintenance" boolean NOT NULL, "jackpot_class" character varying NOT NULL, "jackpot_contribution" integer NOT NULL, "is_demo_allowed" boolean NOT NULL, "is_freeround_supported" boolean NOT NULL, "rtp" integer NOT NULL, CONSTRAINT "UQ_f66209e3c441170db9824c9e891" UNIQUE ("code"), CONSTRAINT "PK_352a30652cd352f552fef73dec5" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
       `CREATE TABLE "game_image" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "resolution" character varying NOT NULL, "uri" character varying NOT NULL, "game_id" uuid, CONSTRAINT "PK_d41575f07137f0e9890b032a38b" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "idx_game_image_game_id_resolution" ON "game_image" ("game_id", "resolution") `,
     );
     await queryRunner.query(`CREATE INDEX "idx_game_image_game_id" ON "game_image" ("game_id") `);
+    await queryRunner.query(
+      `CREATE TABLE "game" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "code" character varying NOT NULL, "category" character varying NOT NULL, "provider_code" character varying NOT NULL, "is_provider_in_maintenance" boolean NOT NULL, "jackpot_class" character varying NOT NULL, "jackpot_contribution" integer NOT NULL, "is_demo_allowed" boolean NOT NULL, "is_freeround_supported" boolean NOT NULL, "rtp" integer NOT NULL, CONSTRAINT "UQ_f66209e3c441170db9824c9e891" UNIQUE ("code"), CONSTRAINT "PK_352a30652cd352f552fef73dec5" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(`CREATE INDEX "idx_game_code" ON "game" ("code") `);
     await queryRunner.query(
       `CREATE TABLE "auth" ("user_id" uuid NOT NULL, "access_token" character varying NOT NULL, "refresh_token" character varying NOT NULL, CONSTRAINT "PK_9922406dc7d70e20423aeffadf3" PRIMARY KEY ("user_id"))`,
     );
@@ -224,10 +225,11 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "public"."IDX_3d0a7155eafd75ddba5a701336"`);
     await queryRunner.query(`DROP TABLE "role_permission"`);
     await queryRunner.query(`DROP TABLE "auth"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_game_code"`);
+    await queryRunner.query(`DROP TABLE "game"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_image_game_id"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_image_game_id_resolution"`);
     await queryRunner.query(`DROP TABLE "game_image"`);
-    await queryRunner.query(`DROP TABLE "game"`);
     await queryRunner.query(`DROP TABLE "user_role"`);
     await queryRunner.query(`DROP TABLE "user"`);
     await queryRunner.query(`DROP TABLE "role"`);
