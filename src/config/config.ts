@@ -13,6 +13,7 @@ const envVarsSchema = Joi.object()
     POSTGRES_USERNAME: Joi.string().required().description('Postgres username'),
     POSTGRES_PASSWORD: Joi.string().required().description('Postgres password'),
     POSTGRES_DATABASE: Joi.string().required().description('Postgres database'),
+    GAME_API_ZENITH_TOKEN: Joi.string().required().description('Zenith Basic Token'),
   })
   .unknown();
 
@@ -35,6 +36,11 @@ const config = {
     secret: envVars.JWT_SECRET,
     accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
     refreshExpirationDays: envVars.JWT_REFRESH_EXPIRATION_DAYS,
+  },
+  game_api: {
+    zenith: {
+      token: envVars.GAME_API_ZENITH_TOKEN,
+    }
   },
 };
 
