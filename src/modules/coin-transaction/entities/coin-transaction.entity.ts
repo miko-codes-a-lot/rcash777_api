@@ -6,11 +6,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+@Index('idx_coin_transaction_user_player_id_type_id', ['player', 'type'])
 @Entity('coin_transaction')
 export class CoinTransaction {
   @PrimaryGeneratedColumn('uuid')
@@ -60,7 +62,7 @@ export class CoinTransaction {
 
   @CreateDateColumn({
     name: 'created_at',
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   public createdAt: Date;

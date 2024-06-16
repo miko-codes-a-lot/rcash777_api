@@ -61,7 +61,7 @@ export class CashTransaction {
 
   @CreateDateColumn({
     name: 'created_at',
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   public createdAt: Date;
