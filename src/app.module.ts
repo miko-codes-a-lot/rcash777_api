@@ -13,14 +13,14 @@ import { PaymentChannelModule } from './modules/payment-channel/payment-channel.
 import { CashTransactionModule } from './modules/cash-transaction/cash-transaction.module';
 import { CoinTransactionModule } from './modules/coin-transaction/coin-transaction.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { GetGamesSchedule } from './background/schedules/get-games.schedule';
 import { HttpModule } from '@nestjs/axios';
+import { GameModule } from './modules/game/game.module';
 
 @Module({
   imports: [
-    HttpModule,
     TypeOrmModule.forRoot(dataSourceOptions),
     ScheduleModule.forRoot(),
+    HttpModule,
     AdminModule,
     AuthModule,
     HealthCheckModule,
@@ -30,6 +30,7 @@ import { HttpModule } from '@nestjs/axios';
     PaymentChannelModule,
     CashTransactionModule,
     CoinTransactionModule,
+    GameModule,
   ],
   controllers: [],
   providers: [
@@ -37,7 +38,6 @@ import { HttpModule } from '@nestjs/axios';
       provide: APP_INTERCEPTOR,
       useClass: DefaultResponseStatus,
     },
-    GetGamesSchedule,
   ],
 })
 export class AppModule {}
