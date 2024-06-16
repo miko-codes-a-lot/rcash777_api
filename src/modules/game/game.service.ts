@@ -108,7 +108,11 @@ export class GameService {
     };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} game`;
+  async findOne(id: string) {
+    const game = await this.gameRepo.findOne({ where: { id } });
+    if (!game) {
+      throw new NotFoundException('Game not found');
+    }
+    return game;
   }
 }

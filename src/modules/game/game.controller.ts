@@ -12,7 +12,7 @@ export class GameController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.gameService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.gameService.findOne(id);
   }
 }
