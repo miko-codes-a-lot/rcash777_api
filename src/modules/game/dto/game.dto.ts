@@ -9,7 +9,7 @@ export interface GameDTO {
   isDemoAllowed: boolean;
   gameTags: string[];
   isFreeroundSupported: boolean;
-  rpt: number;
+  rtp: number;
   translations: {
     [key: string]: string;
   };
