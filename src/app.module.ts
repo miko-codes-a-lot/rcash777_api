@@ -12,10 +12,15 @@ import { RoleModule } from './modules/role/role.module';
 import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module';
 import { CashTransactionModule } from './modules/cash-transaction/cash-transaction.module';
 import { CoinTransactionModule } from './modules/coin-transaction/coin-transaction.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { GetGamesSchedule } from './background/schedules/get-games.schedule';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     TypeOrmModule.forRoot(dataSourceOptions),
+    ScheduleModule.forRoot(),
     AdminModule,
     AuthModule,
     HealthCheckModule,
@@ -32,6 +37,7 @@ import { CoinTransactionModule } from './modules/coin-transaction/coin-transacti
       provide: APP_INTERCEPTOR,
       useClass: DefaultResponseStatus,
     },
+    GetGamesSchedule,
   ],
 })
 export class AppModule {}
