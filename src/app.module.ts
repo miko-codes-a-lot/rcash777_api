@@ -12,10 +12,15 @@ import { RoleModule } from './modules/role/role.module';
 import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module';
 import { CashTransactionModule } from './modules/cash-transaction/cash-transaction.module';
 import { CoinTransactionModule } from './modules/coin-transaction/coin-transaction.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { HttpModule } from '@nestjs/axios';
+import { GameModule } from './modules/game/game.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(dataSourceOptions),
+    ScheduleModule.forRoot(),
+    HttpModule,
     AdminModule,
     AuthModule,
     HealthCheckModule,
@@ -25,6 +30,7 @@ import { CoinTransactionModule } from './modules/coin-transaction/coin-transacti
     PaymentChannelModule,
     CashTransactionModule,
     CoinTransactionModule,
+    GameModule,
   ],
   controllers: [],
   providers: [
