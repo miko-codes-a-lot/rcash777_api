@@ -8,8 +8,25 @@ import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.e
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { PaymentChannel } from '../payment-channel/entities/payment-channel.entity';
 
-const CASH_TO_COINS_RATE = 10;
-const REBATE_PERCENT = 0.03;
+// owner account source ng pera
+// owner -> city manager -> agent
+
+// owner splits 50% with city manager
+// city manager splits the rest with agent
+
+// owner can set percentage to individual agent
+// city manager can set percentage to individual agent
+// rebate however is constant for every agent
+// NO MORE CASHBACK
+
+// rebate every 24 hours on the first time
+
+// player cash in 300 pesos goes to casino if player lossess
+
+const CASH_TO_COINS_RATE = 1;
+const AGENT_COMISSION_FEE = 0.1; // 10%
+const REBATE_PERCENT = 0.03; // 3%
+const REBATE_AFTER_ELAPSED_MS = 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class CashTransactionService {
@@ -20,6 +37,9 @@ export class CashTransactionService {
     private cashRepo: Repository<CashTransaction>,
   ) {}
 
+  // @TODO: 2024-06-13: Add triggers to automatically increment/decrement the user coin debit
+  // @TODO: 2024-06-13: Casino only wins if player loses as such agent only gets commission upon player losing
+  // @TODO: 2024-06-13: Save commission to a separate table
   deposit(agent: User, formData: FormCashTransactionDTO) {
     return this.dataSource.transaction(async (manager) => {
       const userRepo = manager.getRepository(User);
@@ -36,14 +56,6 @@ export class CashTransactionService {
 
       const cashTxData = cashRepo.merge(cashTx, formData);
 
-      const depositCount = await cashRepo.count({
-        where: {
-          player: { id: formData.playerId },
-          type: TransactionType.DEBIT,
-          typeCategory: TransactionTypeCategory.DEPOSIT,
-        },
-      });
-
       await cashRepo.save(cashTxData);
 
       const coins = cashTxData.amount * CASH_TO_COINS_RATE;
@@ -59,7 +71,19 @@ export class CashTransactionService {
 
       await coinRepo.save(coinTx);
 
-      if (depositCount === 0) {
+      const lastRebate = await coinRepo.findOne({
+        where: {
+          player: { id: formData.playerId },
+          type: TransactionType.DEBIT,
+          typeCategory: TransactionTypeCategory.REBATE,
+        },
+        order: { createdAt: 'DESC' },
+      });
+
+      const now = new Date().getTime();
+      const elapsed = now - lastRebate?.createdAt?.getTime();
+
+      if (!lastRebate || elapsed >= REBATE_AFTER_ELAPSED_MS) {
         const coinRebate = coins * REBATE_PERCENT;
 
         const coinRebateTx = CoinTransaction.builder()
