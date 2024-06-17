@@ -12,6 +12,8 @@
   cp .env.example .env
 ```
 
+Change .env's GAME_API_ZENITH_TOKEN attribute, request one from Arjay
+
 3. Spin up the backend
 
 ```bash
