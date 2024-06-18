@@ -5,6 +5,12 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
+      `CREATE TYPE "public"."coin_transaction_type_enum" AS ENUM('DEBIT', 'CREDIT')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."coin_transaction_type_category_enum" AS ENUM('DEPOSIT', 'REBATE', 'CASH_BACK', 'BET_CREDIT', 'BET_DEBIT', 'REFUND', 'CONFISCATE')`,
+    );
+    await queryRunner.query(
       `CREATE TABLE "coin_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."coin_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."coin_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "game_id" character varying, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "cash_transaction_id" uuid, "user_player_id" uuid, "created_by_id" uuid, CONSTRAINT "PK_038fe0990ab9f6c09993c7761ea" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
@@ -12,6 +18,12 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     );
     await queryRunner.query(
       `CREATE TABLE "payment_channel" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "description" character varying NOT NULL DEFAULT '', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "created_by_id" uuid, "updated_by_id" uuid, CONSTRAINT "UQ_197a99efb311a9f24706e33bfb2" UNIQUE ("name"), CONSTRAINT "PK_f280a94d71fb8ec321a3a7a1208" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."cash_transaction_type_enum" AS ENUM('DEBIT', 'CREDIT')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."cash_transaction_type_category_enum" AS ENUM('DEPOSIT', 'REBATE', 'CASH_BACK', 'BET_CREDIT', 'BET_DEBIT', 'REFUND', 'CONFISCATE')`,
     );
     await queryRunner.query(
       `CREATE TABLE "cash_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."cash_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."cash_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "user_player_id" uuid, "payment_channel_id" uuid, "created_by_id" uuid, CONSTRAINT "PK_d4d82b6912d82a7f4f519bd0d86" PRIMARY KEY ("id"))`,
@@ -235,8 +247,12 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "role"`);
     await queryRunner.query(`DROP TABLE "permission"`);
     await queryRunner.query(`DROP TABLE "cash_transaction"`);
+    await queryRunner.query(`DROP TYPE "public"."cash_transaction_type_category_enum"`);
+    await queryRunner.query(`DROP TYPE "public"."cash_transaction_type_enum"`);
     await queryRunner.query(`DROP TABLE "payment_channel"`);
     await queryRunner.query(`DROP INDEX "public"."idx_coin_transaction_user_player_id_type_id"`);
     await queryRunner.query(`DROP TABLE "coin_transaction"`);
+    await queryRunner.query(`DROP TYPE "public"."coin_transaction_type_category_enum"`);
+    await queryRunner.query(`DROP TYPE "public"."coin_transaction_type_enum"`);
   }
 }
