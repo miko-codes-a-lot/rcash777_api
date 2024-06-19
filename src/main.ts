@@ -26,6 +26,7 @@ async function bootstrap() {
       'expires',
       'last-modified',
       'pragma',
+      'authorization',
     ],
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
     origin: true,
