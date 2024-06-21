@@ -35,6 +35,6 @@ RUN yarn install --frozen-lockfile --production
 # Copy built artifacts from the build stage and db folder
 COPY --from=builder /app/dist ./dist
 
-EXPOSE 1337
+EXPOSE 5001
 
 CMD ["node", "dist/src/main"]
