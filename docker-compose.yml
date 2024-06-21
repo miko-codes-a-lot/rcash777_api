@@ -24,8 +24,8 @@ services:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     ports:
-      - '${MINIO_PORT:-9001}:9001'
-      - '${MINIO_CONSOLE_PORT:-8901}:8901'
+      - '${MINIO_PORT:-9000}:9000'
+      - '${MINIO_CONSOLE_PORT:-8900}:8900'
     command: minio server /data/minio --console-address ":${MINIO_CONSOLE_PORT}" --address ":${MINIO_PORT}"
     volumes:
       - rcash-minio-data:/data
@@ -37,7 +37,7 @@ services:
     image: minio/mc:latest
     entrypoint: >
       sh -c "sleep 5 &&
-      mc alias set minio ${MINIO_BASE_URL} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
+      mc alias set minio http://rcash-minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
       mc mb minio/rcash-files --ignore-existing"
     depends_on:
       - rcash-minio
@@ -48,7 +48,7 @@ services:
     container_name: rcash-api
     build:
       context: .
-      dockerfile: ./docker/local/Dockerfile
+      dockerfile: ./docker/remote/Dockerfile
     restart: always
     env_file: .env
     expose:
