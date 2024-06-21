@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  waymore-postgresdb:
+  rcash-postgresdb:
     container_name: ${POSTGRES_HOST}
     image: postgres
     restart: always
@@ -11,17 +11,44 @@ services:
       PGDATA: /data/postgres
       POSTGRES_DB: ${POSTGRES_DATABASE}
     volumes:
-      - waymore-postgres-data:/data/postgres
+      - rcash-postgres-data:/data/postgres
     ports:
       - '5432:5432'
     networks:
-      - waymore-network
+      - rcash-network
 
-  waymore_api:
-    container_name: waymore_api
+  rcash-minio:
+    container_name: rcash-minio
+    image: minio/minio:latest
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    ports:
+      - '${MINIO_PORT:-9001}:9001'
+      - '${MINIO_CONSOLE_PORT:-8901}:8901'
+    command: minio server /data/minio --console-address ":${MINIO_CONSOLE_PORT}" --address ":${MINIO_PORT}"
+    volumes:
+      - rcash-minio-data:/data
+    networks:
+      - rcash-network
+
+  rcash-minio-setup:
+    container_name: rcash-minio-setup
+    image: minio/mc:latest
+    entrypoint: >
+      sh -c "sleep 5 &&
+      mc alias set minio ${MINIO_BASE_URL} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
+      mc mb minio/rcash-files --ignore-existing"
+    depends_on:
+      - rcash-minio
+    networks:
+      - rcash-network
+
+  rcash-api:
+    container_name: rcash-api
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./docker/local/Dockerfile
     restart: always
     env_file: .env
     expose:
@@ -32,9 +59,9 @@ services:
       - PORT=${PORT}
       - CLIENT_URL=${CLIENT_URL}
     links:
-      - waymore-postgresdb
+      - rcash-postgresdb
     depends_on:
-      - waymore-postgresdb
+      - rcash-postgresdb
     volumes:
       - ./.env:/app/.env
       - ./package.json:/app/package.json
@@ -42,25 +69,26 @@ services:
       - ./src:/app/src
       - ./db:/app/db
     networks:
-      - waymore-network
+      - rcash-network
 
   pgadmin:
     image: dpage/pgadmin4
     restart: always
-    container_name: waymore-pgadmin4
+    container_name: rcash-pgadmin4
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
     ports:
       - '5050:80'
     depends_on:
-      - waymore-postgresdb
+      - rcash-postgresdb
     networks:
-      - waymore-network
+      - rcash-network
 
 networks:
-  waymore-network:
+  rcash-network:
     driver: bridge
 
 volumes:
-  waymore-postgres-data:
+  rcash-postgres-data:
+  rcash-minio-data:
