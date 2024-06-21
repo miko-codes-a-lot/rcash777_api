@@ -1,4 +1,3 @@
-# development stage
 FROM node:slim
 
 # Set app as the working directory
