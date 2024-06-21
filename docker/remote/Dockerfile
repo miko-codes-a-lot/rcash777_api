@@ -1,4 +1,4 @@
-ARG NODE_IMAGE=public.ecr.aws/docker/library/node:22.3.0-slim
+ARG NODE_IMAGE=public.ecr.aws/docker/library/node:20.14.0-slim
 
 FROM --platform=linux/amd64 $NODE_IMAGE AS builder
 
