@@ -38,4 +38,40 @@ export class WalletController {
       balance: 1000,
     };
   }
+
+  @Get('balance')
+  async balance(
+    @Query() player: string,
+    @Query() clientToken: string,
+    @Query() game: string,
+    @Query() platform: string,
+    @Res() res: Response,
+  ) {
+    console.log(`playerId -> ${player}`);
+    console.log(`clientToken -> ${clientToken}`);
+    console.log(`gameId -> ${game}`);
+    console.log(`platform -> ${platform}`);
+
+    const status = Math.random();
+    if (status === 1) {
+      return res.status(EResponse.NOTFOUND).json({
+        error: {
+          errorCode: 'PLAYER_NOT_FOUND',
+          errorMessage: 'Player not found',
+        },
+      });
+    } else if (status === 2) {
+      return res.status(EResponse.NOTFOUND).json({
+        error: {
+          errorCode: 'GAME_NOT_FOUND',
+          errorMessage: 'Game not found',
+        },
+      });
+    }
+
+    return {
+      balance: '1000.00',
+      currency: 'USD',
+    };
+  }
 }
