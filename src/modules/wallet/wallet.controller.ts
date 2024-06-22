@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { Response } from 'express';
 import { EResponse } from 'src/enums/response.enum';
 
-@Controller('wallet')
+@Controller('provider/nextral')
 export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
