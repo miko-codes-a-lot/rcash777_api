@@ -10,8 +10,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Waymore Capital API')
-    .setDescription('Waymore Capital API. [Get JSON](/api/swagger-json)')
+    .setTitle('RCash777 API')
+    .setDescription('RCash777 API. [Get JSON](/api/swagger-json)')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);

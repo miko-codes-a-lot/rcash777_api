@@ -23,7 +23,7 @@ Change .env's GAME_API_ZENITH_TOKEN attribute, request one from Arjay
 #### To restore default db migration data (needed on first install)
 
 - Go to Docker -> Containers
-- Click `waymore_api`
+- Click `rcash-api`
 - Go to `Terminal` tab
 - run `yarn migration:run`
 
@@ -37,7 +37,7 @@ Change .env's GAME_API_ZENITH_TOKEN attribute, request one from Arjay
 - authenticate using the creds from .env
 - If server is not yet connected
   - Click Add new server
-  - Add any name eg: pg_waymore
+  - Add any name eg: pg-admin
   - Go to Connection tab
   - Add Host, Username and Password from .env
   - Click Save
