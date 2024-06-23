@@ -6,7 +6,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Validate } from 'src/decorators/validate.decorator';
 import { User } from '../user/entities/user.entity';
 import { RequestUser } from 'src/decorators/request-user.decorator';
-import { EResponse } from 'src/enums/response.enum';
+import { HttpStatus } from 'src/enums/http-status.enum';
 import { Response } from 'express';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 
@@ -24,7 +24,7 @@ export class PaymentChannelController {
     @Res() res: Response,
   ) {
     const doc = await this.channelService.createOrUpdate(user, createPaymentChannelDto);
-    return res.status(EResponse.CREATED).json(doc);
+    return res.status(HttpStatus.CREATED).json(doc);
   }
 
   @Get()
@@ -53,6 +53,6 @@ export class PaymentChannelController {
   @Delete(':id')
   async remove(@Param('id') id: string, @Res() res: Response) {
     await this.channelService.remove(id);
-    return res.status(EResponse.NOCONTENT).send();
+    return res.status(HttpStatus.NO_CONTENT).send();
   }
 }

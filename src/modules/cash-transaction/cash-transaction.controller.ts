@@ -6,7 +6,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { User } from '../user/entities/user.entity';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { Response } from 'express';
-import { EResponse } from 'src/enums/response.enum';
+import { HttpStatus } from 'src/enums/http-status.enum';
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 
 @AuthRequired()
@@ -25,7 +25,7 @@ export class CashTransactionController {
     FormData.typeCategory = TransactionTypeCategory.DEPOSIT;
 
     const doc = await this.cashTransactionService.deposit(user, FormData);
-    return res.status(EResponse.CREATED).json(doc);
+    return res.status(HttpStatus.CREATED).json(doc);
   }
 
   @Get()

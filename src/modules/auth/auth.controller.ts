@@ -4,7 +4,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Validate } from 'src/decorators/validate.decorator';
 import { Response } from 'express';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
-import { EResponse } from 'src/enums/response.enum';
+import { HttpStatus } from 'src/enums/http-status.enum';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import {
   PostAuthLoginRequest,
@@ -42,7 +42,7 @@ export class AuthController {
   ) {
     await this.authService.passwordChange(user.id, payload.old_password, payload.new_password);
 
-    res.status(EResponse.SUCCESS).send();
+    res.status(HttpStatus.SUCCESS).send();
   }
 
   @Delete('logout')
@@ -50,7 +50,7 @@ export class AuthController {
   async logout(@RequestUser() user: User, @Res() res: Response) {
     await this.authService.delete(user.id);
 
-    res.status(EResponse.SUCCESS).send();
+    res.status(HttpStatus.SUCCESS).send();
   }
 
   @Post('refresh-token')
