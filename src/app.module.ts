@@ -15,6 +15,7 @@ import { CoinTransactionModule } from './modules/coin-transaction/coin-transacti
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { GameModule } from './modules/game/game.module';
+import { WalletModule } from './modules/wallet/wallet.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { GameModule } from './modules/game/game.module';
     CashTransactionModule,
     CoinTransactionModule,
     GameModule,
+    WalletModule,
   ],
   controllers: [],
   providers: [

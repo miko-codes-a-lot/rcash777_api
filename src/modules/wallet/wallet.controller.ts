@@ -47,12 +47,13 @@ export class WalletController {
 
   @Get('balance')
   async balance(
-    @Query() player: string,
-    // @Query() clientToken: string,
-    // @Query() game: string,
-    // @Query() platform: Platform,
+    @Query('player') player: string,
+    // @Query('clientToken') clientToken: string,
+    // @Query('game') game: string,
+    // @Query('platform') platform: Platform,
     // @Res() res: Response,
   ) {
+    console.log(player, '008347f6-0c9b-41e1-86bc-19978e9de440');
     const balance = await this.coinService.computeBalance(player);
 
     return {
