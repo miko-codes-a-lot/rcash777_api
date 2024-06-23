@@ -7,6 +7,7 @@ import { FormDebitDTO } from './dto/form-debit.dto';
 import { FormCreditDTO } from './dto/form-credit.dto';
 import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
 import { FormRollbackDTO } from './dto/form-rollback.dto';
+import { FormEndRoundDTO } from './dto/form-end-round-dto';
 
 @Controller('provider/nextral')
 export class WalletController {
@@ -294,7 +295,7 @@ export class WalletController {
   }
 
   @Post('endRound')
-  async endRound(@Body() data: any, @Res() res: Response) {
+  async endRound(@Body() data: FormEndRoundDTO, @Res() res: Response) {
     const status = Math.random();
     if (status === 1) {
       return res.status(HttpStatus.BAD_REQUEST).json({
