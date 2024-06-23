@@ -1,7 +1,6 @@
-import { DebitReason } from 'src/enums/debit-reason.enum';
 import { Platform } from 'src/enums/platform.enum';
 
-export interface FormDebitDTO {
+export interface FormCreditDTO {
   player: string;
   clientToken: string;
   roundId: string;
@@ -9,7 +8,7 @@ export interface FormDebitDTO {
   platform: Platform;
   transId: string;
   currency: string;
-  amount: number;
-  jpContrib?: number;
-  reason: DebitReason;
+  amount: string;
+  jackpotAmount?: number;
+  roundEnded: boolean;
 }

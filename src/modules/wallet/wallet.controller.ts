@@ -3,7 +3,8 @@ import { WalletService } from './wallet.service';
 import { Response } from 'express';
 import { EResponse } from 'src/enums/response.enum';
 import { Platform } from 'src/enums/platform.enum';
-import { FormDebit } from './dto/form-debit.dto';
+import { FormDebitDTO } from './dto/form-debit.dto';
+import { FormCreditDTO } from './dto/form-credit.dto';
 
 @Controller('provider/nextral')
 export class WalletController {
@@ -79,7 +80,7 @@ export class WalletController {
 
   /** @TODO: 2024-06-23 - Add middleware to check if signature is correct */
   @Post('debit')
-  async debit(@Body() data: FormDebit, @Res() res: Response) {
+  async debit(@Body() data: FormDebitDTO, @Res() res: Response) {
     const status = Math.random();
     if (status === 1) {
       return res.status(EResponse.BADREQUEST).json({
@@ -133,6 +134,52 @@ export class WalletController {
         error: {
           errorCode: 'GAME_NOT_FOUND',
           errorMessage: 'Game not found',
+        },
+      });
+    }
+    return {
+      currency: 'USD',
+      balance: '1000.00',
+    };
+  }
+
+  /** @TODO: 2024-06-23 - Add middleware to check if signature is correct */
+  @Post('credit')
+  async credit(@Body() data: FormCreditDTO, @Res() res: Response) {
+    const status = Math.random();
+    if (status === 1) {
+      return res.status(EResponse.NOTFOUND).json({
+        error: {
+          errorCode: 'PLAYER_NOT_FOUND',
+          errorMessage: 'Player not found',
+        },
+      });
+    } else if (status === 2) {
+      return res.status(EResponse.NOTFOUND).json({
+        error: {
+          errorCode: 'GAME_NOT_FOUND',
+          errorMessage: 'Game not found',
+        },
+      });
+    } else if (status === 3) {
+      return res.status(EResponse.NOTFOUND).json({
+        error: {
+          errorCode: 'ROUND_NOT_FOUND',
+          errorMessage: 'Round not found',
+        },
+      });
+    } else if (status === 4) {
+      return res.status(EResponse.BADREQUEST).json({
+        error: {
+          errorCode: 'INVALID_CURRENCY',
+          errorMessage: 'Currency not supported or invalid',
+        },
+      });
+    } else if (status === 5) {
+      return res.status(EResponse.BADREQUEST).json({
+        error: {
+          errorCode: 'ROUND_ENDED',
+          errorMessage: 'Game round has already been closed',
         },
       });
     }
