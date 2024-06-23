@@ -4,7 +4,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Validate } from 'src/decorators/validate.decorator';
 import { Response } from 'express';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
-import { EResponse } from 'src/enums/response.enum';
+import { HttpStatus } from 'src/enums/http-status.enum';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from './entities/user.entity';
 import { PostUserNewRequest, PostUserNewRequestSchema } from './schemas/post-user-new.schema';
@@ -28,7 +28,7 @@ export class UserController {
 
     await this.userService.create(payload);
 
-    res.status(EResponse.SUCCESS).send();
+    res.status(HttpStatus.SUCCESS).send();
   }
 
   @Put()
@@ -42,7 +42,7 @@ export class UserController {
 
     await this.userService.update(id, payload);
 
-    res.status(EResponse.SUCCESS).send();
+    res.status(HttpStatus.SUCCESS).send();
   }
 
   @Get()

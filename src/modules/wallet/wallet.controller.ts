@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { Response } from 'express';
-import { EResponse } from 'src/enums/response.enum';
+import { HttpStatus } from 'src/enums/http-status.enum';
 import { Platform } from 'src/enums/platform.enum';
 import { FormDebitDTO } from './dto/form-debit.dto';
 import { FormCreditDTO } from './dto/form-credit.dto';
@@ -15,14 +15,14 @@ export class WalletController {
   async authenticate(@Res() res: Response) {
     const no = Math.random();
     if (no === 1) {
-      res.status(EResponse.NOTFOUND).json({
+      res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'TOKEN_NOT_FOUND',
           errorMessage: 'Token is already validated or invalid',
         },
       });
     } else if (no === 2) {
-      res.status(EResponse.NOTFOUND).json({
+      res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'GAME_NOT_FOUND',
           errorMessage: 'Game not found',
@@ -58,14 +58,14 @@ export class WalletController {
 
     const status = Math.random();
     if (status === 1) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'PLAYER_NOT_FOUND',
           errorMessage: 'Player not found',
         },
       });
     } else if (status === 2) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'GAME_NOT_FOUND',
           errorMessage: 'Game not found',
@@ -84,54 +84,54 @@ export class WalletController {
   async debit(@Body() data: FormDebitDTO, @Res() res: Response) {
     const status = Math.random();
     if (status === 1) {
-      return res.status(EResponse.BADREQUEST).json({
+      return res.status(HttpStatus.BAD_REQUEST).json({
         error: {
           errorCode: 'INVALID_CURRENCY',
           errorMessage: 'Currency not supported or invalid',
         },
       });
     } else if (status === 2) {
-      return res.status(EResponse.BADREQUEST).json({
+      return res.status(HttpStatus.BAD_REQUEST).json({
         error: {
           errorCode: 'ROUND_ENDED',
           errorMessage: 'Game round has already been closed',
         },
       });
     } else if (status === 3) {
-      return res.status(EResponse.PAYMENTREQUIRED).json({
+      return res.status(HttpStatus.PAYMENT).json({
         currency: 'USD',
         balance: '1000.00',
       });
     } else if (status === 4) {
-      return res.status(EResponse.FORBIDDEN).json({
+      return res.status(HttpStatus.FORBIDDEN).json({
         error: {
           errorCode: 'GAMING_LIMIT_REACHED',
           errorMessage: 'Player bet limit reached',
         },
       });
     } else if (status === 5) {
-      return res.status(EResponse.FORBIDDEN).json({
+      return res.status(HttpStatus.FORBIDDEN).json({
         error: {
           errorCode: 'SESSION_LIMIT_REACHED',
           errorMessage: 'Player session limit reached',
         },
       });
     } else if (status === 6) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'SESSION_NOT_FOUND',
           errorMessage: 'Session not found or invalid',
         },
       });
     } else if (status === 6) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'PLAYER_NOT_FOUND',
           errorMessage: 'Player not found',
         },
       });
     } else if (status === 6) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'GAME_NOT_FOUND',
           errorMessage: 'Game not found',
@@ -149,35 +149,35 @@ export class WalletController {
   async credit(@Body() data: FormCreditDTO, @Res() res: Response) {
     const status = Math.random();
     if (status === 1) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'PLAYER_NOT_FOUND',
           errorMessage: 'Player not found',
         },
       });
     } else if (status === 2) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'GAME_NOT_FOUND',
           errorMessage: 'Game not found',
         },
       });
     } else if (status === 3) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'ROUND_NOT_FOUND',
           errorMessage: 'Round not found',
         },
       });
     } else if (status === 4) {
-      return res.status(EResponse.BADREQUEST).json({
+      return res.status(HttpStatus.BAD_REQUEST).json({
         error: {
           errorCode: 'INVALID_CURRENCY',
           errorMessage: 'Currency not supported or invalid',
         },
       });
     } else if (status === 5) {
-      return res.status(EResponse.BADREQUEST).json({
+      return res.status(HttpStatus.BAD_REQUEST).json({
         error: {
           errorCode: 'ROUND_ENDED',
           errorMessage: 'Game round has already been closed',
@@ -194,54 +194,54 @@ export class WalletController {
   async debitAndCredit(@Body() data: FormDebitAndCreditDTO, @Res() res: Response) {
     const status = Math.random();
     if (status === 1) {
-      return res.status(EResponse.BADREQUEST).json({
+      return res.status(HttpStatus.BAD_REQUEST).json({
         error: {
           errorCode: 'ROUND_ENDED',
           errorMessage: 'Game round has already been closed',
         },
       });
     } else if (status === 2) {
-      return res.status(EResponse.BADREQUEST).json({
+      return res.status(HttpStatus.BAD_REQUEST).json({
         error: {
           errorCode: 'INVALID_CURRENCY',
           errorMessage: 'Currency not supported or invalid',
         },
       });
     } else if (status === 3) {
-      return res.status(EResponse.PAYMENTREQUIRED).json({
+      return res.status(HttpStatus.PAYMENT).json({
         currency: 'USD',
         balance: '1000.00',
       });
     } else if (status === 4) {
-      return res.status(EResponse.FORBIDDEN).json({
+      return res.status(HttpStatus.FORBIDDEN).json({
         error: {
           errorCode: 'GAMING_LIMIT_REACHED',
           errorMessage: 'Player bet limit reached',
         },
       });
     } else if (status === 5) {
-      return res.status(EResponse.FORBIDDEN).json({
+      return res.status(HttpStatus.FORBIDDEN).json({
         error: {
           errorCode: 'SESSION_LIMIT_REACHED',
           errorMessage: 'Player session limit reached',
         },
       });
     } else if (status === 6) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'SESSION_NOT_FOUND',
           errorMessage: 'Session not found or invalid',
         },
       });
     } else if (status === 7) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'PLAYER_NOT_FOUND',
           errorMessage: 'Player not found',
         },
       });
     } else if (status === 8) {
-      return res.status(EResponse.NOTFOUND).json({
+      return res.status(HttpStatus.NOT_FOUND).json({
         error: {
           errorCode: 'GAME_NOT_FOUND',
           errorMessage: 'Game not found',
@@ -252,5 +252,9 @@ export class WalletController {
       currency: 'USD',
       balance: '1000.00',
     };
+  }
+
+  @Post('rollback')
+  async rollback(@Body() data: FormRollbackDTO, @Res() response: Response) {
   }
 }

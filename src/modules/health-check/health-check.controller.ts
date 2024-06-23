@@ -1,5 +1,5 @@
 import { Controller, Get, Res } from '@nestjs/common';
-import { EResponse } from 'src/enums/response.enum';
+import { HttpStatus } from 'src/enums/http-status.enum';
 import { Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -8,6 +8,6 @@ import { ApiTags } from '@nestjs/swagger';
 export class HealthCheckController {
   @Get()
   get(@Res() res: Response) {
-    res.status(EResponse.SUCCESS).json({ message: 'OK' });
+    res.status(HttpStatus.SUCCESS).json({ message: 'OK' });
   }
 }

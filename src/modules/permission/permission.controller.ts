@@ -6,7 +6,7 @@ import { Validate } from 'src/decorators/validate.decorator';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
-import { EResponse } from 'src/enums/response.enum';
+import { HttpStatus } from 'src/enums/http-status.enum';
 import { Response } from 'express';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 
@@ -24,7 +24,7 @@ export class PermissionController {
     @Res() res: Response,
   ) {
     const doc = await this.permissionService.upsert(user, formPermissionDTO);
-    return res.status(EResponse.CREATED).json(doc);
+    return res.status(HttpStatus.CREATED).json(doc);
   }
 
   @Get()
@@ -34,7 +34,7 @@ export class PermissionController {
 
     const paged = await this.permissionService.findAllPaginated(query);
 
-    return res.status(EResponse.SUCCESS).json(paged);
+    return res.status(HttpStatus.SUCCESS).json(paged);
   }
 
   @Get(':id')
@@ -51,7 +51,7 @@ export class PermissionController {
     @Res() res: Response,
   ) {
     const doc = await this.permissionService.upsert(user, formPermissionDTO, id);
-    return res.status(EResponse.SUCCESS).json(doc);
+    return res.status(HttpStatus.SUCCESS).json(doc);
   }
 
   @Delete(':id')

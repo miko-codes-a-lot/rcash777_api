@@ -18,7 +18,7 @@ import { Validate } from 'src/decorators/validate.decorator';
 import { UserService } from '../user/user.service';
 import { Pagination, PaginationSchema } from 'src/schemas/pagination.schema';
 import { Response } from 'express';
-import { EResponse } from 'src/enums/response.enum';
+import { HttpStatus } from 'src/enums/http-status.enum';
 import { PutUserInfoRequest, PutUserInfoRequestSchema } from './schemas/put-user-info.schema';
 import { PutUserRoleRequest, PutUserRoleRequestSchema } from './schemas/put-user-role.schema';
 import { DeleteUserRequest, DeleteUserRequestSchema } from './schemas/delete-user.schema';
@@ -70,7 +70,7 @@ export class AdminController {
 
     await this.adminService.updateUserInfo(user, payload);
 
-    res.status(EResponse.SUCCESS).send();
+    res.status(HttpStatus.SUCCESS).send();
   }
 
   @Put('user/:id/update-role')
@@ -88,7 +88,7 @@ export class AdminController {
 
     await this.adminService.updateUserRole(user, payload);
 
-    res.status(EResponse.SUCCESS).send();
+    res.status(HttpStatus.SUCCESS).send();
   }
 
   @Delete('admin/user')
@@ -102,6 +102,6 @@ export class AdminController {
 
     await this.adminService.deleteUser(user);
 
-    res.status(EResponse.SUCCESS).send();
+    res.status(HttpStatus.SUCCESS).send();
   }
 }

@@ -7,7 +7,7 @@ import { FormRoleDTO, RoleSchema } from './dto/form-role.dto';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { Response } from 'express';
-import { EResponse } from 'src/enums/response.enum';
+import { HttpStatus } from 'src/enums/http-status.enum';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 
 @AuthRequired()
@@ -20,7 +20,7 @@ export class RoleController {
   @Validate({ body: RoleSchema })
   async create(@RequestUser() user: User, @Body() formData: FormRoleDTO, @Res() res: Response) {
     const doc = await this.roleService.createOrUpdate(user, formData);
-    return res.status(EResponse.CREATED).json(doc);
+    return res.status(HttpStatus.CREATED).json(doc);
   }
 
   @Get()
@@ -30,7 +30,7 @@ export class RoleController {
 
     const paged = await this.roleService.findAllPaginated(query);
 
-    return res.status(EResponse.SUCCESS).json(paged);
+    return res.status(HttpStatus.SUCCESS).json(paged);
   }
 
   @Get(':id')
@@ -47,12 +47,12 @@ export class RoleController {
     @Res() res: Response,
   ) {
     const doc = await this.roleService.createOrUpdate(user, formData, id);
-    return res.status(EResponse.SUCCESS).json(doc);
+    return res.status(HttpStatus.SUCCESS).json(doc);
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string, @Res() res: Response) {
     await this.roleService.remove(id);
-    return res.status(EResponse.NOCONTENT).send();
+    return res.status(HttpStatus.NO_CONTENT).send();
   }
 }
