@@ -1,17 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query } from '@nestjs/common';
-import { WalletService } from './wallet.service';
+import { Controller, Get, Post, Body, Res, Query } from '@nestjs/common';
 import { Response } from 'express';
 import { HttpStatus } from 'src/enums/http-status.enum';
-import { Platform } from 'src/enums/platform.enum';
+// import { Platform } from 'src/enums/platform.enum';
 import { FormDebitDTO } from './dto/form-debit.dto';
 import { FormCreditDTO } from './dto/form-credit.dto';
 import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
 import { FormRollbackDTO } from './dto/form-rollback.dto';
 import { FormEndRoundDTO } from './dto/form-end-round-dto';
+import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
 
 @Controller('provider/nextral')
 export class WalletController {
-  constructor(private readonly walletService: WalletService) {}
+  constructor(private readonly coinService: CoinTransactionService) {}
 
   @Post('authenticate')
   async authenticate(@Res() res: Response) {
@@ -48,36 +48,16 @@ export class WalletController {
   @Get('balance')
   async balance(
     @Query() player: string,
-    @Query() clientToken: string,
-    @Query() game: string,
-    @Query() platform: Platform,
-    @Res() res: Response,
+    // @Query() clientToken: string,
+    // @Query() game: string,
+    // @Query() platform: Platform,
+    // @Res() res: Response,
   ) {
-    console.log(`playerId -> ${player}`);
-    console.log(`clientToken -> ${clientToken}`);
-    console.log(`gameId -> ${game}`);
-    console.log(`platform -> ${platform}`);
-
-    const status = Math.random();
-    if (status === 1) {
-      return res.status(HttpStatus.NOT_FOUND).json({
-        error: {
-          errorCode: 'PLAYER_NOT_FOUND',
-          errorMessage: 'Player not found',
-        },
-      });
-    } else if (status === 2) {
-      return res.status(HttpStatus.NOT_FOUND).json({
-        error: {
-          errorCode: 'GAME_NOT_FOUND',
-          errorMessage: 'Game not found',
-        },
-      });
-    }
+    const balance = await this.coinService.computeBalance(player);
 
     return {
-      balance: '1000.00',
-      currency: 'USD',
+      balance,
+      currency: 'PHP',
     };
   }
 
