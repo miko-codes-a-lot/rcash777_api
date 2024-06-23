@@ -6,6 +6,7 @@ import { Platform } from 'src/enums/platform.enum';
 import { FormDebitDTO } from './dto/form-debit.dto';
 import { FormCreditDTO } from './dto/form-credit.dto';
 import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
+import { FormRollbackDTO } from './dto/form-rollback.dto';
 
 @Controller('provider/nextral')
 export class WalletController {
@@ -98,7 +99,7 @@ export class WalletController {
         },
       });
     } else if (status === 3) {
-      return res.status(HttpStatus.PAYMENT).json({
+      return res.status(HttpStatus.PAYMENT_REQUIRED).json({
         currency: 'USD',
         balance: '1000.00',
       });
@@ -208,7 +209,7 @@ export class WalletController {
         },
       });
     } else if (status === 3) {
-      return res.status(HttpStatus.PAYMENT).json({
+      return res.status(HttpStatus.PAYMENT_REQUIRED).json({
         currency: 'USD',
         balance: '1000.00',
       });
@@ -255,6 +256,40 @@ export class WalletController {
   }
 
   @Post('rollback')
-  async rollback(@Body() data: FormRollbackDTO, @Res() response: Response) {
+  async rollback(@Body() data: FormRollbackDTO, @Res() res: Response) {
+    const status = Math.random();
+    if (status === 1) {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        error: {
+          errorCode: 'ROUND_ENDED',
+          errorMessage: 'Game round has already been closed',
+        },
+      });
+    } else if (status === 2) {
+      return res.status(404).json({
+        error: {
+          errorCode: 'PLAYER_NOT_FOUND',
+          errorMessage: 'Player not found',
+        },
+      });
+    } else if (status === 3) {
+      return res.status(404).json({
+        error: {
+          errorCode: 'ROUND_NOT_FOUND',
+          errorMessage: 'Round not found',
+        },
+      });
+    } else if (status === 4) {
+      return res.status(404).json({
+        error: {
+          errorCode: 'TRANS_NOT_FOUND',
+          errorMessage: 'Transaction not found',
+        },
+      });
+    }
+    return {
+      currency: 'USD',
+      balance: '1000.00',
+    };
   }
 }
