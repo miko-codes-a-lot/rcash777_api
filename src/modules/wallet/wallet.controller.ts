@@ -292,4 +292,35 @@ export class WalletController {
       balance: '1000.00',
     };
   }
+
+  @Post('endRound')
+  async endRound(@Body() data: any, @Res() res: Response) {
+    const status = Math.random();
+    if (status === 1) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        error: {
+          errorCode: 'ROUND_ENDED',
+          errorMessage: 'Game round has already been closed',
+        },
+      });
+    } else if (status === 2) {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        error: {
+          errorCode: 'PLAYER_NOT_FOUND',
+          errorMessage: 'Player not found',
+        },
+      });
+    } else if (status === 3) {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        error: {
+          errorCode: 'ROUND_NOT_FOUND',
+          errorMessage: 'Round not found',
+        },
+      });
+    }
+    return {
+      currency: 'USD',
+      balance: '1000.00',
+    };
+  }
 }
