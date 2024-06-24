@@ -1,13 +1,13 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { ERoles } from 'src/enums/roles.enum';
 import { Pagination, PaginationResponse } from 'src/schemas/pagination.schema';
 import { BaseService } from 'src/services/base.service';
 import { PostUserNewRequest } from './schemas/post-user-new.schema';
 import { PostUserUpdateRequest } from './schemas/put-user-update.schema';
+import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 
 @Injectable()
 export class UserService extends BaseService<User> {
@@ -47,6 +47,32 @@ export class UserService extends BaseService<User> {
 
   async findByEmail(email: string) {
     return await this.userRepository.findOne({ where: { email } });
+  }
+
+  async findAllPaginated(config: PaginationDTO) {
+    const { page = 1, pageSize = 10, search, sortBy = 'createdAt', sortOrder = 'asc' } = config;
+
+    const [users, count] = await this.userRepository.findAndCount({
+      ...(search && {
+        where: [
+          { email: ILike(`%${search}%`) },
+          { firstName: ILike(`%${search}%`) },
+          { lastName: ILike(`%${search}%`) },
+          { phoneNumber: ILike(`%${search}%`) },
+        ],
+      }),
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      order: { [sortBy]: sortOrder },
+    });
+
+    return {
+      total: count,
+      totalPages: Math.ceil(count / pageSize),
+      page,
+      pageSize,
+      items: users,
+    };
   }
 
   async findAllUserPaginate(pagination: Pagination): Promise<PaginationResponse<User>> {
