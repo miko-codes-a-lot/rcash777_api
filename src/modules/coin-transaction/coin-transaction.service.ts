@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { CoinTransaction } from './entities/coin-transaction.entity';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { TransactionType } from 'src/enums/transaction.enum';
+import { User } from '../user/entities/user.entity';
+import httpStatus from 'http-status';
 
 @Injectable()
 export class CoinTransactionService {
@@ -13,13 +15,29 @@ export class CoinTransactionService {
 
     @InjectRepository(CoinTransaction)
     private coinRepo: Repository<CoinTransaction>,
+
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
   ) {}
 
   create(createCoinTransactionDto: FormCoinTransactionDto) {
     return 'This action adds a new coinTransaction' + createCoinTransactionDto;
   }
 
+  async findPlayerById(playerId: string) {
+    const player = await this.userRepo.findOne({ where: { id: playerId } });
+    if (!player) {
+      throw new HttpException(
+        { error: { errorCode: 'PLAYER_NOT_FOUND', errorMessage: 'Player not found' } },
+        httpStatus.NOT_FOUND,
+      );
+    }
+    return player;
+  }
+
   async computeBalance(playerId: string) {
+    await this.findPlayerById(playerId);
+
     const { debit } = await this.coinRepo
       .createQueryBuilder('coin_transaction')
       .select('SUM(coin_transaction.amount)', 'debit')

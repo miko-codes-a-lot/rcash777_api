@@ -1,5 +1,24 @@
-import { DebitReason } from 'src/enums/debit-reason.enum';
+import * as Joi from 'joi';
+
 import { Platform } from 'src/enums/platform.enum';
+import { TransactionTypeCategory } from 'src/enums/transaction.enum';
+
+export const FormDebitSchema = Joi.object({
+  player: Joi.string().guid().required(),
+  clientToken: Joi.string().optional(),
+  roundId: Joi.string().required(),
+  game: Joi.string().required(),
+  platform: Joi.string()
+    .valid(...Object.values(Platform))
+    .optional(),
+  transId: Joi.string().required(),
+  currency: Joi.string().valid('PHP').required(),
+  amount: Joi.number().required(),
+  jpContrib: Joi.number().allow(null).optional(),
+  reason: Joi.string()
+    .valid(...Object.values(TransactionTypeCategory))
+    .required(),
+});
 
 export interface FormDebitDTO {
   player: string;
@@ -11,5 +30,5 @@ export interface FormDebitDTO {
   currency: string;
   amount: number;
   jpContrib?: number;
-  reason: DebitReason;
+  reason: TransactionTypeCategory;
 }
