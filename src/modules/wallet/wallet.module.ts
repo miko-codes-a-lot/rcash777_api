@@ -4,10 +4,12 @@ import { CoinTransactionService } from '../coin-transaction/coin-transaction.ser
 import { User } from '../user/entities/user.entity';
 import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Game } from '../game/entities/game.entity';
+import { WalletService } from './wallet.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, CoinTransaction])],
+  imports: [TypeOrmModule.forFeature([User, Game, CoinTransaction])],
   controllers: [WalletController],
-  providers: [CoinTransactionService],
+  providers: [WalletService, CoinTransactionService],
 })
 export class WalletModule {}
