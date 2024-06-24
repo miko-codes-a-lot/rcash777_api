@@ -50,7 +50,6 @@ services:
       context: .
       dockerfile: ./docker/local/Dockerfile
     restart: always
-    env_file: .env
     expose:
       - ${PORT}
     ports:
