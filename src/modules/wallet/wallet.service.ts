@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.entity';
 import { User } from '../user/entities/user.entity';
@@ -9,6 +9,8 @@ import { HttpStatus } from 'src/enums/http-status.enum';
 import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { FormCreditDTO } from './dto/form-credit.dto';
+
+const AGENT_COMMISSION_PERCENTAGE = 0.1; // %10
 
 @Injectable()
 export class WalletService {
@@ -111,13 +113,23 @@ export class WalletService {
       { errorCode: 'GAME_NOT_FOUND', errorMessage: 'Game not found' },
     );
 
+    const txCredit = await this.coinRepo.findOne({ where: { roundId: data.roundId } });
+    if (!txCredit) {
+      throw new NotFoundException(`Credit counterpart not found: roundId=${data.roundId}`);
+    }
+
+    const WIN_OR_LOSS =
+      data.amount - txCredit.amount >= 0
+        ? TransactionTypeCategory.WIN
+        : TransactionTypeCategory.LOSS;
+
     const txDebit = CoinTransaction.builder()
       .id(data.transId)
       .player(player)
       .roundId(data.roundId)
       .game(game)
       .type(TransactionType.DEBIT)
-      .typeCategory(data.reason || TransactionTypeCategory.BET_DEBIT)
+      .typeCategory(WIN_OR_LOSS)
       .amount(data.amount)
       .createdBy(player)
       .build();

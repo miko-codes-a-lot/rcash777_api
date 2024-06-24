@@ -10,6 +10,7 @@ export enum TransactionTypeCategory {
   CASH_BACK = 'CASH_BACK', // discontinued but still here just in case
   BET_DEBIT = 'BET_DEBIT',
   WIN = 'WIN',
+  LOSS = 'LOSS',
   PAYOUT = 'PAYOUT',
   BET_CREDIT = 'BET',
   TIP = 'TIP',
