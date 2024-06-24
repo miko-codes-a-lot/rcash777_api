@@ -1,6 +1,7 @@
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
 import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
+import { Game } from 'src/modules/game/entities/game.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
   Column,
@@ -13,6 +14,7 @@ import {
 } from 'typeorm';
 
 @Index('idx_coin_transaction_user_player_id_type_id', ['player', 'type'])
+@Index('idx_coin_transaction_game_id', ['game'])
 @Entity('coin_transaction')
 export class CoinTransaction {
   @PrimaryGeneratedColumn('uuid')
@@ -48,9 +50,12 @@ export class CoinTransaction {
   @JoinColumn({ name: 'cash_transaction_id' })
   cashTransaction: CashTransaction;
 
-  /** @TODO: 2024-06-12 - Miko Chu >> transition later to Game FK */
-  @Column({ name: 'game_id', nullable: true })
-  gameId: string;
+  @Column({ name: 'round_id', nullable: true })
+  roundId: string;
+
+  @ManyToOne(() => Game, (game) => game.coinTransactions, { nullable: true })
+  @JoinColumn({ name: 'game_id' })
+  game: Game;
 
   @ManyToOne(() => User, (user) => user.coinTransactions)
   @JoinColumn({ name: 'user_player_id' })
@@ -109,8 +114,13 @@ class CoinTransactionBuilder {
     return this;
   }
 
-  gameId(gameId: string): CoinTransactionBuilder {
-    this.coinTransaction.gameId = gameId;
+  roundId(roundId: string): CoinTransactionBuilder {
+    this.coinTransaction.roundId = roundId;
+    return this;
+  }
+
+  game(game: Game): CoinTransactionBuilder {
+    this.coinTransaction.game = game;
     return this;
   }
 
