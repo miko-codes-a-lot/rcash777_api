@@ -1,5 +1,6 @@
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { GameImage } from './game-image.entity';
+import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 
 @Index('idx_game_code', ['code'])
 @Entity('game')
@@ -33,6 +34,9 @@ export class Game {
 
   @Column({ name: 'is_freeround_supported' })
   isFreeroundSupported: boolean;
+
+  @OneToMany(() => CoinTransaction, (cointx) => cointx.game)
+  coinTransactions: CoinTransaction[];
 
   @Column()
   rtp: number;
