@@ -52,6 +52,12 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE TABLE "user" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "email" character varying NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "phone_number" character varying NOT NULL, "address" character varying NOT NULL, "coin_deposit" numeric(18,8) NOT NULL DEFAULT '0', "password" character varying NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "deactivated_at" TIMESTAMP WITH TIME ZONE, "activated_at" TIMESTAMP WITH TIME ZONE, "created_by_id" uuid, "updated_by_id" uuid, "deactivated_by_id" uuid, "activated_by_id" uuid, CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
+      `CREATE INDEX "idx_user_email_first_name_last_name_phone_number_created_at" ON "user" ("first_name", "last_name", "phone_number", "created_at") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_user_email_first_name_last_name_phone_number" ON "user" ("first_name", "last_name", "phone_number") `,
+    );
+    await queryRunner.query(
       `CREATE TABLE "user_role" ("user_id" uuid NOT NULL, "role_id" uuid NOT NULL, CONSTRAINT "PK_f634684acb47c1a158b83af5150" PRIMARY KEY ("user_id", "role_id"))`,
     );
     await queryRunner.query(
@@ -247,6 +253,12 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "role_permission"`);
     await queryRunner.query(`DROP TABLE "auth"`);
     await queryRunner.query(`DROP TABLE "user_role"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_user_email_first_name_last_name_phone_number"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."idx_user_email_first_name_last_name_phone_number_created_at"`,
+    );
     await queryRunner.query(`DROP TABLE "user"`);
     await queryRunner.query(`DROP TABLE "role"`);
     await queryRunner.query(`DROP TABLE "permission"`);

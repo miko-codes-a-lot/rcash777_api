@@ -6,6 +6,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   JoinTable,
   ManyToMany,
@@ -15,6 +16,13 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+@Index('idx_user_email_first_name_last_name_phone_number', ['firstName', 'lastName', 'phoneNumber'])
+@Index('idx_user_email_first_name_last_name_phone_number_created_at', [
+  'firstName',
+  'lastName',
+  'phoneNumber',
+  'createdAt',
+])
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn('uuid')
