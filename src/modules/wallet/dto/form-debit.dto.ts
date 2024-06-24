@@ -12,7 +12,8 @@ export const FormDebitSchema = Joi.object({
     .valid(...Object.values(Platform))
     .optional(),
   transId: Joi.string().required(),
-  currency: Joi.string().valid('PHP').required(),
+  // handled in service itself because we have to give special error format
+  currency: Joi.string().required(), // .valid('PHP')
   amount: Joi.number().required(),
   jpContrib: Joi.number().allow(null).optional(),
   reason: Joi.string()

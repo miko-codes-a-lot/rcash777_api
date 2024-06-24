@@ -7,7 +7,8 @@ import { Game } from '../game/entities/game.entity';
 import { FormDebitDTO } from './dto/form-debit.dto';
 import { HttpStatus } from 'src/enums/http-status.enum';
 import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
-import { TransactionType } from 'src/enums/transaction.enum';
+import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
+import { FormCreditDTO } from './dto/form-credit.dto';
 
 @Injectable()
 export class WalletService {
@@ -37,10 +38,8 @@ export class WalletService {
     return data;
   }
 
-  // remove money from player balance (credit on our DB)
-  // @TODO: 2024-06-24 - Implement later "ROUND_NOT_FOUND", "ROUND_ENDED"
-  async debit(data: FormDebitDTO) {
-    if (data.currency !== 'PHP') {
+  isValidCurrency(currency: string) {
+    if (currency !== 'PHP')
       throw new HttpException(
         {
           error: {
@@ -50,7 +49,13 @@ export class WalletService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    }
+  }
+
+  // remove money from player balance (credit on our DB)
+  // @TODO: 2024-06-24 - Implement later "ROUND_NOT_FOUND", "ROUND_ENDED"
+  async debit(data: FormDebitDTO) {
+    this.isValidCurrency(data.currency);
+
     const remainingBalance = await this.coinService.computeBalance(data.player);
     if (remainingBalance - data.amount <= 0) {
       throw new HttpException(
@@ -85,5 +90,40 @@ export class WalletService {
     await this.coinRepo.save(txCredit);
 
     return remainingBalance + txCredit.amount;
+  }
+
+  // remove money from game and add it to player balance (debit on our DB)
+  // @TODO: 2024-06-24 - Implement later "ROUND_NOT_FOUND", "ROUND_ENDED"
+  async credit(data: FormCreditDTO) {
+    this.isValidCurrency(data.currency);
+
+    const remainingBalance = await this.coinService.computeBalance(data.player);
+
+    const player = await this.findOne<User>(
+      this.userRepo,
+      { id: data.player },
+      { errorCode: 'PLAYER_NOT_FOUND', errorMessage: 'Player not found' },
+    );
+
+    const game = await this.findOne<Game>(
+      this.gameRepo,
+      { code: data.game },
+      { errorCode: 'GAME_NOT_FOUND', errorMessage: 'Game not found' },
+    );
+
+    const txDebit = CoinTransaction.builder()
+      .id(data.transId)
+      .player(player)
+      .roundId(data.roundId)
+      .game(game)
+      .type(TransactionType.DEBIT)
+      .typeCategory(data.reason || TransactionTypeCategory.BET_DEBIT)
+      .amount(data.amount)
+      .createdBy(player)
+      .build();
+
+    await this.coinRepo.save(txDebit);
+
+    return remainingBalance + txDebit.amount;
   }
 }
