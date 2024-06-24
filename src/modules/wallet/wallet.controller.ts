@@ -57,7 +57,6 @@ export class WalletController {
     // @Query('platform') platform: Platform,
     // @Res() res: Response,
   ) {
-    console.log(player, '008347f6-0c9b-41e1-86bc-19978e9de440');
     const balance = await this.coinService.computeBalance(player);
 
     return {
