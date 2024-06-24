@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, BadRequestException, Put, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, BadRequestException, Put, Res, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Validate } from 'src/decorators/validate.decorator';
@@ -12,6 +12,7 @@ import {
   PostUserUpdateRequest,
   PutUserUpdateRequestSchema,
 } from './schemas/put-user-update.schema';
+import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 
 @AuthRequired()
 @ApiTags('user')
@@ -29,6 +30,16 @@ export class UserController {
     await this.userService.create(payload);
 
     res.status(HttpStatus.SUCCESS).send();
+  }
+
+  @Get()
+  async findAll(@Query() query: PaginationDTO, @Res() res: Response) {
+    query.page *= 1;
+    query.pageSize *= 1;
+
+    const paged = await this.userService.findAllPaginated(query);
+
+    return res.status(HttpStatus.SUCCESS).json(paged);
   }
 
   @Put()
