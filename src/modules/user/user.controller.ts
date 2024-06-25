@@ -56,7 +56,7 @@ export class UserController {
     res.status(HttpStatus.SUCCESS).send();
   }
 
-  @Get()
+  @Get('self')
   getUser(@RequestUser() user: User) {
     const { id } = user;
     return this.userService.findById(id);
