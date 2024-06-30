@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Res, Query } from '@nestjs/common';
 import { Response } from 'express';
 import { HttpStatus } from 'src/enums/http-status.enum';
 import { FormDebitDTO, FormDebitSchema } from './dto/form-debit.dto';
-import { FormCreditDTO } from './dto/form-credit.dto';
+import { FormCreditDTO, FormCreditSchema } from './dto/form-credit.dto';
 import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
 import { FormRollbackDTO } from './dto/form-rollback.dto';
 import { FormEndRoundDTO } from './dto/form-end-round-dto';
@@ -14,6 +14,7 @@ import { AuthRequired } from 'src/decorators/auth-required.decorator';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { FormAuthDTO } from './dto/form-auth.dto';
+import { FormPayoutDTO, FormPayoutSchema } from './dto/form-payout.dto';
 
 @Controller('provider/nextral')
 export class WalletController {
@@ -50,24 +51,36 @@ export class WalletController {
   /** @TODO: 2024-06-23 - Add middleware to check if signature is correct */
   @Post('debit')
   @Validate({ body: FormDebitSchema })
-  async debit(@Body() data: FormDebitDTO) {
+  async debit(@Body() data: FormDebitDTO, @Res() res: Response) {
     const balance = await this.walletService.debit(data);
 
-    return {
+    return res.json({
       currency: 'PHP',
       balance,
-    };
+    });
   }
 
   /** @TODO: 2024-06-23 - Add middleware to check if signature is correct */
   @Post('credit')
-  async credit(@Body() data: FormCreditDTO) {
+  @Validate({ body: FormCreditSchema })
+  async credit(@Body() data: FormCreditDTO, @Res() res: Response) {
     const balance = await this.walletService.credit(data);
 
-    return {
+    return res.json({
       currency: 'PHP',
       balance,
-    };
+    });
+  }
+
+  @Post('payout')
+  @Validate({ body: FormPayoutSchema })
+  async payout(@Body() data: FormPayoutDTO, @Res() res: Response) {
+    const balance = await this.walletService.payout(data);
+
+    return res.json({
+      currency: 'PHP',
+      balance,
+    });
   }
 
   @Post('debitAndCredit')

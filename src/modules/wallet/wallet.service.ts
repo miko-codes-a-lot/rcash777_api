@@ -10,6 +10,7 @@ import { CoinTransactionService } from '../coin-transaction/coin-transaction.ser
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { FormCreditDTO } from './dto/form-credit.dto';
 import { FormRollbackDTO } from './dto/form-rollback.dto';
+import { FormPayoutDTO } from './dto/form-payout.dto';
 
 @Injectable()
 export class WalletService {
@@ -27,7 +28,22 @@ export class WalletService {
     private gameRepo: Repository<Game>,
   ) {}
 
-  async findOne<T>(
+  private async _getPlayerAndGame(playerId: string, gameCode: string) {
+    return Promise.all([
+      this._findOne<User>(
+        this.userRepo,
+        { id: playerId },
+        { errorCode: 'PLAYER_NOT_FOUND', errorMessage: 'Player not found' },
+      ),
+      this._findOne<Game>(
+        this.gameRepo,
+        { code: gameCode },
+        { errorCode: 'GAME_NOT_FOUND', errorMessage: 'Game not found' },
+      ),
+    ]);
+  }
+
+  private async _findOne<T>(
     repo: Repository<T>,
     query: any,
     error: { errorCode: string; errorMessage: string },
@@ -65,17 +81,7 @@ export class WalletService {
       );
     }
 
-    const player = await this.findOne<User>(
-      this.userRepo,
-      { id: data.player },
-      { errorCode: 'PLAYER_NOT_FOUND', errorMessage: 'Player not found' },
-    );
-
-    const game = await this.findOne<Game>(
-      this.gameRepo,
-      { code: data.game },
-      { errorCode: 'GAME_NOT_FOUND', errorMessage: 'Game not found' },
-    );
+    const [player, game] = await this._getPlayerAndGame(data.player, data.game);
 
     const txCredit = CoinTransaction.builder()
       .id(data.transId)
@@ -96,51 +102,38 @@ export class WalletService {
   // rolling back a player deposit from the game
   // which means we undo player credit to debit in our DB
   async rollback(data: FormRollbackDTO) {
-    const player = await this.findOne<User>(
+    const player = await this._findOne<User>(
       this.userRepo,
       { id: data.player },
       { errorCode: 'PLAYER_NOT_FOUND', errorMessage: 'Player not found' },
     );
 
     // in game's perspective we are undoing a debit (this means CREDIT in our DB)
-    const txDebit = await this.findOne<CoinTransaction>(
+    const txCredit = await this._findOne<CoinTransaction>(
       this.coinRepo,
       { id: data.originalTransId },
       { errorCode: 'TRANS_NOT_FOUND', errorMessage: 'Transaction not found' },
     );
 
     // undo game's debit by making a credit (this means DEBIT in our DB)
-    const txCredit = CoinTransaction.builder()
+    const txDebit = CoinTransaction.builder()
       .player(player)
       .roundId(data.roundId)
-      .game(txDebit.game)
-      .type(TransactionType.CREDIT)
+      .game(txCredit.game)
+      .type(TransactionType.DEBIT)
       .typeCategory(TransactionTypeCategory.ROLL_BACK)
-      .amount(txDebit.amount)
+      .amount(txCredit.amount)
       .createdBy(player)
       .build();
 
-    await this.coinRepo.save(txCredit);
+    await this.coinRepo.save(txDebit);
   }
 
   // remove money from game and add it to player balance (debit on our DB)
   // @TODO: 2024-06-24 - Implement later "ROUND_NOT_FOUND", "ROUND_ENDED"
   async credit(data: FormCreditDTO) {
     this.isValidCurrency(data.currency);
-
-    const remainingBalance = await this.coinService.computeBalance(data.player);
-
-    const player = await this.findOne<User>(
-      this.userRepo,
-      { id: data.player },
-      { errorCode: 'PLAYER_NOT_FOUND', errorMessage: 'Player not found' },
-    );
-
-    const game = await this.findOne<Game>(
-      this.gameRepo,
-      { code: data.game },
-      { errorCode: 'GAME_NOT_FOUND', errorMessage: 'Game not found' },
-    );
+    const [player, game] = await this._getPlayerAndGame(data.player, data.game);
 
     const txCredit = await this.coinRepo.findOne({ where: { roundId: data.roundId } });
     if (!txCredit) {
@@ -165,6 +158,26 @@ export class WalletService {
 
     await this.coinRepo.save(txDebit);
 
-    return remainingBalance + txDebit.amount;
+    return this.coinService.computeBalance(data.player);
+  }
+
+  // remove money from game and add it to player balance (debit on our DB)
+  async payout(data: FormPayoutDTO) {
+    const [player, game] = await this._getPlayerAndGame(data.player, data.game);
+
+    const txDebit = CoinTransaction.builder()
+      .id(data.transId)
+      .player(player)
+      .roundId(data.roundId)
+      .game(game)
+      .type(TransactionType.DEBIT)
+      .typeCategory(TransactionTypeCategory.PAYOUT)
+      .amount(data.amount)
+      .createdBy(player)
+      .build();
+
+    await this.coinRepo.save(txDebit);
+
+    return await this.coinService.computeBalance(data.player);
   }
 }
