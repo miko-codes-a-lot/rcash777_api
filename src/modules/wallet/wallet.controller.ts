@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Res, Query } from '@nestjs/common';
 import { Response } from 'express';
-import { HttpStatus } from 'src/enums/http-status.enum';
 import { FormDebitDTO, FormDebitSchema } from './dto/form-debit.dto';
 import { FormCreditDTO, FormCreditSchema } from './dto/form-credit.dto';
 import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
@@ -85,66 +84,12 @@ export class WalletController {
 
   @Post('debitAndCredit')
   async debitAndCredit(@Body() data: FormDebitAndCreditDTO, @Res() res: Response) {
-    const status = Math.random();
-    if (status === 1) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        error: {
-          errorCode: 'ROUND_ENDED',
-          errorMessage: 'Game round has already been closed',
-        },
-      });
-    } else if (status === 2) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        error: {
-          errorCode: 'INVALID_CURRENCY',
-          errorMessage: 'Currency not supported or invalid',
-        },
-      });
-    } else if (status === 3) {
-      return res.status(HttpStatus.PAYMENT_REQUIRED).json({
-        currency: 'USD',
-        balance: '1000.00',
-      });
-    } else if (status === 4) {
-      return res.status(HttpStatus.FORBIDDEN).json({
-        error: {
-          errorCode: 'GAMING_LIMIT_REACHED',
-          errorMessage: 'Player bet limit reached',
-        },
-      });
-    } else if (status === 5) {
-      return res.status(HttpStatus.FORBIDDEN).json({
-        error: {
-          errorCode: 'SESSION_LIMIT_REACHED',
-          errorMessage: 'Player session limit reached',
-        },
-      });
-    } else if (status === 6) {
-      return res.status(HttpStatus.NOT_FOUND).json({
-        error: {
-          errorCode: 'SESSION_NOT_FOUND',
-          errorMessage: 'Session not found or invalid',
-        },
-      });
-    } else if (status === 7) {
-      return res.status(HttpStatus.NOT_FOUND).json({
-        error: {
-          errorCode: 'PLAYER_NOT_FOUND',
-          errorMessage: 'Player not found',
-        },
-      });
-    } else if (status === 8) {
-      return res.status(HttpStatus.NOT_FOUND).json({
-        error: {
-          errorCode: 'GAME_NOT_FOUND',
-          errorMessage: 'Game not found',
-        },
-      });
-    }
-    return {
-      currency: 'USD',
-      balance: '1000.00',
-    };
+    const balance = await this.walletService.debitAndCredit(data);
+
+    return res.json({
+      currency: 'PHP',
+      balance,
+    });
   }
 
   @Post('rollback')
@@ -157,34 +102,12 @@ export class WalletController {
     });
   }
 
+  // optional
   @Post('endRound')
   async endRound(@Body() data: FormEndRoundDTO, @Res() res: Response) {
-    const status = Math.random();
-    if (status === 1) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        error: {
-          errorCode: 'ROUND_ENDED',
-          errorMessage: 'Game round has already been closed',
-        },
-      });
-    } else if (status === 2) {
-      return res.status(HttpStatus.NOT_FOUND).json({
-        error: {
-          errorCode: 'PLAYER_NOT_FOUND',
-          errorMessage: 'Player not found',
-        },
-      });
-    } else if (status === 3) {
-      return res.status(HttpStatus.NOT_FOUND).json({
-        error: {
-          errorCode: 'ROUND_NOT_FOUND',
-          errorMessage: 'Round not found',
-        },
-      });
-    }
-    return {
-      currency: 'USD',
-      balance: '1000.00',
-    };
+    return res.json({
+      currency: 'PHP',
+      balance: 0,
+    });
   }
 }

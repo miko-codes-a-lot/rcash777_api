@@ -1,5 +1,5 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
 import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.entity';
 import { User } from '../user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +11,7 @@ import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.
 import { FormCreditDTO } from './dto/form-credit.dto';
 import { FormRollbackDTO } from './dto/form-rollback.dto';
 import { FormPayoutDTO } from './dto/form-payout.dto';
+import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
 
 @Injectable()
 export class WalletService {
@@ -45,7 +46,7 @@ export class WalletService {
 
   private async _findOne<T>(
     repo: Repository<T>,
-    query: any,
+    query: FindOptionsWhere<T>[] | FindOptionsWhere<T>,
     error: { errorCode: string; errorMessage: string },
   ) {
     const data = await repo.findOne({ where: query });
@@ -84,8 +85,8 @@ export class WalletService {
     const [player, game] = await this._getPlayerAndGame(data.player, data.game);
 
     const txCredit = CoinTransaction.builder()
-      .id(data.transId)
       .player(player)
+      .transactionId(data.transId)
       .roundId(data.roundId)
       .game(game)
       .type(TransactionType.CREDIT)
@@ -108,25 +109,51 @@ export class WalletService {
       { errorCode: 'PLAYER_NOT_FOUND', errorMessage: 'Player not found' },
     );
 
-    // in game's perspective we are undoing a debit (this means CREDIT in our DB)
-    const txCredit = await this._findOne<CoinTransaction>(
-      this.coinRepo,
-      { id: data.originalTransId },
-      { errorCode: 'TRANS_NOT_FOUND', errorMessage: 'Transaction not found' },
-    );
+    await this.dataSource.transaction(async (manager) => {
+      const coinRepo = manager.getRepository(CoinTransaction);
+      // in game's perspective we are undoing a debit (this means CREDIT in our DB)
+      const txCredit = await this._findOne<CoinTransaction>(
+        coinRepo,
+        { transactionId: data.originalTransId, type: TransactionType.CREDIT },
+        { errorCode: 'TRANS_NOT_FOUND', errorMessage: 'Transaction not found' },
+      );
 
-    // undo game's debit by making a credit (this means DEBIT in our DB)
-    const txDebit = CoinTransaction.builder()
-      .player(player)
-      .roundId(data.roundId)
-      .game(txCredit.game)
-      .type(TransactionType.DEBIT)
-      .typeCategory(TransactionTypeCategory.ROLL_BACK)
-      .amount(txCredit.amount)
-      .createdBy(player)
-      .build();
+      // undo game's debit by making a credit (this means DEBIT in our DB)
+      const txDebit = CoinTransaction.builder()
+        .player(player)
+        .roundId(data.roundId)
+        .game(txCredit.game)
+        .type(TransactionType.DEBIT)
+        .typeCategory(TransactionTypeCategory.ROLL_BACK)
+        .amount(txCredit.amount)
+        .createdBy(player)
+        .build();
 
-    await this.coinRepo.save(txDebit);
+      await coinRepo.save(txDebit);
+
+      // optionally undo "win" from "debitAndCredit"
+      const txWin = await this._findOne<CoinTransaction>(
+        coinRepo,
+        { transactionId: data.originalTransId, type: TransactionType.DEBIT },
+        { errorCode: 'TRANS_NOT_FOUND', errorMessage: 'Transaction not found' },
+      );
+
+      if (txWin) {
+        const txWinCredit = CoinTransaction.builder()
+          .player(player)
+          .roundId(data.roundId)
+          .game(txWin.game)
+          .type(TransactionType.CREDIT)
+          .typeCategory(TransactionTypeCategory.ROLL_BACK)
+          .amount(txWin.amount)
+          .createdBy(player)
+          .build();
+
+        await coinRepo.save(txWinCredit);
+      }
+    });
+
+    return this.coinService.computeBalance(data.player);
   }
 
   // remove money from game and add it to player balance (debit on our DB)
@@ -146,8 +173,8 @@ export class WalletService {
         : TransactionTypeCategory.LOSS;
 
     const txDebit = CoinTransaction.builder()
-      .id(data.transId)
       .player(player)
+      .transactionId(data.transId)
       .roundId(data.roundId)
       .game(game)
       .type(TransactionType.DEBIT)
@@ -166,8 +193,8 @@ export class WalletService {
     const [player, game] = await this._getPlayerAndGame(data.player, data.game);
 
     const txDebit = CoinTransaction.builder()
-      .id(data.transId)
       .player(player)
+      .transactionId(data.transId)
       .roundId(data.roundId)
       .game(game)
       .type(TransactionType.DEBIT)
@@ -179,5 +206,46 @@ export class WalletService {
     await this.coinRepo.save(txDebit);
 
     return await this.coinService.computeBalance(data.player);
+  }
+
+  async debitAndCredit(data: FormDebitAndCreditDTO) {
+    const [player, game] = await this._getPlayerAndGame(data.player, data.game);
+    const balance = await this.coinService.computeBalance(data.player);
+
+    if (balance - data.bet <= 0) {
+      throw new HttpException({ currency: 'PHP', balance }, HttpStatus.PAYMENT_REQUIRED);
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const coinRepo = manager.getRepository(CoinTransaction);
+
+      const txBet = CoinTransaction.builder()
+        .player(player)
+        .transactionId(data.transId)
+        .roundId(data.roundId)
+        .game(game)
+        .type(TransactionType.CREDIT)
+        .typeCategory(TransactionTypeCategory.BET_CREDIT)
+        .amount(data.bet)
+        .createdBy(player)
+        .build();
+
+      await coinRepo.save(txBet);
+
+      const txWin = CoinTransaction.builder()
+        .player(player)
+        .transactionId(data.transId)
+        .roundId(data.roundId)
+        .game(game)
+        .type(TransactionType.DEBIT)
+        .typeCategory(TransactionTypeCategory.WIN)
+        .amount(data.win)
+        .createdBy(player)
+        .build();
+
+      await coinRepo.save(txWin);
+
+      return balance - data.bet + data.win;
+    });
   }
 }

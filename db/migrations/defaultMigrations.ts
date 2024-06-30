@@ -19,13 +19,19 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE TYPE "public"."coin_transaction_type_enum" AS ENUM('DEBIT', 'CREDIT')`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."coin_transaction_type_category_enum" AS ENUM('DEPOSIT', 'REBATE', 'REFUND', 'CASH_BACK', 'BET_DEBIT', 'WIN', 'LOSS', 'PAYOUT', 'BET', 'TIP', 'PARTIAL_REFUND', 'BUY_IN', 'CASH_OUT', 'FREEROUND_WIN', 'TOURNAMENT_WIN', 'CAMPAIGN_WIN', 'FREEGAME_WIN', 'CONFISCATE')`,
+      `CREATE TYPE "public"."coin_transaction_type_category_enum" AS ENUM('DEPOSIT', 'REBATE', 'REFUND', 'ROLL_BACK', 'CASH_BACK', 'BET_DEBIT', 'WIN', 'LOSS', 'PAYOUT', 'BET', 'TIP', 'PARTIAL_REFUND', 'BUY_IN', 'CASH_OUT', 'FREEROUND_WIN', 'TOURNAMENT_WIN', 'CAMPAIGN_WIN', 'FREEGAME_WIN', 'CONFISCATE')`,
     );
     await queryRunner.query(
-      `CREATE TABLE "coin_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."coin_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."coin_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "round_id" character varying, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "cash_transaction_id" uuid, "game_id" uuid, "user_player_id" uuid, "created_by_id" uuid, CONSTRAINT "PK_038fe0990ab9f6c09993c7761ea" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "coin_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."coin_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."coin_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "transaction_id" character varying, "round_id" character varying, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "cash_transaction_id" uuid, "game_id" uuid, "user_player_id" uuid, "created_by_id" uuid, CONSTRAINT "PK_038fe0990ab9f6c09993c7761ea" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_cash_transaction_round_id" ON "coin_transaction" ("round_id") `,
     );
     await queryRunner.query(
       `CREATE INDEX "idx_coin_transaction_game_id" ON "coin_transaction" ("game_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_coin_transaction_transaction_id_type" ON "coin_transaction" ("transaction_id", "type") `,
     );
     await queryRunner.query(
       `CREATE INDEX "idx_coin_transaction_user_player_id_type_id" ON "coin_transaction" ("user_player_id", "type") `,
@@ -37,7 +43,7 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE TYPE "public"."cash_transaction_type_enum" AS ENUM('DEBIT', 'CREDIT')`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."cash_transaction_type_category_enum" AS ENUM('DEPOSIT', 'REBATE', 'REFUND', 'CASH_BACK', 'BET_DEBIT', 'WIN', 'LOSS', 'PAYOUT', 'BET', 'TIP', 'PARTIAL_REFUND', 'BUY_IN', 'CASH_OUT', 'FREEROUND_WIN', 'TOURNAMENT_WIN', 'CAMPAIGN_WIN', 'FREEGAME_WIN', 'CONFISCATE')`,
+      `CREATE TYPE "public"."cash_transaction_type_category_enum" AS ENUM('DEPOSIT', 'REBATE', 'REFUND', 'ROLL_BACK', 'CASH_BACK', 'BET_DEBIT', 'WIN', 'LOSS', 'PAYOUT', 'BET', 'TIP', 'PARTIAL_REFUND', 'BUY_IN', 'CASH_OUT', 'FREEROUND_WIN', 'TOURNAMENT_WIN', 'CAMPAIGN_WIN', 'FREEGAME_WIN', 'CONFISCATE')`,
     );
     await queryRunner.query(
       `CREATE TABLE "cash_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."cash_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."cash_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "user_player_id" uuid, "payment_channel_id" uuid, "created_by_id" uuid, CONSTRAINT "PK_d4d82b6912d82a7f4f519bd0d86" PRIMARY KEY ("id"))`,
@@ -282,7 +288,9 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`DROP TYPE "public"."cash_transaction_type_enum"`);
     await queryRunner.query(`DROP TABLE "payment_channel"`);
     await queryRunner.query(`DROP INDEX "public"."idx_coin_transaction_user_player_id_type_id"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_coin_transaction_transaction_id_type"`);
     await queryRunner.query(`DROP INDEX "public"."idx_coin_transaction_game_id"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_cash_transaction_round_id"`);
     await queryRunner.query(`DROP TABLE "coin_transaction"`);
     await queryRunner.query(`DROP TYPE "public"."coin_transaction_type_category_enum"`);
     await queryRunner.query(`DROP TYPE "public"."coin_transaction_type_enum"`);
