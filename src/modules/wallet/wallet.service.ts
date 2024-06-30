@@ -9,6 +9,7 @@ import { HttpStatus } from 'src/enums/http-status.enum';
 import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { FormCreditDTO } from './dto/form-credit.dto';
+import { FormRollbackDTO } from './dto/form-rollback.dto';
 
 @Injectable()
 export class WalletService {
@@ -90,6 +91,36 @@ export class WalletService {
     await this.coinRepo.save(txCredit);
 
     return remainingBalance + txCredit.amount;
+  }
+
+  // rolling back a player deposit from the game
+  // which means we undo player credit to debit in our DB
+  async rollback(data: FormRollbackDTO) {
+    const player = await this.findOne<User>(
+      this.userRepo,
+      { id: data.player },
+      { errorCode: 'PLAYER_NOT_FOUND', errorMessage: 'Player not found' },
+    );
+
+    // in game's perspective we are undoing a debit (this means CREDIT in our DB)
+    const txDebit = await this.findOne<CoinTransaction>(
+      this.coinRepo,
+      { id: data.originalTransId },
+      { errorCode: 'TRANS_NOT_FOUND', errorMessage: 'Transaction not found' },
+    );
+
+    // undo game's debit by making a credit (this means DEBIT in our DB)
+    const txCredit = CoinTransaction.builder()
+      .player(player)
+      .roundId(data.roundId)
+      .game(txDebit.game)
+      .type(TransactionType.CREDIT)
+      .typeCategory(TransactionTypeCategory.ROLL_BACK)
+      .amount(txDebit.amount)
+      .createdBy(player)
+      .build();
+
+    await this.coinRepo.save(txCredit);
   }
 
   // remove money from game and add it to player balance (debit on our DB)
