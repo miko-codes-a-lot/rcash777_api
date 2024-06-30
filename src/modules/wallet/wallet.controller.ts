@@ -9,43 +9,26 @@ import { FormEndRoundDTO } from './dto/form-end-round-dto';
 import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
 import { Validate } from 'src/decorators/validate.decorator';
 import { WalletService } from './wallet.service';
+import { NextralService } from './nextral.service';
+import { AuthRequired } from 'src/decorators/auth-required.decorator';
+import { RequestUser } from 'src/decorators/request-user.decorator';
+import { User } from '../user/entities/user.entity';
+import { FormAuthDTO } from './dto/form-auth.dto';
 
 @Controller('provider/nextral')
 export class WalletController {
   constructor(
-    private readonly walletService: WalletService,
     private readonly coinService: CoinTransactionService,
+    private readonly nextralService: NextralService,
+    private readonly walletService: WalletService,
   ) {}
 
   @Post('authenticate')
-  async authenticate(@Res() res: Response) {
-    const no = Math.random();
-    if (no === 1) {
-      res.status(HttpStatus.NOT_FOUND).json({
-        error: {
-          errorCode: 'TOKEN_NOT_FOUND',
-          errorMessage: 'Token is already validated or invalid',
-        },
-      });
-    } else if (no === 2) {
-      res.status(HttpStatus.NOT_FOUND).json({
-        error: {
-          errorCode: 'GAME_NOT_FOUND',
-          errorMessage: 'Game not found',
-        },
-      });
-    }
+  @AuthRequired()
+  async authenticate(@RequestUser() user: User, @Body() data: FormAuthDTO, @Res() res: Response) {
+    const details = await this.nextralService.authenticate(user, data);
 
-    return res.json({
-      client: 'GF77',
-      currency: 'PHP',
-      testAccount: 'false',
-      country: 'PHP',
-      affiliate: 'aff-1',
-      jurisdiction: '',
-      player: 'player.id',
-      balance: 1000,
-    });
+    return res.json(details);
   }
 
   @Get('balance')
