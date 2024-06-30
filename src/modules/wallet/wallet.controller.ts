@@ -14,7 +14,9 @@ import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { FormAuthDTO } from './dto/form-auth.dto';
 import { FormPayoutDTO, FormPayoutSchema } from './dto/form-payout.dto';
+import { NextralSecure } from 'src/decorators/nextral-secure.decorator';
 
+@NextralSecure()
 @Controller('provider/nextral')
 export class WalletController {
   constructor(

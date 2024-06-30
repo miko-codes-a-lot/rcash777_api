@@ -111,13 +111,14 @@ export class NextralService {
     });
   }
 
-  isRequestSignatureValid(payload: { [key: string]: any }, requestSignature: string) {
-    payload = {
-      token: null,
-      device: 'Iphone 14',
-      gameCode: 'GAME_1',
-      platform: 'DESKTOP',
-    };
+  private _generateSignature(value: string): string {
+    return crypto.createHash('md5').update(value).digest('hex');
+  }
+
+  isRequestSignatureValid(requestSignature: string, payload?: { [key: string]: any }) {
+    if (!payload) {
+      return this._generateSignature(ZENITH_API_KEY) === requestSignature;
+    }
 
     const keys = Object.keys(payload).sort();
 
@@ -127,11 +128,6 @@ export class NextralService {
       return acc.replace(`${key}=`, `${key}=${payload[key] || ''}`);
     }, template);
 
-    const hash = crypto
-      .createHash('md5')
-      .update(sortedParams + ZENITH_API_KEY)
-      .digest('hex');
-
-    return hash === requestSignature;
+    return this._generateSignature(sortedParams + ZENITH_API_KEY) === requestSignature;
   }
 }
