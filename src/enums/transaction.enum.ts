@@ -7,9 +7,11 @@ export enum TransactionTypeCategory {
   DEPOSIT = 'DEPOSIT',
   REBATE = 'REBATE',
   REFUND = 'REFUND',
+  ROLL_BACK = 'ROLL_BACK',
   CASH_BACK = 'CASH_BACK', // discontinued but still here just in case
   BET_DEBIT = 'BET_DEBIT',
   WIN = 'WIN',
+  LOSS = 'LOSS',
   PAYOUT = 'PAYOUT',
   BET_CREDIT = 'BET',
   TIP = 'TIP',

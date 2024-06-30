@@ -14,7 +14,9 @@ import {
 } from 'typeorm';
 
 @Index('idx_coin_transaction_user_player_id_type_id', ['player', 'type'])
+@Index('idx_coin_transaction_transaction_id_type', ['transactionId', 'type'])
 @Index('idx_coin_transaction_game_id', ['game'])
+@Index('idx_cash_transaction_round_id', ['roundId'])
 @Entity('coin_transaction')
 export class CoinTransaction {
   @PrimaryGeneratedColumn('uuid')
@@ -49,6 +51,9 @@ export class CoinTransaction {
   @ManyToOne(() => CashTransaction, (cashtx) => cashtx.coinTransactions)
   @JoinColumn({ name: 'cash_transaction_id' })
   cashTransaction: CashTransaction;
+
+  @Column({ name: 'transaction_id', nullable: true })
+  transactionId: string;
 
   @Column({ name: 'round_id', nullable: true })
   roundId: string;
@@ -116,6 +121,11 @@ class CoinTransactionBuilder {
 
   roundId(roundId: string): CoinTransactionBuilder {
     this.coinTransaction.roundId = roundId;
+    return this;
+  }
+
+  transactionId(transactionId: string): CoinTransactionBuilder {
+    this.coinTransaction.transactionId = transactionId;
     return this;
   }
 

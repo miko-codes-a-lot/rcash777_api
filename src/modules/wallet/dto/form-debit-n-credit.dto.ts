@@ -11,6 +11,6 @@ export interface FormDebitAndCreditDTO {
   bet: number;
   win: number;
   jpContrib: string;
-  jackpotAmount: string;
+  jackpotAmount?: number;
   roundEnded: false;
 }
