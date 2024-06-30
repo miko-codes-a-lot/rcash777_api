@@ -24,7 +24,7 @@ import { PaymentChannel } from '../payment-channel/entities/payment-channel.enti
 // player cash in 300 pesos goes to casino if player lossess
 
 const CASH_TO_COINS_RATE = 1;
-const AGENT_COMISSION_FEE = 0.1; // 10%
+// const AGENT_COMISSION_FEE = 0.1; // 10%
 const REBATE_PERCENT = 0.03; // 3%
 const REBATE_AFTER_ELAPSED_MS = 24 * 60 * 60 * 1000;
 

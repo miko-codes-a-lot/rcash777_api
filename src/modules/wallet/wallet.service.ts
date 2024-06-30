@@ -10,8 +10,6 @@ import { CoinTransactionService } from '../coin-transaction/coin-transaction.ser
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { FormCreditDTO } from './dto/form-credit.dto';
 
-const AGENT_COMMISSION_PERCENTAGE = 0.1; // %10
-
 @Injectable()
 export class WalletService {
   constructor(

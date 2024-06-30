@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Game } from './entities/game.entity';
 import { GameImage } from './entities/game-image.entity';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class GameService {
@@ -12,6 +13,7 @@ export class GameService {
 
   constructor(
     private dataSource: DataSource,
+    private readonly http: HttpService,
 
     @InjectRepository(Game)
     private gameRepo: Repository<Game>,

@@ -1,6 +1,7 @@
 import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
 import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
 import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
+import { GameSession } from 'src/modules/game/entities/game-session.entity';
 import { Role } from 'src/modules/role/entities/role.entity';
 import {
   Column,
@@ -75,6 +76,9 @@ export class User {
 
   @OneToMany(() => CoinTransaction, (cointx) => cointx.player)
   coinTransactions: CoinTransaction[];
+
+  @OneToMany(() => GameSession, (gs) => gs.user)
+  gameSessions: GameSession[];
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by_id' })

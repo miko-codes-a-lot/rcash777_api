@@ -26,7 +26,7 @@ export class Game {
   @Column({ name: 'jackpot_class' })
   jackpotClass: string;
 
-  @Column({ name: 'jackpot_contribution' })
+  @Column({ name: 'jackpot_contribution', nullable: true })
   jackpotContribution: number;
 
   @Column({ name: 'is_demo_allowed' })

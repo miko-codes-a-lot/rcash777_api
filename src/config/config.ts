@@ -14,6 +14,7 @@ const envVarsSchema = Joi.object()
     POSTGRES_PASSWORD: Joi.string().required().description('Postgres password'),
     POSTGRES_DATABASE: Joi.string().required().description('Postgres database'),
     GAME_API_ZENITH_TOKEN: Joi.string().required().description('Zenith Basic Token'),
+    GAME_API_ZENITH_URI: Joi.string().required().description('Zenith URI'),
   })
   .unknown();
 
@@ -40,6 +41,7 @@ const config = {
   game_api: {
     zenith: {
       token: envVars.GAME_API_ZENITH_TOKEN,
+      uri: envVars.GAME_API_ZENITH_URI
     }
   },
 };

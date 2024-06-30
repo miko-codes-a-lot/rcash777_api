@@ -36,17 +36,16 @@ export class WalletController {
       });
     }
 
-    return {
-      client: 'CASINO1',
-      currency: 'USD',
+    return res.json({
+      client: 'GF77',
+      currency: 'PHP',
       testAccount: 'false',
-      country: 'JP',
+      country: 'PHP',
       affiliate: 'aff-1',
-      displayName: 'CasinoPlayer123',
       jurisdiction: '',
-      player: 'Player1',
+      player: 'player.id',
       balance: 1000,
-    };
+    });
   }
 
   @Get('balance')

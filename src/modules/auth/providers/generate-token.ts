@@ -17,7 +17,7 @@ export class GenerateToken {
     };
 
     return {
-      access_token: generate(config.jwt.accessExpirationMinutes + 'm'),
+      access_token: generate(config.jwt.accessExpirationMinutes + 'd'),
       refresh_token: generate(config.jwt.refreshExpirationDays + 'd'),
     };
   }
