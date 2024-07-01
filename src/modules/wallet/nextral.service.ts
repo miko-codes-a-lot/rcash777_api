@@ -54,7 +54,7 @@ export class NextralService {
     });
   }
 
-  async authenticate(user: User, data: FormAuthDTO) {
+  async authenticate(data: FormAuthDTO) {
     return this.dataSource.transaction(async (manager) => {
       const gsRepo = manager.getRepository(GameSession);
       const gameRepo = manager.getRepository(Game);
@@ -79,9 +79,6 @@ export class NextralService {
 
       const session = await gsRepo.findOne({
         where: {
-          user: {
-            id: user.id,
-          },
           token: data.token,
         },
       });
@@ -99,7 +96,7 @@ export class NextralService {
       }
 
       await gsRepo.remove(session);
-      const balance = await this.coinService.computeBalance(user.id);
+      const balance = await this.coinService.computeBalance(session.user.id);
 
       return {
         client: 'GF77',
@@ -108,7 +105,7 @@ export class NextralService {
         country: 'PHP',
         affiliate: 'aff-1',
         jurisdiction: '',
-        player: user.id,
+        player: session.user.id,
         balance,
       };
     });
