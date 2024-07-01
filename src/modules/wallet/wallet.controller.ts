@@ -39,14 +39,14 @@ export class WalletController {
     // @Query('clientToken') clientToken: string,
     // @Query('game') game: string,
     // @Query('platform') platform: Platform,
-    // @Res() res: Response,
+    @Res() res: Response,
   ) {
     const balance = await this.coinService.computeBalance(player);
 
-    return {
+    return res.json({
       balance,
       currency: 'PHP',
-    };
+    });
   }
 
   /** @TODO: 2024-06-23 - Add middleware to check if signature is correct */
