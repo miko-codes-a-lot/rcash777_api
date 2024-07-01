@@ -15,6 +15,8 @@ import { CoinTransactionService } from '../coin-transaction/coin-transaction.ser
 const ZENITH_TOKEN = config.game_api.zenith.token;
 const ZENITH_URI = config.game_api.zenith.uri;
 const ZENITH_API_KEY = config.game_api.zenith.apiKey;
+const GAME_API_ZENITH_EXIT_URI = config.game_api.zenith.exitURI;
+const GAME_API_ZENITH_DEPOSIT_URI = config.game_api.zenith.depositURI;
 
 @Injectable()
 export class NextralService {
@@ -32,8 +34,8 @@ export class NextralService {
 
       data.token = tokenUUID;
       data.clientCode = 'GF77';
-      data.urls.exitUrl = 'https://20a57c0cb5fa.ngrok.app/api/game';
-      data.urls.depositUrl = 'https://20a57c0cb5fa.ngrok.app/api/game';
+      data.urls.exitUrl = GAME_API_ZENITH_EXIT_URI; // deposit
+      data.urls.depositUrl = GAME_API_ZENITH_DEPOSIT_URI; // deposit place
 
       const gameSession = new GameSession();
       gameSession.token = tokenUUID;
@@ -96,6 +98,7 @@ export class NextralService {
         );
       }
 
+      await gsRepo.remove(session);
       const balance = await this.coinService.computeBalance(user.id);
 
       return {

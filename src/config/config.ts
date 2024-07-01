@@ -16,6 +16,8 @@ const envVarsSchema = Joi.object()
     GAME_API_ZENITH_TOKEN: Joi.string().required().description('Zenith Basic Token'),
     GAME_API_ZENITH_KEY: Joi.string().required().description('Zenith API KEY'),
     GAME_API_ZENITH_URI: Joi.string().required().description('Zenith URI'),
+    GAME_API_ZENITH_EXIT_URI: Joi.string().required().description('Game Lobby'),
+    GAME_API_ZENITH_DEPOSIT_URI: Joi.string().required().description('Deposit Page'),
   })
   .unknown();
 
@@ -44,6 +46,8 @@ const config = {
       token: envVars.GAME_API_ZENITH_TOKEN,
       uri: envVars.GAME_API_ZENITH_URI,
       apiKey: envVars.GAME_API_ZENITH_KEY,
+      exitURI: envVars.GAME_API_ZENITH_EXIT_URI,
+      depositURI: envVars.GAME_API_ZENITH_DEPOSIT_URI,
     }
   },
 };
