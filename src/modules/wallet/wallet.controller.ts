@@ -16,7 +16,6 @@ import { FormAuthDTO } from './dto/form-auth.dto';
 import { FormPayoutDTO, FormPayoutSchema } from './dto/form-payout.dto';
 import { NextralSecure } from 'src/decorators/nextral-secure.decorator';
 
-@NextralSecure()
 @Controller('provider/nextral')
 export class WalletController {
   constructor(
@@ -26,6 +25,7 @@ export class WalletController {
   ) {}
 
   @Post('authenticate')
+  @NextralSecure()
   @AuthRequired()
   async authenticate(@RequestUser() user: User, @Body() data: FormAuthDTO, @Res() res: Response) {
     const details = await this.nextralService.authenticate(user, data);
@@ -50,6 +50,7 @@ export class WalletController {
   }
 
   /** @TODO: 2024-06-23 - Add middleware to check if signature is correct */
+  @NextralSecure()
   @Post('debit')
   @Validate({ body: FormDebitSchema })
   async debit(@Body() data: FormDebitDTO, @Res() res: Response) {
@@ -62,6 +63,7 @@ export class WalletController {
   }
 
   /** @TODO: 2024-06-23 - Add middleware to check if signature is correct */
+  @NextralSecure()
   @Post('credit')
   @Validate({ body: FormCreditSchema })
   async credit(@Body() data: FormCreditDTO, @Res() res: Response) {
@@ -73,6 +75,7 @@ export class WalletController {
     });
   }
 
+  @NextralSecure()
   @Post('payout')
   @Validate({ body: FormPayoutSchema })
   async payout(@Body() data: FormPayoutDTO, @Res() res: Response) {
@@ -84,6 +87,7 @@ export class WalletController {
     });
   }
 
+  @NextralSecure()
   @Post('debitAndCredit')
   async debitAndCredit(@Body() data: FormDebitAndCreditDTO, @Res() res: Response) {
     const balance = await this.walletService.debitAndCredit(data);
@@ -94,6 +98,7 @@ export class WalletController {
     });
   }
 
+  @NextralSecure()
   @Post('rollback')
   async rollback(@Body() data: FormRollbackDTO, @Res() res: Response) {
     const balance = await this.walletService.rollback(data);
@@ -105,6 +110,7 @@ export class WalletController {
   }
 
   // optional
+  @NextralSecure()
   @Post('endRound')
   async endRound(@Body() data: FormEndRoundDTO, @Res() res: Response) {
     return res.json({
