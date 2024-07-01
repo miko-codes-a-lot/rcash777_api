@@ -8,6 +8,9 @@ export const PaginationSchema = Joi.object({
   sort: Joi.string().valid('asc', 'desc'),
 });
 
+/**
+ * @deprecated
+ */
 export interface Pagination {
   page: number;
   per_page: number;
