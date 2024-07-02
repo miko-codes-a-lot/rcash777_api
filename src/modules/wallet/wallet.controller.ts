@@ -4,7 +4,6 @@ import { FormDebitDTO, FormDebitSchema } from './dto/form-debit.dto';
 import { FormCreditDTO, FormCreditSchema } from './dto/form-credit.dto';
 import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
 import { FormRollbackDTO } from './dto/form-rollback.dto';
-import { FormEndRoundDTO } from './dto/form-end-round-dto';
 import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
 import { Validate } from 'src/decorators/validate.decorator';
 import { WalletService } from './wallet.service';
@@ -22,13 +21,13 @@ export class WalletController {
   ) {}
 
   @Post('authenticate')
-  @NextralBasicSecure()
   async authenticate(@Body() data: FormAuthDTO, @Res() res: Response) {
     const details = await this.nextralService.authenticate(data);
 
     return res.json(details);
   }
 
+  @NextralBasicSecure()
   @Get('balance')
   async balance(
     @Query('player') player: string,
@@ -45,7 +44,7 @@ export class WalletController {
     });
   }
 
-  /** @TODO: 2024-06-23 - Add middleware to check if signature is correct */
+  @NextralBasicSecure()
   @NextralSecure()
   @Post('debit')
   @Validate({ body: FormDebitSchema })
@@ -58,7 +57,7 @@ export class WalletController {
     });
   }
 
-  /** @TODO: 2024-06-23 - Add middleware to check if signature is correct */
+  @NextralBasicSecure()
   @NextralSecure()
   @Post('credit')
   @Validate({ body: FormCreditSchema })
@@ -71,6 +70,7 @@ export class WalletController {
     });
   }
 
+  @NextralBasicSecure()
   @NextralSecure()
   @Post('payout')
   @Validate({ body: FormPayoutSchema })
@@ -83,6 +83,7 @@ export class WalletController {
     });
   }
 
+  @NextralBasicSecure()
   @NextralSecure()
   @Post('debitAndCredit')
   async debitAndCredit(@Body() data: FormDebitAndCreditDTO, @Res() res: Response) {
@@ -94,6 +95,7 @@ export class WalletController {
     });
   }
 
+  @NextralBasicSecure()
   @NextralSecure()
   @Post('rollback')
   async rollback(@Body() data: FormRollbackDTO, @Res() res: Response) {
@@ -105,13 +107,17 @@ export class WalletController {
     });
   }
 
-  // optional
-  @NextralSecure()
-  @Post('endRound')
-  async endRound(@Body() data: FormEndRoundDTO, @Res() res: Response) {
+  @NextralBasicSecure()
+  @Get('playerDetails')
+  playerDetails(@Res() res: Response) {
     return res.json({
+      client: '',
       currency: 'PHP',
-      balance: 0,
+      testAccount: 'false',
+      country: 'PH',
+      affiliate: 'aff-1',
+      displayName: '',
+      jurisdiction: '',
     });
   }
 }
