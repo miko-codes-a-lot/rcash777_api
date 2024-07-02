@@ -12,7 +12,7 @@ import { FormAuthDTO } from './dto/form-auth.dto';
 import { Game } from '../game/entities/game.entity';
 import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
 
-const ZENITH_TOKEN = config.game_api.zenith.token;
+const ZENITH_OPERATION_BASIC = config.game_api.zenith.operation.basic;
 const ZENITH_URI = config.game_api.zenith.uri;
 const ZENITH_API_KEY = config.game_api.zenith.apiKey;
 const GAME_API_ZENITH_EXIT_URI = config.game_api.zenith.exitURI;
@@ -47,7 +47,7 @@ export class NextralService {
         .post<{ playUrl: string }>(`${ZENITH_URI}/play/v2`, data, {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Basic ${ZENITH_TOKEN}`,
+            Authorization: `Basic ${ZENITH_OPERATION_BASIC}`,
           },
         })
         .pipe(map((res) => res.data));
