@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Res, Query, Req } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Controller, Get, Post, Body, Res, Query } from '@nestjs/common';
+import { Response } from 'express';
 import { FormDebitDTO, FormDebitSchema } from './dto/form-debit.dto';
 import { FormCreditDTO, FormCreditSchema } from './dto/form-credit.dto';
 import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
@@ -11,7 +11,7 @@ import { WalletService } from './wallet.service';
 import { NextralService } from './nextral.service';
 import { FormAuthDTO } from './dto/form-auth.dto';
 import { FormPayoutDTO, FormPayoutSchema } from './dto/form-payout.dto';
-import { NextralSecure } from 'src/decorators/nextral-secure.decorator';
+import { NextralBasicSecure, NextralSecure } from 'src/decorators/nextral-secure.decorator';
 
 @Controller('provider/nextral')
 export class WalletController {
@@ -22,7 +22,8 @@ export class WalletController {
   ) {}
 
   @Post('authenticate')
-  async authenticate(@Body() data: FormAuthDTO, @Req() req: Request, @Res() res: Response) {
+  @NextralBasicSecure()
+  async authenticate(@Body() data: FormAuthDTO, @Res() res: Response) {
     const details = await this.nextralService.authenticate(data);
 
     return res.json(details);
