@@ -106,18 +106,4 @@ export class WalletController {
       balance,
     });
   }
-
-  @NextralBasicSecure()
-  @Get('playerDetails')
-  playerDetails(@Res() res: Response) {
-    return res.json({
-      client: '',
-      currency: 'PHP',
-      testAccount: 'false',
-      country: 'PH',
-      affiliate: 'aff-1',
-      displayName: '',
-      jurisdiction: '',
-    });
-  }
 }
