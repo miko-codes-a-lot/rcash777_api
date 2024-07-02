@@ -24,7 +24,7 @@ export class GameSchedule {
       .get('https://zenith-fusion-stage.nextralgaming.com/public/v1/gameList', {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Basic ${config.game_api.zenith.token}`,
+          Authorization: `Basic ${config.game_api.zenith.operation.basic}`,
         },
       })
       .subscribe({
