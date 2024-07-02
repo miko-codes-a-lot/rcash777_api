@@ -13,7 +13,12 @@ const envVarsSchema = Joi.object()
     POSTGRES_USERNAME: Joi.string().required().description('Postgres username'),
     POSTGRES_PASSWORD: Joi.string().required().description('Postgres password'),
     POSTGRES_DATABASE: Joi.string().required().description('Postgres database'),
-    GAME_API_ZENITH_TOKEN: Joi.string().required().description('Zenith Basic Token'),
+    GAME_API_ZENITH_WALLET_USERNAME: Joi.string().description('Zenith Wallet Username'),
+    GAME_API_ZENITH_WALLET_PASSWORD: Joi.string().description('Zenith Wallet Password'),
+    GAME_API_ZENITH_WALLET_BASIC: Joi.string().required().description('Zenith Wallet Basic Token'),
+    GAME_API_ZENITH_PLATFORM_USERNAME: Joi.string().description('Zenith Platform Username'),
+    GAME_API_ZENITH_PLATFORM_PASSWORD: Joi.string().description('Zenith Platform Password'),
+    GAME_API_ZENITH_PLATFORM_BASIC: Joi.string().required().description('Zenith Platform Basic Token'),
     GAME_API_ZENITH_KEY: Joi.string().required().description('Zenith API KEY'),
     GAME_API_ZENITH_URI: Joi.string().required().description('Zenith URI'),
     GAME_API_ZENITH_EXIT_URI: Joi.string().required().description('Game Lobby'),
@@ -43,7 +48,12 @@ const config = {
   },
   game_api: {
     zenith: {
-      token: envVars.GAME_API_ZENITH_TOKEN,
+      wallet: {
+        basic: envVars.GAME_API_ZENITH_WALLET_BASIC
+      },
+      operation: {
+        basic: envVars.GAME_API_ZENITH_PLATFORM_BASIC,
+      },
       uri: envVars.GAME_API_ZENITH_URI,
       apiKey: envVars.GAME_API_ZENITH_KEY,
       exitURI: envVars.GAME_API_ZENITH_EXIT_URI,

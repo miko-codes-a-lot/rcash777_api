@@ -12,7 +12,7 @@
   cp .env.example .env
 ```
 
-Change .env's GAME_API_ZENITH_TOKEN attribute, request one from Arjay
+Please ask the dev for the actual ".env" file as it contains provider tokens
 
 3. Spin up the backend
 
