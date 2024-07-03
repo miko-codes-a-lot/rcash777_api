@@ -59,6 +59,6 @@ export class UserController {
   @Get('self')
   getUser(@RequestUser() user: User) {
     const { id } = user;
-    return this.userService.findById(id);
+    return this.userService.getSelf(id);
   }
 }

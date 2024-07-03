@@ -75,6 +75,15 @@ export class UserService extends BaseService<User> {
     };
   }
 
+  getSelf(id: string) {
+    return this.userRepository.findOne({
+      where: {
+        id,
+      },
+      relations: { roles: { permissions: true } },
+    });
+  }
+
   async findAllUserPaginate(pagination: Pagination): Promise<PaginationResponse<User>> {
     return await super.findAllPaginate(pagination, {
       fields: ['phoneNumber', 'address'],
