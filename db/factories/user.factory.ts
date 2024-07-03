@@ -1,17 +1,18 @@
-import { ERoles } from 'src/enums/roles.enum';
 import { User } from 'src/modules/user/entities/user.entity';
 import { setSeederFactory } from 'typeorm-extension';
 
 export default setSeederFactory(User, (faker) => {
-  const user = new User();
+  const admin = { id: '008347f6-0c9b-41e1-86bc-19978e9de440' } as User;
 
-  user.email = faker.internet.email();
-  user.firstName = faker.person.firstName();
-  user.lastName = faker.person.lastName();
-  user.phoneNumber = faker.phone.number();
-  user.address = faker.location.streetAddress();
-  user.password = '$2b$10$3rSxQ9Dg.WndZoW9zrZcmOGrih2I6BKWL81mwRmlSuRE6Upqviq4a'; // user123
-  // user.role = ERoles.USER;
-
-  return user;
+  return User.builder()
+    .id(admin.id)
+    .email('admin@thefirm.tech')
+    .firstName('The')
+    .lastName('Firm')
+    .phoneNumber('+639394252236')
+    .address(faker.location.streetAddress())
+    .password('$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy')
+    .createdBy(admin)
+    .updatedBy(admin)
+    .build();
 });
