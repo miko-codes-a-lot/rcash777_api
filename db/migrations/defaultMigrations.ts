@@ -159,52 +159,6 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "role_permission" ADD CONSTRAINT "FK_e3a3ba47b7ca00fd23be4ebd6cf" FOREIGN KEY ("permission_id") REFERENCES "permission"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
-
-    // await queryRunner.query(`
-    //     INSERT INTO "user" 
-    //     (
-    //     "id", 
-    //     "email", 
-    //     "first_name", 
-    //     "last_name", 
-    //     "phone_number", 
-    //     "address", 
-    //     "password",
-    //     "created_by_id",
-    //     "updated_by_id"
-    //     ) 
-    //     VALUES 
-    //     (
-    //     '008347f6-0c9b-41e1-86bc-19978e9de440', 
-    //     'admin@thefirm.tech', 
-    //     'The', 
-    //     'Firm', 
-    //     '+639394252236', 
-    //     'Philippines', 
-    //     '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-    //     '008347f6-0c9b-41e1-86bc-19978e9de440', 
-    //     '008347f6-0c9b-41e1-86bc-19978e9de440'
-    //     );
-    // `);
-
-    // await queryRunner.query(`
-    //   INSERT INTO "payment_channel"
-    //   (
-    //     "id",
-    //     "name",
-    //     "description",
-    //     "created_by_id",
-    //     "updated_by_id"
-    //   )
-    //   VALUES
-    //   (
-    //     'b2de9197-4d7b-4947-bb15-e2d228b444d4',
-    //     'Gcash',
-    //     'payment through gcash',
-    //     '008347f6-0c9b-41e1-86bc-19978e9de440',
-    //     '008347f6-0c9b-41e1-86bc-19978e9de440'
-    //   );
-    // `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
