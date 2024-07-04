@@ -8,12 +8,14 @@ import { NextralService } from '../wallet/nextral.service';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { Response } from 'express';
+import { HttpService } from '@nestjs/axios';
 
 @Controller('game')
 export class GameController {
   constructor(
     private readonly gameService: GameService,
     private readonly nextralService: NextralService,
+    private readonly http: HttpService,
   ) {}
 
   @Post('nextral/launch')

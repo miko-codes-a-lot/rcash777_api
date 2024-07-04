@@ -20,6 +20,10 @@ RUN yarn build && ls -la /app
 
 FROM $NODE_IMAGE as production
 
+RUN apt-get update && \
+    apt-get install -y curl iputils-ping \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set user to node
 USER node
 

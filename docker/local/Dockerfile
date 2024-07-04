@@ -1,4 +1,4 @@
-FROM node:slim
+FROM public.ecr.aws/docker/library/node:20.14.0-slim
 
 # Set app as the working directory
 RUN mkdir -p /app
