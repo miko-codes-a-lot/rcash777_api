@@ -50,7 +50,7 @@ export class CoinTransactionController {
 
   @Post('request/withdraw')
   @Validate({ body: WithdrawRequestSchema })
-  async requestWithdraw(@RequestUser() user: User, data: WithdrawRequestDTO) {
+  async requestWithdraw(@RequestUser() user: User, @Body() data: WithdrawRequestDTO) {
     return await this.coinService.requestWithdraw(user, data);
   }
 }

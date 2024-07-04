@@ -1,13 +1,14 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { CoinTransaction } from './entities/coin-transaction.entity';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
-import { TransactionType } from 'src/enums/transaction.enum';
+import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { User } from '../user/entities/user.entity';
 import httpStatus from 'http-status';
 import { WithdrawRequestDTO } from './dto/withdraw-request.dto';
+import { CoinRequest } from './entities/coin-request.entity';
 
 @Injectable()
 export class CoinTransactionService {
@@ -86,8 +87,36 @@ export class CoinTransactionService {
     };
   }
 
-  requestWithdraw(user: User, data: WithdrawRequestDTO) {
-    console.log(user, data);
+  async requestWithdraw(user: User, data: WithdrawRequestDTO) {
+    const { amount } = data;
+    const balance = await this.computeBalance(user.id);
+    if (amount > balance) {
+      throw new BadRequestException('Not enough remaining balance to proceed');
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const coinRepo = manager.getRepository(CoinTransaction);
+      const requestRepo = manager.getRepository(CoinRequest);
+
+      const txWithdraw = CoinTransaction.builder()
+        .player(user)
+        .type(TransactionType.CREDIT)
+        .typeCategory(TransactionTypeCategory.WITHDRAW)
+        .amount(amount)
+        .createdBy(user)
+        .build();
+
+      await coinRepo.save(txWithdraw);
+
+      const request = CoinRequest.builder()
+        .requestingUser(user)
+        .defaultReviewUser(user.createdBy)
+        .build();
+
+      await requestRepo.save(request);
+
+      return balance - amount;
+    });
   }
 
   findOne(id: number) {
