@@ -1,4 +1,3 @@
-import { CoinRequestStatus } from 'src/enums/coin-request-status.enum';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
   Column,
@@ -11,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CoinTransaction } from './coin-transaction.entity';
+import { CoinRequestStatus, CoinRequestType } from 'src/enums/coin-request.enum';
 
 @Index('fk_coin_request_coin_transaction_id', ['coinTransaction'])
 @Index('fk_coin_request_requesting_user_id', ['requestingUser'])
@@ -31,7 +31,16 @@ export class CoinRequest {
   })
   status: string;
 
-  @ManyToOne(() => CoinTransaction, (ct) => ct.coinRequests)
+  @Column({
+    type: 'enum',
+    enum: CoinRequestType,
+  })
+  type: string;
+
+  @Column()
+  amount: number;
+
+  @ManyToOne(() => CoinTransaction, (ct) => ct.coinRequests, { nullable: true })
   @JoinColumn({ name: 'coin_transaction_id' })
   coinTransaction: CoinTransaction;
 
@@ -89,6 +98,21 @@ class CoinRequestBuilder {
 
   public status(status: string): CoinRequestBuilder {
     this.coinRequest.status = status;
+    return this;
+  }
+
+  public type(type: string): CoinRequestBuilder {
+    this.coinRequest.type = type;
+    return this;
+  }
+
+  public amount(amount: number): CoinRequestBuilder {
+    this.coinRequest.amount = amount;
+    return this;
+  }
+
+  public coinTransaction(coinTransaction: CoinTransaction): CoinRequestBuilder {
+    this.coinRequest.coinTransaction = coinTransaction;
     return this;
   }
 

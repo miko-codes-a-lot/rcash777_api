@@ -3,3 +3,8 @@ export enum CoinRequestStatus {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
 }
+
+export enum CoinRequestType {
+  WITHDRAW = 'WITHDRAW',
+  DEPOSIT = 'DEPOSIT',
+}
