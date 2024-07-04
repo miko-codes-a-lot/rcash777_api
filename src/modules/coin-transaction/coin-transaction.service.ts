@@ -63,7 +63,7 @@ export class CoinTransactionService {
 
     const [tx, count] = await this.coinRepo.findAndCount({
       ...(playerId && { where: { player: { id: playerId } } }),
-      relations: { player: true, cashTransaction: true, createdBy: true },
+      relations: { player: true, cashTransaction: true, createdBy: true, coinRequests: true },
       select: {
         createdBy: {
           id: true,
