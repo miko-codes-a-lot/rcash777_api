@@ -91,13 +91,18 @@ export class GameService {
     });
   }
 
-  async findAllProviders() {
-    return this.gameRepo
+  async findAllProviders(category?: string) {
+    const queryBuilder = this.gameRepo
       .createQueryBuilder('game')
-      .select('game.providerCode')
-      .distinct(true)
-      .getRawMany()
-      .then((items) => items.map((item) => item.game_provider_code));
+      .select('DISTINCT game.providerCode', 'providerCode');
+
+    if (category && category !== '') {
+      queryBuilder.where('game.category = :category', { category });
+    }
+
+    const items = await queryBuilder.getRawMany();
+
+    return items.map((item) => item.providerCode);
   }
 
   async findAllPaginated(config: GamePaginationDTO) {

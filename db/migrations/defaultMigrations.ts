@@ -15,6 +15,7 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE TABLE "game" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "code" character varying NOT NULL, "category" character varying NOT NULL, "provider_code" character varying NOT NULL, "is_provider_in_maintenance" boolean NOT NULL, "jackpot_class" character varying NOT NULL, "jackpot_contribution" integer, "is_demo_allowed" boolean NOT NULL, "is_freeround_supported" boolean NOT NULL, "rtp" integer NOT NULL, CONSTRAINT "UQ_f66209e3c441170db9824c9e891" UNIQUE ("code"), CONSTRAINT "PK_352a30652cd352f552fef73dec5" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(`CREATE INDEX "idx_game_code" ON "game" ("code") `);
+    await queryRunner.query(`CREATE INDEX "idx_game_category" ON "game" ("category") `);
     await queryRunner.query(
       `CREATE INDEX "idx_game_name_category" ON "game" ("name", "category") `,
     );
@@ -316,6 +317,7 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`DROP TYPE "public"."coin_request_type_enum"`);
     await queryRunner.query(`DROP TYPE "public"."coin_request_status_enum"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_name_category"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_game_category"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_code"`);
     await queryRunner.query(`DROP TABLE "game"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_image_game_id"`);
