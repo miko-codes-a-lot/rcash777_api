@@ -91,6 +91,15 @@ export class GameService {
     });
   }
 
+  async findAllProviders() {
+    return this.gameRepo
+      .createQueryBuilder('game')
+      .select('game.providerCode')
+      .distinct(true)
+      .getRawMany()
+      .then((items) => items.map((item) => item.game_provider_code));
+  }
+
   async findAllPaginated(config: GamePaginationDTO) {
     const {
       page = 1,

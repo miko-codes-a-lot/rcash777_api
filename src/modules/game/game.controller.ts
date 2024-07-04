@@ -35,6 +35,11 @@ export class GameController {
     return await this.gameService.findAllPaginated(query);
   }
 
+  @Get('provider')
+  async findAllProviders() {
+    return await this.gameService.findAllProviders();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.gameService.findOne(id);
