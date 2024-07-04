@@ -6,7 +6,11 @@ import { AuthRequired } from 'src/decorators/auth-required.decorator';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { Validate } from 'src/decorators/validate.decorator';
-import { WithdrawRequestDTO, WithdrawRequestSchema } from './dto/withdraw-request.dto';
+import {
+  CoinRequestDTO,
+  DepositRequestSchema,
+  WithdrawRequestSchema,
+} from './dto/coin-request.dto';
 import { ApiTags } from '@nestjs/swagger';
 
 @AuthRequired()
@@ -50,7 +54,13 @@ export class CoinTransactionController {
 
   @Post('request/withdraw')
   @Validate({ body: WithdrawRequestSchema })
-  async requestWithdraw(@RequestUser() user: User, @Body() data: WithdrawRequestDTO) {
+  async requestWithdraw(@RequestUser() user: User, @Body() data: CoinRequestDTO) {
     return await this.coinService.requestWithdraw(user, data);
+  }
+
+  @Post('request/deposit')
+  @Validate({ body: DepositRequestSchema })
+  async requestDeposit(@RequestUser() user: User, @Body() data: CoinRequestDTO) {
+    return await this.coinService.requestDeposit(user, data);
   }
 }

@@ -7,8 +7,9 @@ import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { User } from '../user/entities/user.entity';
 import httpStatus from 'http-status';
-import { WithdrawRequestDTO } from './dto/withdraw-request.dto';
+import { CoinRequestDTO } from './dto/coin-request.dto';
 import { CoinRequest } from './entities/coin-request.entity';
+import { CoinRequestType } from 'src/enums/coin-request.enum';
 
 @Injectable()
 export class CoinTransactionService {
@@ -87,7 +88,24 @@ export class CoinTransactionService {
     };
   }
 
-  async requestWithdraw(user: User, data: WithdrawRequestDTO) {
+  async requestDeposit(user: User, data: CoinRequestDTO) {
+    const { amount } = data;
+
+    return this.dataSource.transaction(async (manager) => {
+      const requestRepo = manager.getRepository(CoinRequest);
+
+      const request = CoinRequest.builder()
+        .amount(amount)
+        .requestingUser(user)
+        .defaultReviewUser(user.createdBy)
+        .type(CoinRequestType.DEPOSIT)
+        .build();
+
+      return requestRepo.save(request);
+    });
+  }
+
+  async requestWithdraw(user: User, data: CoinRequestDTO) {
     const { amount } = data;
     const balance = await this.computeBalance(user.id);
     if (amount > balance) {
@@ -109,13 +127,14 @@ export class CoinTransactionService {
       await coinRepo.save(txWithdraw);
 
       const request = CoinRequest.builder()
+        .amount(amount)
+        .coinTransaction(txWithdraw)
         .requestingUser(user)
         .defaultReviewUser(user.createdBy)
+        .type(CoinRequestType.WITHDRAW)
         .build();
 
-      await requestRepo.save(request);
-
-      return balance - amount;
+      return requestRepo.save(request);
     });
   }
 
