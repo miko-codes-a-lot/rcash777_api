@@ -60,3 +60,13 @@ Please ask the dev for the actual ".env" file as it contains provider tokens
 
 - `yarn seed`
   - For generated users, the default password is `user123`
+
+## Deployment
+
+```bash
+$ aws --profile rcash777 ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+$
+$ docker buildx build --platform linux/amd64 -f docker/remote/Dockerfile -t $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/staging-rcash777-backend:latest .
+$
+$ docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/staging-rcash777-backend:latest 
+```

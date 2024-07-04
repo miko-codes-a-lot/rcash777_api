@@ -9,6 +9,7 @@ import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
+import { HttpService } from '@nestjs/axios';
 
 @ApiTags('game')
 @Controller('game')
@@ -16,6 +17,7 @@ export class GameController {
   constructor(
     private readonly gameService: GameService,
     private readonly nextralService: NextralService,
+    private readonly http: HttpService,
   ) {}
 
   @Post('nextral/launch')

@@ -19,8 +19,8 @@ export class GameSchedule {
     timeZone: 'Asia/Singapore',
   })
   performTask() {
-    this.logger.debug('Retrieving list of games!');
-    this.http
+    this.logger.debug('Retrieving games in cron!');
+    return this.http
       .get('https://zenith-fusion-stage.nextralgaming.com/public/v1/gameList', {
         headers: {
           'Content-Type': 'application/json',
@@ -28,9 +28,9 @@ export class GameSchedule {
         },
       })
       .subscribe({
-        next: (response) => {
+        next: async (response) => {
           const games: GameDTO[] = response.data;
-          this.gameService.createMany(games);
+          await this.gameService.createMany(games);
         },
       });
   }
