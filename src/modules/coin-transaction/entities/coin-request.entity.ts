@@ -40,7 +40,7 @@ export class CoinRequest {
   @Column()
   amount: number;
 
-  @ManyToOne(() => CoinTransaction, (ct) => ct.coinRequests, { nullable: true })
+  @ManyToOne(() => CoinTransaction, (ct) => ct.coinRequests)
   @JoinColumn({ name: 'coin_transaction_id' })
   coinTransaction: CoinTransaction;
 
