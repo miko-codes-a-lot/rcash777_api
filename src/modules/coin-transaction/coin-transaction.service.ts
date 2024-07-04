@@ -7,6 +7,7 @@ import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { TransactionType } from 'src/enums/transaction.enum';
 import { User } from '../user/entities/user.entity';
 import httpStatus from 'http-status';
+import { WithdrawRequestDTO } from './dto/withdraw-request.dto';
 
 @Injectable()
 export class CoinTransactionService {
@@ -83,6 +84,10 @@ export class CoinTransactionService {
       pageSize,
       items: tx,
     };
+  }
+
+  requestWithdraw(user: User, data: WithdrawRequestDTO) {
+    console.log(user, data);
   }
 
   findOne(id: number) {

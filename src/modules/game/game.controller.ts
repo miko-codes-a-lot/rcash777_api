@@ -8,7 +8,9 @@ import { NextralService } from '../wallet/nextral.service';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { Response } from 'express';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('game')
 @Controller('game')
 export class GameController {
   constructor(
