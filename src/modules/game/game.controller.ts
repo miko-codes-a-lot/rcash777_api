@@ -40,8 +40,8 @@ export class GameController {
   }
 
   @Get('provider')
-  async findAllProviders() {
-    return await this.gameService.findAllProviders();
+  async findAllProviders(@Query('category') category?: string) {
+    return await this.gameService.findAllProviders(category);
   }
 
   @Get(':id')
