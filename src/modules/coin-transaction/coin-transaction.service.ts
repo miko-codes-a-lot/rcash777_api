@@ -92,10 +92,22 @@ export class CoinTransactionService {
     const { amount } = data;
 
     return this.dataSource.transaction(async (manager) => {
+      const coinRepo = manager.getRepository(CoinTransaction);
       const requestRepo = manager.getRepository(CoinRequest);
+
+      const txDeposit = CoinTransaction.builder()
+        .player(user)
+        .type(TransactionType.DEBIT)
+        .typeCategory(TransactionTypeCategory.DEPOSIT)
+        .amount(0) // later we update once approved
+        .createdBy(user)
+        .build();
+
+      await coinRepo.save(txDeposit);
 
       const request = CoinRequest.builder()
         .amount(amount)
+        .coinTransaction(txDeposit)
         .requestingUser(user)
         .defaultReviewUser(user.createdBy)
         .type(CoinRequestType.DEPOSIT)
