@@ -22,7 +22,10 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE TYPE "public"."coin_request_status_enum" AS ENUM('PENDING', 'APPROVED', 'REJECTED')`,
     );
     await queryRunner.query(
-      `CREATE TABLE "coin_request" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "status" "public"."coin_request_status_enum" NOT NULL DEFAULT 'PENDING', "actioned_at" TIMESTAMP, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "coin_transaction_id" uuid, "requesting_user_id" uuid, "reviewing_user_id" uuid, "action_agent_id" uuid, CONSTRAINT "PK_6727f0a839e7e463a3f36ab7a46" PRIMARY KEY ("id"))`,
+      `CREATE TYPE "public"."coin_request_type_enum" AS ENUM('WITHDRAW', 'DEPOSIT')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "coin_request" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "status" "public"."coin_request_status_enum" NOT NULL DEFAULT 'PENDING', "type" "public"."coin_request_type_enum" NOT NULL, "amount" integer NOT NULL, "actioned_at" TIMESTAMP, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "coin_transaction_id" uuid, "requesting_user_id" uuid, "reviewing_user_id" uuid, "action_agent_id" uuid, CONSTRAINT "PK_6727f0a839e7e463a3f36ab7a46" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "fk_coin_request_action_agent_id" ON "coin_request" ("action_agent_id") `,
@@ -310,6 +313,7 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "public"."fk_coin_request_reviewing_user_id"`);
     await queryRunner.query(`DROP INDEX "public"."fk_coin_request_action_agent_id"`);
     await queryRunner.query(`DROP TABLE "coin_request"`);
+    await queryRunner.query(`DROP TYPE "public"."coin_request_type_enum"`);
     await queryRunner.query(`DROP TYPE "public"."coin_request_status_enum"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_name_category"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_code"`);
