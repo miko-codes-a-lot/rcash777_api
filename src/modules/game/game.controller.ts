@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
 import { GameService } from './game.service';
-import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { GamePaginationDTO } from 'src/schemas/paginate-query.dto';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
 import { Validate } from 'src/decorators/validate.decorator';
 import { FormLaunchGameDTO, FormLaunchGameSchema } from './dto/form-launch-game.dto';
@@ -28,7 +28,10 @@ export class GameController {
   }
 
   @Get()
-  async findAll(@Query() query: PaginationDTO) {
+  async findAll(@Query() query: GamePaginationDTO) {
+    query.page *= 1;
+    query.pageSize *= 1;
+
     return await this.gameService.findAllPaginated(query);
   }
 

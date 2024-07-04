@@ -1,10 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { GameDTO } from './dto/game.dto';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Game } from './entities/game.entity';
 import { GameImage } from './entities/game-image.entity';
-import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { GamePaginationDTO } from 'src/schemas/paginate-query.dto';
 import { HttpService } from '@nestjs/axios';
 
 @Injectable()
@@ -91,10 +91,21 @@ export class GameService {
     });
   }
 
-  async findAllPaginated(config: PaginationDTO) {
-    const { page = 1, pageSize = 10, sortBy = 'name', sortOrder = 'asc' } = config;
+  async findAllPaginated(config: GamePaginationDTO) {
+    const {
+      page = 1,
+      pageSize = 10,
+      search,
+      category,
+      sortBy = 'name',
+      sortOrder = 'asc',
+    } = config;
 
     const [tx, count] = await this.gameRepo.findAndCount({
+      where: {
+        name: ILike(`%${search}%`),
+        category,
+      },
       relations: { images: true },
       skip: (page - 1) * pageSize,
       take: pageSize,

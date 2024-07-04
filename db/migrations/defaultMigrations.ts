@@ -16,6 +16,9 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     );
     await queryRunner.query(`CREATE INDEX "idx_game_code" ON "game" ("code") `);
     await queryRunner.query(
+      `CREATE INDEX "idx_game_name_category" ON "game" ("name", "category") `,
+    );
+    await queryRunner.query(
       `CREATE TYPE "public"."coin_transaction_type_enum" AS ENUM('DEBIT', 'CREDIT')`,
     );
     await queryRunner.query(
@@ -248,6 +251,7 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "coin_transaction"`);
     await queryRunner.query(`DROP TYPE "public"."coin_transaction_type_category_enum"`);
     await queryRunner.query(`DROP TYPE "public"."coin_transaction_type_enum"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_game_name_category"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_code"`);
     await queryRunner.query(`DROP TABLE "game"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_image_game_id"`);
