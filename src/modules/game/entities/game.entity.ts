@@ -3,6 +3,7 @@ import { GameImage } from './game-image.entity';
 import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 
 @Index('idx_game_name_category', ['name', 'category'])
+@Index('idx_game_category', ['category'])
 @Index('idx_game_code', ['code'])
 @Entity('game')
 export class Game {
