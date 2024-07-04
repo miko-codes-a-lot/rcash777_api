@@ -10,13 +10,15 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { CoinRequest } from './coin-request.entity';
 
 @Index('idx_coin_transaction_user_player_id_type_id', ['player', 'type'])
 @Index('idx_coin_transaction_transaction_id_type', ['transactionId', 'type'])
 @Index('idx_coin_transaction_game_id', ['game'])
-@Index('idx_cash_transaction_round_id', ['roundId'])
+@Index('fk_cash_transaction_round_id', ['roundId'])
 @Entity('coin_transaction')
 export class CoinTransaction {
   @PrimaryGeneratedColumn('uuid')
@@ -61,6 +63,9 @@ export class CoinTransaction {
   @ManyToOne(() => Game, (game) => game.coinTransactions, { nullable: true })
   @JoinColumn({ name: 'game_id' })
   game: Game;
+
+  @OneToMany(() => CoinRequest, (r) => r.coinTransaction)
+  coinRequests: CoinRequest[];
 
   @ManyToOne(() => User, (user) => user.coinTransactions)
   @JoinColumn({ name: 'user_player_id' })

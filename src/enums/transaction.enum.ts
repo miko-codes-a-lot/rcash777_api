@@ -14,6 +14,7 @@ export enum TransactionTypeCategory {
   LOSS = 'LOSS',
   PAYOUT = 'PAYOUT',
   BET_CREDIT = 'BET',
+  WITHDRAW = 'WITHDRAW',
   TIP = 'TIP',
   PARTIAL_REFUND = 'PARTIAL_REFUND',
   BUY_IN = 'BUY_IN',

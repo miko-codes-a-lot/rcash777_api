@@ -11,7 +11,9 @@ import { NextralService } from './nextral.service';
 import { FormAuthDTO } from './dto/form-auth.dto';
 import { FormPayoutDTO, FormPayoutSchema } from './dto/form-payout.dto';
 import { NextralBasicSecure, NextralSecure } from 'src/decorators/nextral-secure.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('provider/nextral')
 @Controller('provider/nextral')
 export class WalletController {
   constructor(

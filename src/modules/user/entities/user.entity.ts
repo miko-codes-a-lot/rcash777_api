@@ -1,5 +1,6 @@
 import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
 import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
+import { CoinRequest } from 'src/modules/coin-transaction/entities/coin-request.entity';
 import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 import { GameSession } from 'src/modules/game/entities/game-session.entity';
 import { Role } from 'src/modules/role/entities/role.entity';
@@ -17,6 +18,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+@Index('fk_user_created_by_id', ['createdBy'])
+@Index('fk_user_updated_by_id', ['updatedBy'])
+@Index('fk_user_deactivated_by_id', ['deactivatedBy'])
+@Index('fk_user_activated_by_id', ['activatedBy'])
 @Index('idx_user_email_first_name_last_name_phone_number', ['firstName', 'lastName', 'phoneNumber'])
 @Index('idx_user_email_first_name_last_name_phone_number_created_at', [
   'firstName',
@@ -76,6 +81,15 @@ export class User {
 
   @OneToMany(() => CoinTransaction, (cointx) => cointx.player)
   coinTransactions: CoinTransaction[];
+
+  @OneToMany(() => CoinRequest, (r) => r.requestingUser)
+  coinRequests: CoinRequest[];
+
+  @OneToMany(() => CoinRequest, (r) => r.reviewingUser)
+  actionedRequests: CoinRequest[];
+
+  @OneToMany(() => CoinRequest, (r) => r.defaultReviewUser)
+  defaultReviewRequests: CoinRequest[];
 
   @OneToMany(() => GameSession, (gs) => gs.user)
   gameSessions: GameSession[];
