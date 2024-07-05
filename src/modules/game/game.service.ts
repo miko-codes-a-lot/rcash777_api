@@ -111,6 +111,7 @@ export class GameService {
       pageSize = 10,
       search,
       category,
+      providerCode,
       sortBy = 'name',
       sortOrder = 'asc',
     } = config;
@@ -118,7 +119,8 @@ export class GameService {
     const [tx, count] = await this.gameRepo.findAndCount({
       where: {
         name: ILike(`%${search}%`),
-        category,
+        ...(category && { category }),
+        ...(providerCode && { providerCode }),
       },
       relations: { images: true },
       skip: (page - 1) * pageSize,

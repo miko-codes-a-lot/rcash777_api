@@ -7,7 +7,8 @@ export class PaginationDTO {
 }
 
 export class GamePaginationDTO extends PaginationDTO {
-  category: string;
+  category?: string;
+  providerCode?: string;
 }
 
 export type PaginationResponse<T> = {
