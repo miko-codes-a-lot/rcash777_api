@@ -50,10 +50,9 @@ export class UserController {
     @Res() res: Response,
   ) {
     const { id } = user;
+    const result = await this.userService.update(id, payload);
 
-    await this.userService.update(id, payload);
-
-    res.status(HttpStatus.SUCCESS).send();
+    res.status(HttpStatus.SUCCESS).send(result);
   }
 
   @Get('self')

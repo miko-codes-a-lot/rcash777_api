@@ -42,7 +42,7 @@ export class UserService extends BaseService<User> {
     user.phoneNumber = payload.phoneNumber;
     user.address = payload.address;
 
-    return await this.userRepository.save(user);
+    return this.userRepository.save(user);
   }
 
   async findByEmail(email: string) {
