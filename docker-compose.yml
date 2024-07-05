@@ -2,7 +2,7 @@ version: '3'
 
 services:
   rcash-postgresdb:
-    container_name: ${POSTGRES_HOST}
+    container_name: rcash-postgresdb
     image: postgres
     restart: always
     environment:
