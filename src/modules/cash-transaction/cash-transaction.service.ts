@@ -46,8 +46,7 @@ export class CashTransactionService {
       const cashRepo = manager.getRepository(CashTransaction);
       const coinRepo = manager.getRepository(CoinTransaction);
 
-      // const player = User.builder().id(formData.playerId).build();
-      const player = await userRepo.findOne({ where: { id: formData.playerId } });
+      const player = await userRepo.findOne({ where: { id: formData.userId } });
 
       const cashTx = new CashTransaction();
       cashTx.player = player;
@@ -73,7 +72,7 @@ export class CashTransactionService {
 
       const lastRebate = await coinRepo.findOne({
         where: {
-          player: { id: formData.playerId },
+          player: { id: formData.userId },
           type: TransactionType.DEBIT,
           typeCategory: TransactionTypeCategory.REBATE,
         },

@@ -6,6 +6,7 @@ export const CashTransactionSchema = Joi.object({
   // type: Joi.string().valid(...Object.values(TransactionType)),
   // typeCategory: Joi.string().valid(...Object.values(TransactionTypeCategory)),
   amount: Joi.number().min(0).required(),
+  userId: Joi.string().guid().required(),
   paymentChannelId: Joi.string().guid().required(),
 });
 
@@ -14,6 +15,6 @@ export class FormCashTransactionDTO {
   type: TransactionType;
   typeCategory: TransactionTypeCategory;
   amount: number;
-  playerId: string;
+  userId: string;
   paymentChannelId: string;
 }
