@@ -5,7 +5,7 @@ import { TransactionTypeCategory } from 'src/enums/transaction.enum';
 
 export const FormDebitSchema = Joi.object({
   player: Joi.string().guid().required(),
-  clientToken: Joi.string().optional(),
+  clientToken: Joi.string().allow('').optional(),
   roundId: Joi.string().required(),
   game: Joi.string().required(),
   platform: Joi.string()
@@ -19,6 +19,7 @@ export const FormDebitSchema = Joi.object({
   reason: Joi.string()
     .valid(...Object.values(TransactionTypeCategory))
     .required(),
+  roundEnded: Joi.bool(),
 });
 
 export interface FormDebitDTO {
@@ -32,4 +33,5 @@ export interface FormDebitDTO {
   amount: number;
   jpContrib?: number;
   reason: TransactionTypeCategory;
+  roundEnded: boolean;
 }
