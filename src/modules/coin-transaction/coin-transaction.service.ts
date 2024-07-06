@@ -55,7 +55,7 @@ export class CoinTransactionService {
       .andWhere('coin_transaction.player = :playerId', { playerId })
       .getRawOne();
 
-    return debit - credit;
+    return parseFloat(debit || 0) - parseFloat(credit || 0);
   }
 
   async findAllPaginated(config: PaginationDTO, playerId?: string) {
