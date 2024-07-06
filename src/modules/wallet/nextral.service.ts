@@ -81,6 +81,7 @@ export class NextralService {
         where: {
           token: data.token,
         },
+        relations: { user: true },
       });
 
       if (!session) {
@@ -95,13 +96,18 @@ export class NextralService {
         );
       }
 
-      await gsRepo.remove(session);
+      const isProd = process.env.NODE_ENV === 'production';
+
+      if (isProd) {
+        await gsRepo.remove(session);
+      }
+
       const balance = await this.coinService.computeBalance(session.user.id);
 
       return {
         client: 'GF77',
         currency: 'PHP',
-        testAccount: 'false',
+        testAccount: !isProd,
         country: 'PHP',
         affiliate: 'aff-1',
         jurisdiction: '',
@@ -111,20 +117,28 @@ export class NextralService {
     });
   }
 
-  isRequestSignatureValid(requestSignature: string, payload?: { [key: string]: any }) {
+  computeSignature(payload: { [key: string]: any }, apiKey: string) {
     const keys = Object.keys(payload).sort();
 
-    const template = keys.join('=&') + '=';
+    const sortedParams = keys
+      .map((key) => {
+        const value = payload[key];
+        if (value === undefined || value === null) {
+          return '';
+        }
+        return `${key}=${value.toString()}`;
+      })
+      .filter((part) => part !== '')
+      .join('&');
 
-    const sortedParams = keys.reduce((acc, key) => {
-      return acc.replace(`${key}=`, `${key}=${payload[key] || ''}`);
-    }, template);
-
-    const siganture = crypto
+    return crypto
       .createHash('md5')
-      .update(sortedParams + ZENITH_API_KEY)
+      .update(sortedParams + apiKey)
       .digest('hex');
+  }
 
-    return requestSignature === siganture;
+  isRequestSignatureValid(requestSignature: string, payload?: { [key: string]: any }) {
+    const signature = this.computeSignature(payload, ZENITH_API_KEY).toUpperCase();
+    return signature === requestSignature;
   }
 }

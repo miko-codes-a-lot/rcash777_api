@@ -3,14 +3,14 @@ import { Platform } from 'src/enums/platform.enum';
 import { TransactionTypeCategory } from 'src/enums/transaction.enum';
 
 export const FormCreditSchema = Joi.object({
-  player: Joi.string().required(),
-  clientToken: Joi.string().optional(),
+  player: Joi.string().guid().required(),
+  clientToken: Joi.string().allow('').optional(),
   roundId: Joi.string().required(),
   game: Joi.string().required(),
   platform: Joi.string()
     .valid(...Object.values(Platform))
     .optional(),
-  transId: Joi.string().guid().required(),
+  transId: Joi.string().required(),
   currency: Joi.string().required(),
   amount: Joi.number().required(),
   jackpotAmount: Joi.number().allow(null).optional(),

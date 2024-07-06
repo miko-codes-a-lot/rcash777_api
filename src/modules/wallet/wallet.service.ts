@@ -47,10 +47,10 @@ export class WalletService {
   private async _findOne<T>(
     repo: Repository<T>,
     query: FindOptionsWhere<T>[] | FindOptionsWhere<T>,
-    error: { errorCode: string; errorMessage: string },
+    error?: { errorCode: string; errorMessage: string },
   ) {
     const data = await repo.findOne({ where: query });
-    if (!data) {
+    if (!data && error) {
       throw new HttpException({ error }, HttpStatus.NOT_FOUND);
     }
     return data;
@@ -97,7 +97,7 @@ export class WalletService {
 
     await this.coinRepo.save(txCredit);
 
-    return remainingBalance + txCredit.amount;
+    return remainingBalance - txCredit.amount;
   }
 
   // rolling back a player deposit from the game
@@ -132,11 +132,10 @@ export class WalletService {
       await coinRepo.save(txDebit);
 
       // optionally undo "win" from "debitAndCredit"
-      const txWin = await this._findOne<CoinTransaction>(
-        coinRepo,
-        { transactionId: data.originalTransId, type: TransactionType.DEBIT },
-        { errorCode: 'TRANS_NOT_FOUND', errorMessage: 'Transaction not found' },
-      );
+      const txWin = await this._findOne<CoinTransaction>(coinRepo, {
+        transactionId: data.originalTransId,
+        type: TransactionType.DEBIT,
+      });
 
       if (txWin) {
         const txWinCredit = CoinTransaction.builder()

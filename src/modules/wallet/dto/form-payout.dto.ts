@@ -9,7 +9,7 @@ export const FormPayoutSchema = Joi.object({
   platform: Joi.string()
     .valid(...Object.values(Platform))
     .optional(),
-  transId: Joi.string().guid().required(),
+  transId: Joi.string().required(),
   currency: Joi.string().required(),
   amount: Joi.number().required(),
   jackpotAmount: Joi.number().allow(null).optional(),

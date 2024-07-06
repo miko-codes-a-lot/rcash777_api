@@ -19,7 +19,7 @@ class NextralAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const req = context.switchToHttp().getRequest();
 
-    const signature = req.headers?.authorization['x-cero-signature'];
+    const signature = req.headers?.['x-cero-signature'];
 
     if (!signature) {
       return false;
