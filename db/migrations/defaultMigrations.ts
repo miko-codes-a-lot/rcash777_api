@@ -86,6 +86,21 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE TABLE "role" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "description" character varying NOT NULL DEFAULT '', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "created_by_id" uuid, "updated_by_id" uuid, CONSTRAINT "UQ_ae4578dcaed5adff96595e61660" UNIQUE ("name"), CONSTRAINT "PK_b36bcfe02fc8de3c57a8b2391c2" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
+      `CREATE TABLE "chat_session" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "property_id" character varying NOT NULL, "widget_id" character varying NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "user_id" uuid, "created_by_id" uuid, "updated_by_id" uuid, CONSTRAINT "PK_9017c2ee500cd1ba895752a0aa7" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_chat_session_user_id" ON "chat_session" ("user_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_chat_session_property_id" ON "chat_session" ("property_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_chat_session_widget_id" ON "chat_session" ("widget_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_chat_session_user_id_property_id_wiget_id" ON "chat_session" ("user_id", "property_id", "widget_id") `,
+    );
+    await queryRunner.query(
       `CREATE TABLE "user" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "email" character varying NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "phone_number" character varying NOT NULL, "address" character varying NOT NULL, "coin_deposit" numeric(18,8) NOT NULL DEFAULT '0', "password" character varying NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "deactivated_at" TIMESTAMP WITH TIME ZONE, "activated_at" TIMESTAMP WITH TIME ZONE, "created_by_id" uuid, "updated_by_id" uuid, "deactivated_by_id" uuid, "activated_by_id" uuid, CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
@@ -181,6 +196,15 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "role" ADD CONSTRAINT "FK_41385dfda73d566335406898746" FOREIGN KEY ("updated_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
+      `ALTER TABLE "chat_session" ADD CONSTRAINT "FK_cf8aa366e235b6d4c650bd51b3d" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "chat_session" ADD CONSTRAINT "FK_44d3ae325fbc41708dd03f1ba6c" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "chat_session" ADD CONSTRAINT "FK_36fa967abc7d035766b5fd6948a" FOREIGN KEY ("updated_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "user" ADD CONSTRAINT "FK_b489bba7c2e3d5afcd98a445ff8" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
@@ -223,6 +247,15 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_1ca4322739d8e1101b0bb655d71"`);
     await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_7a4f92de626d8dc4b05f06ad181"`);
     await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_b489bba7c2e3d5afcd98a445ff8"`);
+    await queryRunner.query(
+      `ALTER TABLE "chat_session" DROP CONSTRAINT "FK_36fa967abc7d035766b5fd6948a"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "chat_session" DROP CONSTRAINT "FK_44d3ae325fbc41708dd03f1ba6c"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "chat_session" DROP CONSTRAINT "FK_cf8aa366e235b6d4c650bd51b3d"`,
+    );
     await queryRunner.query(`ALTER TABLE "role" DROP CONSTRAINT "FK_41385dfda73d566335406898746"`);
     await queryRunner.query(`ALTER TABLE "role" DROP CONSTRAINT "FK_db92db78f9478b3e2fea19934b3"`);
     await queryRunner.query(
@@ -294,6 +327,11 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `DROP INDEX "public"."idx_user_email_first_name_last_name_phone_number_created_at"`,
     );
     await queryRunner.query(`DROP TABLE "user"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_chat_session_user_id_property_id_wiget_id"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_chat_session_widget_id"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_chat_session_property_id"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_chat_session_user_id"`);
+    await queryRunner.query(`DROP TABLE "chat_session"`);
     await queryRunner.query(`DROP TABLE "role"`);
     await queryRunner.query(`DROP TABLE "permission"`);
     await queryRunner.query(`DROP INDEX "public"."fb_game_session_user_id"`);
