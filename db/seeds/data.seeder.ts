@@ -15,6 +15,8 @@ export default class UserSeeder implements Seeder {
     const chatSessionFactory = factoryManager.get(ChatSession);
 
     const admin = { id: '008347f6-0c9b-41e1-86bc-19978e9de440' } as User;
+    const admin2 = { id: '3e86f702-a335-46fe-8685-a70dd02b720e' } as User;
+
     const users = [
       {
         id: admin.id,
@@ -28,6 +30,19 @@ export default class UserSeeder implements Seeder {
         updatedBy: admin,
       },
       {
+        id: admin2.id,
+        email: 'isabelle@gmail.com',
+        firstName: 'Isabelle',
+        lastName: 'Sanchez',
+        phoneNumber: '+639394254444',
+        address: 'random address 3',
+        propertyId: '668803c39d7f358570d771e7',
+        widgetId: '1i21ktd2a',
+        password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
+        createdBy: admin,
+        updatedBy: admin,
+      },
+      {
         id: 'fee363ca-a909-453f-ae8b-9d5ce739394e',
         email: 'darwin@gmail.com',
         firstName: 'Darwin',
@@ -35,8 +50,8 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394251111',
         address: 'random address 2',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin,
-        updatedBy: admin,
+        createdBy: admin2,
+        updatedBy: admin2,
       },
     ];
 
