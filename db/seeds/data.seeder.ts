@@ -4,11 +4,11 @@ import { User } from 'src/modules/user/entities/user.entity';
 import { PaymentChannel } from 'src/modules/payment-channel/entities/payment-channel.entity';
 import { Role } from 'src/modules/role/entities/role.entity';
 import { Permission } from 'src/modules/permission/entities/permission.entity';
-import dataSource from 'db/data-source';
 import { ChatSession } from 'src/modules/user/entities/chat-session.entity';
+import { DataSource } from 'typeorm';
 
 export default class UserSeeder implements Seeder {
-  public async run(_, factoryManager: SeederFactoryManager): Promise<void> {
+  public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
     const paymentFactory = factoryManager.get(PaymentChannel);
     const permissionFactory = factoryManager.get(Permission);
     const roleFactory = factoryManager.get(Role);
