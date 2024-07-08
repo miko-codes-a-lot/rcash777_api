@@ -17,7 +17,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ChatSession } from './chat-session.entity';
 
 @Index('fk_user_created_by_id', ['createdBy'])
 @Index('fk_user_updated_by_id', ['updatedBy'])
@@ -63,8 +62,11 @@ export class User {
   @Column({ nullable: false, select: false })
   password: string;
 
-  @OneToMany(() => ChatSession, (chatSession) => chatSession.user)
-  chatSessions: ChatSession[];
+  @Column({ name: 'property_id', nullable: true })
+  propertyId: string;
+
+  @Column({ name: 'widget_id', nullable: true })
+  widgetId: string;
 
   @ManyToMany(() => Role, (role) => role.users, { onDelete: 'NO ACTION', onUpdate: 'NO ACTION' })
   @JoinTable({
@@ -179,6 +181,16 @@ class UserBuilder {
 
   password(password: string): UserBuilder {
     this.user.password = password;
+    return this;
+  }
+
+  propertyId(propertyId: string): UserBuilder {
+    this.user.propertyId = propertyId;
+    return this;
+  }
+
+  widgetId(widgetId: string): UserBuilder {
+    this.user.widgetId = widgetId;
     return this;
   }
 
