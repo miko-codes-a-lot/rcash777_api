@@ -4,7 +4,6 @@ import { User } from 'src/modules/user/entities/user.entity';
 import { PaymentChannel } from 'src/modules/payment-channel/entities/payment-channel.entity';
 import { Role } from 'src/modules/role/entities/role.entity';
 import { Permission } from 'src/modules/permission/entities/permission.entity';
-import { ChatSession } from 'src/modules/user/entities/chat-session.entity';
 import { DataSource } from 'typeorm';
 
 export default class UserSeeder implements Seeder {
@@ -12,7 +11,6 @@ export default class UserSeeder implements Seeder {
     const paymentFactory = factoryManager.get(PaymentChannel);
     const permissionFactory = factoryManager.get(Permission);
     const roleFactory = factoryManager.get(Role);
-    const chatSessionFactory = factoryManager.get(ChatSession);
 
     const admin = { id: '008347f6-0c9b-41e1-86bc-19978e9de440' } as User;
     const admin2 = { id: '3e86f702-a335-46fe-8685-a70dd02b720e' } as User;
@@ -61,6 +59,5 @@ export default class UserSeeder implements Seeder {
     await paymentFactory.save();
     await permissionFactory.save();
     await roleFactory.save();
-    await chatSessionFactory.save();
   }
 }
