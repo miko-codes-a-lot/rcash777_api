@@ -5,12 +5,14 @@ import { PaymentChannel } from 'src/modules/payment-channel/entities/payment-cha
 import { Role } from 'src/modules/role/entities/role.entity';
 import { Permission } from 'src/modules/permission/entities/permission.entity';
 import { DataSource } from 'typeorm';
+import { UserTawk } from 'src/modules/user/entities/user-tawk.entity';
 
 export default class UserSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
     const paymentFactory = factoryManager.get(PaymentChannel);
     const permissionFactory = factoryManager.get(Permission);
     const roleFactory = factoryManager.get(Role);
+    const userTawkFactory = factoryManager.get(UserTawk);
 
     const admin = { id: '008347f6-0c9b-41e1-86bc-19978e9de440' } as User;
     const admin2 = { id: '3e86f702-a335-46fe-8685-a70dd02b720e' } as User;
@@ -36,8 +38,6 @@ export default class UserSeeder implements Seeder {
         lastName: 'Sanchez',
         phoneNumber: '+639394254444',
         address: 'random address 4',
-        propertyId: '668803c39d7f358570d771e7',
-        widgetId: '1i21ktd2a',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin,
         updatedBy: admin,
@@ -138,5 +138,6 @@ export default class UserSeeder implements Seeder {
     await paymentFactory.save();
     await permissionFactory.save();
     await roleFactory.save();
+    await userTawkFactory.save();
   }
 }
