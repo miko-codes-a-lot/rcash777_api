@@ -80,7 +80,11 @@ export class UserService extends BaseService<User> {
       where: {
         id,
       },
-      relations: { roles: { permissions: true }, createdBy: true },
+      relations: {
+        roles: { permissions: true },
+        createdBy: true,
+        tawkto: true,
+      },
     });
   }
 
