@@ -17,6 +17,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserTawk } from './user-tawk.entity';
 
 @Index('fk_user_created_by_id', ['createdBy'])
 @Index('fk_user_updated_by_id', ['updatedBy'])
@@ -62,12 +63,6 @@ export class User {
   @Column({ nullable: false, select: false })
   password: string;
 
-  @Column({ name: 'property_id', nullable: true })
-  propertyId: string;
-
-  @Column({ name: 'widget_id', nullable: true })
-  widgetId: string;
-
   @ManyToMany(() => Role, (role) => role.users, { onDelete: 'NO ACTION', onUpdate: 'NO ACTION' })
   @JoinTable({
     name: 'user_role',
@@ -81,6 +76,10 @@ export class User {
     },
   })
   roles: Role[];
+
+  @ManyToOne(() => UserTawk, (tawk) => tawk.users, { nullable: true })
+  @JoinColumn({ name: 'tawk_id' })
+  tawkto: UserTawk;
 
   @OneToMany(() => CashTransaction, (cointx) => cointx.player)
   cashTransactions: CashTransaction[];
@@ -184,13 +183,8 @@ class UserBuilder {
     return this;
   }
 
-  propertyId(propertyId: string): UserBuilder {
-    this.user.propertyId = propertyId;
-    return this;
-  }
-
-  widgetId(widgetId: string): UserBuilder {
-    this.user.widgetId = widgetId;
+  tawkto(tawkto: UserTawk) {
+    this.user.tawkto = tawkto;
     return this;
   }
 
