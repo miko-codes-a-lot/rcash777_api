@@ -21,7 +21,7 @@ export class RoleService {
       const permissionRepo = manager.getRepository(Permission);
       const roleRepo = manager.getRepository(Role);
 
-      const role = (await roleRepo.findOneBy({ id: roleId })) || new Role();
+      const role = roleId ? await roleRepo.findOneBy({ id: roleId }) : new Role();
 
       const isDuplicate = await roleRepo.findOneBy({
         ...(roleId && { id: Not(roleId) }),
