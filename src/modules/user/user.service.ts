@@ -82,8 +82,9 @@ export class UserService extends BaseService<User> {
       },
       relations: {
         roles: { permissions: true },
-        createdBy: true,
-        tawkto: true,
+        createdBy: {
+          tawkto: true
+        },
       },
     });
   }
