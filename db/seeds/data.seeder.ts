@@ -26,6 +26,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin,
         updatedBy: admin,
+        isAdmin: true,
       },
       {
         id: admin2.id,
@@ -37,6 +38,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin,
         updatedBy: admin,
+        isAdmin: true,
       },
       {
         id: '7c6e8107-01f1-4fbe-90a4-b28a006662a5',
@@ -48,6 +50,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin,
         updatedBy: admin,
+        isOwner: true,
       },
       {
         id: '27b017e0-bd4a-40d6-80f2-2133e3e7fc90',
@@ -59,6 +62,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
       {
         id: 'fee363ca-a909-453f-ae8b-9d5ce739394e',
@@ -70,6 +74,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin2,
         updatedBy: admin2,
+        isPlayer: true,
       },
       {
         id: '723f51ea-9c22-496d-abdb-85901e392900',
@@ -81,6 +86,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
       {
         id: '4c74684d-538b-4fec-848b-cef6640ce342',
@@ -92,6 +98,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
       {
         id: 'e62d259d-2d56-4399-ae57-de767159a5fe',
@@ -103,6 +110,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
       {
         id: 'aa9ca67f-081f-4ca0-b014-606ab3b5ccf5',
@@ -114,6 +122,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
       {
         id: '01658469-9043-4d28-9afc-540caeec545b',
@@ -125,6 +134,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         createdBy: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
     ];
 
