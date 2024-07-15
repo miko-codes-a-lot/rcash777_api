@@ -93,7 +93,7 @@ export class User {
   @OneToMany(() => CoinRequest, (r) => r.reviewingUser)
   actionedRequests: CoinRequest[];
 
-  @OneToMany(() => CoinRequest, (r) => r.defaultReviewUser)
+  @OneToMany(() => CoinRequest, (r) => r.actionAgent)
   defaultReviewRequests: CoinRequest[];
 
   @OneToMany(() => GameSession, (gs) => gs.user)

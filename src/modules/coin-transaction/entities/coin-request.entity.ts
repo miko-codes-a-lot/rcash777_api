@@ -15,7 +15,7 @@ import { CoinRequestStatus, CoinRequestType } from 'src/enums/coin-request.enum'
 @Index('fk_coin_request_coin_transaction_id', ['coinTransaction'])
 @Index('fk_coin_request_requesting_user_id', ['requestingUser'])
 @Index('fk_coin_request_reviewing_user_id', ['reviewingUser'])
-@Index('fk_coin_request_action_agent_id', ['defaultReviewUser'])
+@Index('fk_coin_request_action_agent_id', ['actionAgent'])
 @Entity('coin_request')
 export class CoinRequest {
   @PrimaryGeneratedColumn('uuid')
@@ -54,7 +54,7 @@ export class CoinRequest {
 
   @ManyToOne(() => User, (user) => user.defaultReviewRequests)
   @JoinColumn({ name: 'action_agent_id' })
-  defaultReviewUser: User;
+  actionAgent: User;
 
   @Column({ name: 'actioned_at', nullable: true })
   public actionedAt: Date;
@@ -126,8 +126,8 @@ class CoinRequestBuilder {
     return this;
   }
 
-  public defaultReviewUser(user: User): CoinRequestBuilder {
-    this.coinRequest.defaultReviewUser = user;
+  public actionAgent(user: User): CoinRequestBuilder {
+    this.coinRequest.actionAgent = user;
     return this;
   }
 

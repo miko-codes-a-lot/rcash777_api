@@ -96,7 +96,7 @@ export class CoinTransactionService {
 
     const [tx, count] = await this.requestRepo.findAndCount({
       where: {
-        reviewingUser: { id: user.id },
+        // requestingUser: { id: user.id },
       },
       relations: { requestingUser: true },
       select: {
@@ -121,17 +121,21 @@ export class CoinTransactionService {
 
   async requestDeposit(user: User, data: CoinRequestDTO) {
     const { amount } = data;
+    const fullUser = await this.userRepo.findOne({
+      where: { id: user.id },
+      relations: { createdBy: true },
+    });
 
     return this.dataSource.transaction(async (manager) => {
       const coinRepo = manager.getRepository(CoinTransaction);
       const requestRepo = manager.getRepository(CoinRequest);
 
       const txDeposit = CoinTransaction.builder()
-        .player(user)
+        .player(fullUser)
         .type(TransactionType.DEBIT)
         .typeCategory(TransactionTypeCategory.DEPOSIT)
         .amount(0) // later we update once approved
-        .createdBy(user)
+        .createdBy(fullUser)
         .build();
 
       await coinRepo.save(txDeposit);
@@ -139,8 +143,8 @@ export class CoinTransactionService {
       const request = CoinRequest.builder()
         .amount(amount)
         .coinTransaction(txDeposit)
-        .requestingUser(user)
-        .defaultReviewUser(user.createdBy)
+        .requestingUser(fullUser)
+        .actionAgent(fullUser.createdBy)
         .type(CoinRequestType.DEPOSIT)
         .build();
 
@@ -150,6 +154,11 @@ export class CoinTransactionService {
 
   async requestWithdraw(user: User, data: CoinRequestDTO) {
     const { amount } = data;
+    const fullUser = await this.userRepo.findOne({
+      where: { id: user.id },
+      relations: { createdBy: true },
+    });
+
     const balance = await this.computeBalance(user.id);
     if (amount > balance) {
       throw new BadRequestException('Not enough remaining balance to proceed');
@@ -160,11 +169,11 @@ export class CoinTransactionService {
       const requestRepo = manager.getRepository(CoinRequest);
 
       const txWithdraw = CoinTransaction.builder()
-        .player(user)
+        .player(fullUser)
         .type(TransactionType.CREDIT)
         .typeCategory(TransactionTypeCategory.WITHDRAW)
         .amount(amount)
-        .createdBy(user)
+        .createdBy(fullUser)
         .build();
 
       await coinRepo.save(txWithdraw);
@@ -172,8 +181,8 @@ export class CoinTransactionService {
       const request = CoinRequest.builder()
         .amount(amount)
         .coinTransaction(txWithdraw)
-        .requestingUser(user)
-        .defaultReviewUser(user.createdBy)
+        .requestingUser(fullUser)
+        .reviewingUser(fullUser.createdBy)
         .type(CoinRequestType.WITHDRAW)
         .build();
 
