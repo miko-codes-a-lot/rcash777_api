@@ -5,6 +5,7 @@ export const PutUserUpdateRequestSchema = Joi.object({
   lastName: Joi.string().required(),
   phoneNumber: Joi.string().required(),
   address: Joi.string().required(),
+  roleIds: Joi.array(),
 });
 
 export interface PostUserUpdateRequest {
@@ -13,4 +14,5 @@ export interface PostUserUpdateRequest {
   lastName: string;
   phoneNumber: string;
   address: string;
+  roleIds: string[];
 }

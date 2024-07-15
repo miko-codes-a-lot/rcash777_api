@@ -7,6 +7,11 @@ export const PostUserNewRequestSchema = Joi.object({
   lastName: Joi.string().required(),
   phoneNumber: Joi.string().required(),
   address: Joi.string().required(),
+  roleIds: Joi.array(),
+  // tawkto: Joi.object({
+  //   propertyId: Joi.string().optional().allow(null),
+  //   widgetId: Joi.string().optional().allow(null),
+  // }),
 });
 
 export interface PostUserNewRequest {
@@ -16,6 +21,11 @@ export interface PostUserNewRequest {
   lastName: string;
   phoneNumber: string;
   address: string;
+  roleIds: string[];
+  // tawkto: {
+  //   propertyId: string;
+  //   widgetId: string;
+  // };
 }
 
 export interface PostUserNewResponse {

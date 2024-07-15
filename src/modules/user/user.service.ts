@@ -8,6 +8,7 @@ import { BaseService } from 'src/services/base.service';
 import { PostUserNewRequest } from './schemas/post-user-new.schema';
 import { PostUserUpdateRequest } from './schemas/put-user-update.schema';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { Role } from '../role/entities/role.entity';
 
 @Injectable()
 export class UserService extends BaseService<User> {
@@ -25,7 +26,9 @@ export class UserService extends BaseService<User> {
     user.phoneNumber = data.phoneNumber;
     user.address = data.address;
     user.password = bcrypt.hashSync(data.password, 10);
-    // user.role = ERoles.USER;
+    user.roles = data.roleIds.map((id) => {
+      return { id } as Role;
+    });
 
     try {
       return await this.userRepository.save(user);
@@ -34,13 +37,16 @@ export class UserService extends BaseService<User> {
     }
   }
 
-  async update(id: string, payload: PostUserUpdateRequest) {
+  async update(id: string, data: PostUserUpdateRequest) {
     const user = await this.findById(id);
 
-    user.firstName = payload.firstName;
-    user.lastName = payload.lastName;
-    user.phoneNumber = payload.phoneNumber;
-    user.address = payload.address;
+    user.firstName = data.firstName || user.firstName;
+    user.lastName = data.lastName || user.lastName;
+    user.phoneNumber = data.phoneNumber || user.phoneNumber;
+    user.address = data.address || user.address;
+    user.roles = data.roleIds.map((id) => {
+      return { id } as Role;
+    });
 
     return this.userRepository.save(user);
   }
@@ -82,9 +88,7 @@ export class UserService extends BaseService<User> {
       },
       relations: {
         roles: { permissions: true },
-        createdBy: {
-          tawkto: true
-        },
+        tawkto: true,
       },
     });
   }
