@@ -20,7 +20,6 @@ import { Pagination, PaginationSchema } from 'src/schemas/pagination.schema';
 import { Response } from 'express';
 import { HttpStatus } from 'src/enums/http-status.enum';
 import { PutUserInfoRequest, PutUserInfoRequestSchema } from './schemas/put-user-info.schema';
-import { PutUserRoleRequest, PutUserRoleRequestSchema } from './schemas/put-user-role.schema';
 import { DeleteUserRequest, DeleteUserRequestSchema } from './schemas/delete-user.schema';
 
 @Controller('admin')
@@ -69,24 +68,6 @@ export class AdminController {
     }
 
     await this.adminService.updateUserInfo(user, payload);
-
-    res.status(HttpStatus.SUCCESS).send();
-  }
-
-  @Put('user/:id/update-role')
-  @Validate({ body: PutUserRoleRequestSchema })
-  async updateUserRole(
-    @Body() payload: PutUserRoleRequest,
-    @Param('id', ParseIntPipe) id: string,
-    @Res() res: Response,
-  ) {
-    const user = await this.userService.findById(id);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    await this.adminService.updateUserRole(user, payload);
 
     res.status(HttpStatus.SUCCESS).send();
   }
