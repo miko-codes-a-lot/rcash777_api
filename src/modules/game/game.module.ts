@@ -11,10 +11,11 @@ import { GameSession } from './entities/game-session.entity';
 import { User } from '../user/entities/user.entity';
 import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
 import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.entity';
+import { CoinRequest } from '../coin-transaction/entities/coin-request.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Game, GameImage, GameSession, CoinTransaction]),
+    TypeOrmModule.forFeature([User, Game, GameImage, GameSession, CoinTransaction, CoinRequest]),
     HttpModule.register({}),
   ],
   controllers: [GameController],

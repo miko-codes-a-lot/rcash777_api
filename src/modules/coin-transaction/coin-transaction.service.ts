@@ -19,6 +19,9 @@ export class CoinTransactionService {
     @InjectRepository(CoinTransaction)
     private coinRepo: Repository<CoinTransaction>,
 
+    @InjectRepository(CoinRequest)
+    private requestRepo: Repository<CoinRequest>,
+
     @InjectRepository(User)
     private userRepo: Repository<User>,
   ) {}
@@ -70,6 +73,34 @@ export class CoinTransactionService {
           email: true,
         },
         player: {
+          id: true,
+          email: true,
+        },
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      order: { [sortBy]: sortOrder },
+    });
+
+    return {
+      total: count,
+      totalPages: Math.ceil(count / pageSize),
+      page,
+      pageSize,
+      items: tx,
+    };
+  }
+
+  async findRequests(user: User, config: PaginationDTO) {
+    const { page = 1, pageSize = 10, sortBy = 'createdAt', sortOrder = 'asc' } = config;
+
+    const [tx, count] = await this.requestRepo.findAndCount({
+      where: {
+        reviewingUser: { id: user.id },
+      },
+      relations: { requestingUser: true },
+      select: {
+        requestingUser: {
           id: true,
           email: true,
         },

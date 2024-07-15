@@ -52,6 +52,11 @@ export class CoinTransactionController {
     return await this.coinService.computeBalance(user.id);
   }
 
+  @Get('request')
+  async requests(@RequestUser() user: User, @Query() query: PaginationDTO) {
+    return await this.coinService.findRequests(user, query);
+  }
+
   @Post('request/withdraw')
   @Validate({ body: WithdrawRequestSchema })
   async requestWithdraw(@RequestUser() user: User, @Body() data: CoinRequestDTO) {

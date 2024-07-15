@@ -9,10 +9,11 @@ import { CoinTransactionService } from '../coin-transaction/coin-transaction.ser
 import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.entity';
 import { NextralService } from './nextral.service';
 import { HttpModule } from '@nestjs/axios';
+import { CoinRequest } from '../coin-transaction/entities/coin-request.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Game, GameSession, CoinTransaction]),
+    TypeOrmModule.forFeature([User, Game, GameSession, CoinTransaction, CoinRequest]),
     HttpModule.register({}),
   ],
   controllers: [WalletController],
