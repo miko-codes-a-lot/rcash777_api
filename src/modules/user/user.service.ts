@@ -9,12 +9,30 @@ import { PostUserNewRequest } from './schemas/post-user-new.schema';
 import { PostUserUpdateRequest } from './schemas/put-user-update.schema';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { Role } from '../role/entities/role.entity';
+import { UserTawk } from './entities/user-tawk.entity';
 
 @Injectable()
 export class UserService extends BaseService<User> {
-  constructor(@InjectRepository(User) private userRepository: Repository<User>) {
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(UserTawk) private tawkRepository: Repository<UserTawk>,
+  ) {
     super();
     this.repository = userRepository;
+  }
+
+  private async _assignTawkTo(user: User, tawkto: { propertyId: string; widgetId: string }) {
+    const tawk = user.tawkto || new UserTawk();
+    tawk.propertyId = tawkto.propertyId;
+    tawk.widgetId = tawkto.widgetId;
+    tawk.users = [user];
+
+    delete tawk.users;
+
+    await this.tawkRepository.save(tawk);
+    user.tawkto = tawk;
+
+    return tawk;
   }
 
   async create(data: PostUserNewRequest) {
@@ -31,14 +49,20 @@ export class UserService extends BaseService<User> {
     });
 
     try {
-      return await this.userRepository.save(user);
+      await this.userRepository.save(user);
+
+      if (data.tawkto) {
+        await this._assignTawkTo(user, data.tawkto);
+      }
+
+      return user;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 
   async update(id: string, data: PostUserUpdateRequest) {
-    const user = await this.findById(id);
+    const user = await this.findById(id, { tawkto: true });
 
     user.firstName = data.firstName || user.firstName;
     user.lastName = data.lastName || user.lastName;
@@ -47,6 +71,10 @@ export class UserService extends BaseService<User> {
     user.roles = data.roleIds.map((id) => {
       return { id } as Role;
     });
+
+    if (data.tawkto) {
+      await this._assignTawkTo(user, data.tawkto);
+    }
 
     return this.userRepository.save(user);
   }

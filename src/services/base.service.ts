@@ -20,8 +20,8 @@ export class BaseService<T> {
     return this.repository.save(value);
   }
 
-  async findById(id: string) {
-    return await this.repository.findOne({ where: { id } as any });
+  async findById(id: string, relations?: any) {
+    return await this.repository.findOne({ where: { id } as any, relations });
   }
 
   async findByUserId(id: string) {

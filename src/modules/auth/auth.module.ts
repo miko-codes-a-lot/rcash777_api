@@ -10,11 +10,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import config from 'src/config/config';
+import { UserTawk } from '../user/entities/user-tawk.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Auth]),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Auth, UserTawk]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       useFactory: async () => {

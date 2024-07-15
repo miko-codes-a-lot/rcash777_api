@@ -27,9 +27,9 @@ export class UserController {
       throw new BadRequestException('Email already exist');
     }
 
-    await this.userService.create(payload);
+    const user = await this.userService.create(payload);
 
-    res.status(HttpStatus.SUCCESS).send();
+    return res.status(HttpStatus.SUCCESS).json(user);
   }
 
   @Get()
@@ -42,7 +42,7 @@ export class UserController {
     return res.status(HttpStatus.SUCCESS).json(paged);
   }
 
-  @Put()
+  @Put('self')
   @Validate({ body: PutUserUpdateRequestSchema })
   async updateUser(
     @Body() payload: PostUserUpdateRequest,
