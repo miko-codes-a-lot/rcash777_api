@@ -22,7 +22,7 @@ export class UserService extends BaseService<User> {
   }
 
   private async _assignTawkTo(user: User, tawkto: { propertyId: string; widgetId: string }) {
-    const tawk = new UserTawk();
+    const tawk = user.tawkto || new UserTawk();
     tawk.propertyId = tawkto.propertyId;
     tawk.widgetId = tawkto.widgetId;
     tawk.users = [user];
@@ -62,7 +62,7 @@ export class UserService extends BaseService<User> {
   }
 
   async update(id: string, data: PostUserUpdateRequest) {
-    const user = await this.findById(id);
+    const user = await this.findById(id, { tawkto: true });
 
     user.firstName = data.firstName || user.firstName;
     user.lastName = data.lastName || user.lastName;
