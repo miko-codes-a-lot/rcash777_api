@@ -8,7 +8,6 @@ import { BaseService } from 'src/services/base.service';
 import { PostUserNewRequest } from './schemas/post-user-new.schema';
 import { PostUserUpdateRequest } from './schemas/put-user-update.schema';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
-import { Role } from '../role/entities/role.entity';
 import { UserTawk } from './entities/user-tawk.entity';
 
 @Injectable()
@@ -45,9 +44,6 @@ export class UserService extends BaseService<User> {
     user.address = data.address;
     user.password = bcrypt.hashSync(data.password, 10);
     user.createdBy = creator;
-    user.roles = data.roleIds.map((id) => {
-      return { id } as Role;
-    });
 
     try {
       await this.userRepository.save(user);
@@ -70,9 +66,6 @@ export class UserService extends BaseService<User> {
     user.phoneNumber = data.phoneNumber || user.phoneNumber;
     user.address = data.address || user.address;
     user.updatedBy = updater;
-    user.roles = data.roleIds.map((id) => {
-      return { id } as Role;
-    });
 
     if (data.tawkto) {
       await this._assignTawkTo(user, data.tawkto);
@@ -117,7 +110,6 @@ export class UserService extends BaseService<User> {
         id,
       },
       relations: {
-        roles: { permissions: true },
         tawkto: true,
       },
     });

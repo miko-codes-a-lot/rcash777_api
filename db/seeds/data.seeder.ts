@@ -2,16 +2,12 @@ import { Seeder, SeederFactoryManager } from 'typeorm-extension';
 
 import { User } from 'src/modules/user/entities/user.entity';
 import { PaymentChannel } from 'src/modules/payment-channel/entities/payment-channel.entity';
-import { Role } from 'src/modules/role/entities/role.entity';
-import { Permission } from 'src/modules/permission/entities/permission.entity';
 import { DataSource } from 'typeorm';
 import { UserTawk } from 'src/modules/user/entities/user-tawk.entity';
 
 export default class UserSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
     const paymentFactory = factoryManager.get(PaymentChannel);
-    const permissionFactory = factoryManager.get(Permission);
-    const roleFactory = factoryManager.get(Role);
     const userTawkFactory = factoryManager.get(UserTawk);
 
     const admin = { id: '008347f6-0c9b-41e1-86bc-19978e9de440' } as User;
@@ -136,8 +132,6 @@ export default class UserSeeder implements Seeder {
     await userRepo.insert(users);
 
     await paymentFactory.save();
-    await permissionFactory.save();
-    await roleFactory.save();
     await userTawkFactory.save();
   }
 }
