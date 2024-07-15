@@ -45,6 +45,13 @@ export class UserService extends BaseService<User> {
     user.password = bcrypt.hashSync(data.password, 10);
     user.createdBy = creator;
 
+    user.isOwner = data.isOwner;
+    user.isAdmin = data.isAdmin;
+    user.isCityManager = data.isCityManager;
+    user.isMasterAgent = data.isMasterAgent;
+    user.isAgent = data.isAgent;
+    user.isPlayer = data.isPlayer;
+
     try {
       await this.userRepository.save(user);
 
@@ -58,6 +65,22 @@ export class UserService extends BaseService<User> {
     }
   }
 
+  async updateSelf(id: string, updater: User, data: PostUserUpdateRequest) {
+    const user = await this.findById(id, { tawkto: true });
+
+    user.firstName = data.firstName || user.firstName;
+    user.lastName = data.lastName || user.lastName;
+    user.phoneNumber = data.phoneNumber || user.phoneNumber;
+    user.address = data.address || user.address;
+    user.updatedBy = updater;
+
+    if (data.tawkto) {
+      await this._assignTawkTo(user, data.tawkto);
+    }
+
+    return this.userRepository.save(user);
+  }
+
   async update(id: string, updater: User, data: PostUserUpdateRequest) {
     const user = await this.findById(id, { tawkto: true });
 
@@ -66,6 +89,13 @@ export class UserService extends BaseService<User> {
     user.phoneNumber = data.phoneNumber || user.phoneNumber;
     user.address = data.address || user.address;
     user.updatedBy = updater;
+
+    user.isOwner = data.isOwner;
+    user.isAdmin = data.isAdmin;
+    user.isCityManager = data.isCityManager;
+    user.isMasterAgent = data.isMasterAgent;
+    user.isAgent = data.isAgent;
+    user.isPlayer = data.isPlayer;
 
     if (data.tawkto) {
       await this._assignTawkTo(user, data.tawkto);
