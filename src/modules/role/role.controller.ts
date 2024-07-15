@@ -29,8 +29,8 @@ export class RoleController {
   }
 
   @Get('option')
-  async option(@Query('name') name: string) {
-    return this.roleService.getOptions(name);
+  async oneOption(@Query('name') name: string) {
+    return this.roleService.getOneOption(name);
   }
 
   @Get()

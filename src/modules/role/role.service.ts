@@ -56,7 +56,7 @@ export class RoleService {
     });
   }
 
-  async getOption(name: string) {
+  async getOneOption(name: string) {
     return this.roleRepo.findOne({
       where: {
         name,
