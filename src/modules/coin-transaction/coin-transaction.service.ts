@@ -96,7 +96,7 @@ export class CoinTransactionService {
 
     const [tx, count] = await this.requestRepo.findAndCount({
       where: {
-        // requestingUser: { id: user.id },
+        reviewingUser: { id: user.id },
       },
       relations: { requestingUser: true },
       select: {
