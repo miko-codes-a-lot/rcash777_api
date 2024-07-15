@@ -47,8 +47,13 @@ export class RoleService {
     });
   }
 
-  async getOptions() {
-    return this.roleRepo.find({ select: ['id', 'name'] });
+  async getOptions(name: string) {
+    return this.roleRepo.find({
+      where: {
+        name,
+      },
+      select: ['id', 'name'],
+    });
   }
 
   async findAllPaginated(config: PaginationDTO) {
