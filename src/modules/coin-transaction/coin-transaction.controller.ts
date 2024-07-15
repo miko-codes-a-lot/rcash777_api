@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { CoinTransactionService } from './coin-transaction.service';
 import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
-import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { CoinRequestPaginateDTO, PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
@@ -53,7 +53,7 @@ export class CoinTransactionController {
   }
 
   @Get('request')
-  async requests(@RequestUser() user: User, @Query() query: PaginationDTO) {
+  async requests(@RequestUser() user: User, @Query() query: CoinRequestPaginateDTO) {
     return await this.coinService.findRequests(user, query);
   }
 

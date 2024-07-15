@@ -3,7 +3,7 @@ import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { CoinTransaction } from './entities/coin-transaction.entity';
-import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { CoinRequestPaginateDTO, PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { User } from '../user/entities/user.entity';
 import httpStatus from 'http-status';
@@ -91,12 +91,21 @@ export class CoinTransactionService {
     };
   }
 
-  async findRequests(user: User, config: PaginationDTO) {
-    const { page = 1, pageSize = 10, sortBy = 'createdAt', sortOrder = 'asc' } = config;
+  async findRequests(user: User, config: CoinRequestPaginateDTO) {
+    const {
+      page = 1,
+      pageSize = 10,
+      status,
+      type,
+      sortBy = 'createdAt',
+      sortOrder = 'asc',
+    } = config;
 
     const [tx, count] = await this.requestRepo.findAndCount({
       where: {
         reviewingUser: { id: user.id },
+        status,
+        type,
       },
       relations: { requestingUser: true },
       select: {
@@ -144,7 +153,7 @@ export class CoinTransactionService {
         .amount(amount)
         .coinTransaction(txDeposit)
         .requestingUser(fullUser)
-        .actionAgent(fullUser.createdBy)
+        .reviewingUser(fullUser.createdBy)
         .type(CoinRequestType.DEPOSIT)
         .build();
 
