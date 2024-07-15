@@ -56,6 +56,15 @@ export class RoleService {
     });
   }
 
+  async getOption(name: string) {
+    return this.roleRepo.findOne({
+      where: {
+        name,
+      },
+      select: ['id', 'name'],
+    });
+  }
+
   async findAllPaginated(config: PaginationDTO) {
     const { page = 1, pageSize = 10, search, sortBy = 'createdAt', sortOrder = 'asc' } = config;
 

@@ -28,6 +28,11 @@ export class RoleController {
     return this.roleService.getOptions(name);
   }
 
+  @Get('option')
+  async option(@Query('name') name: string) {
+    return this.roleService.getOptions(name);
+  }
+
   @Get()
   async findAll(@Query() query: PaginationDTO, @Res() res: Response) {
     query.page *= 1;
