@@ -35,7 +35,7 @@ export class UserService extends BaseService<User> {
     return tawk;
   }
 
-  async create(data: PostUserNewRequest) {
+  async create(creator: User, data: PostUserNewRequest) {
     const user = new User();
 
     user.email = data.email;
@@ -44,6 +44,7 @@ export class UserService extends BaseService<User> {
     user.phoneNumber = data.phoneNumber;
     user.address = data.address;
     user.password = bcrypt.hashSync(data.password, 10);
+    user.createdBy = creator;
     user.roles = data.roleIds.map((id) => {
       return { id } as Role;
     });
@@ -61,13 +62,14 @@ export class UserService extends BaseService<User> {
     }
   }
 
-  async update(id: string, data: PostUserUpdateRequest) {
+  async update(id: string, updater: User, data: PostUserUpdateRequest) {
     const user = await this.findById(id, { tawkto: true });
 
     user.firstName = data.firstName || user.firstName;
     user.lastName = data.lastName || user.lastName;
     user.phoneNumber = data.phoneNumber || user.phoneNumber;
     user.address = data.address || user.address;
+    user.updatedBy = updater;
     user.roles = data.roleIds.map((id) => {
       return { id } as Role;
     });
