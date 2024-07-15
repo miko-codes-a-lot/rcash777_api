@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, BadRequestException, Put, Res, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  BadRequestException,
+  Put,
+  Res,
+  Query,
+  Param,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Validate } from 'src/decorators/validate.decorator';
@@ -20,19 +30,23 @@ import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
+  @Post('admin')
   @Validate({ body: PostUserNewRequestSchema })
-  async addUser(@Body() payload: PostUserNewRequest, @Res() res: Response) {
+  async addUser(
+    @Body() payload: PostUserNewRequest,
+    @RequestUser() admin: User,
+    @Res() res: Response,
+  ) {
     if (await this.userService.findByEmail(payload.email)) {
       throw new BadRequestException('Email already exist');
     }
 
-    const user = await this.userService.create(payload);
+    const user = await this.userService.create(admin, payload);
 
     return res.status(HttpStatus.SUCCESS).json(user);
   }
 
-  @Get()
+  @Get('admin')
   async findAll(@Query() query: PaginationDTO, @Res() res: Response) {
     query.page *= 1;
     query.pageSize *= 1;
@@ -44,13 +58,26 @@ export class UserController {
 
   @Put('self')
   @Validate({ body: PutUserUpdateRequestSchema })
-  async updateUser(
+  async updateSelf(
     @Body() payload: PostUserUpdateRequest,
     @RequestUser() user: User,
     @Res() res: Response,
   ) {
     const { id } = user;
-    const result = await this.userService.update(id, payload);
+    const result = await this.userService.update(id, user, payload);
+
+    res.status(HttpStatus.SUCCESS).send(result);
+  }
+
+  @Put('admin/:id')
+  @Validate({ body: PutUserUpdateRequestSchema })
+  async updateUser(
+    @Param('id') id: string,
+    @Body() payload: PostUserUpdateRequest,
+    @RequestUser() user: User,
+    @Res() res: Response,
+  ) {
+    const result = await this.userService.update(id, user, payload);
 
     res.status(HttpStatus.SUCCESS).send(result);
   }
