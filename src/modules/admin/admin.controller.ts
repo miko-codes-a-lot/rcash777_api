@@ -22,6 +22,7 @@ import { HttpStatus } from 'src/enums/http-status.enum';
 import { PutUserInfoRequest, PutUserInfoRequestSchema } from './schemas/put-user-info.schema';
 import { PutUserRoleRequest, PutUserRoleRequestSchema } from './schemas/put-user-role.schema';
 import { DeleteUserRequest, DeleteUserRequestSchema } from './schemas/delete-user.schema';
+import { PutUserPassword, PutUserPasswordSchema } from './schemas/put-user-password.schema';
 
 @Controller('admin')
 @ApiTags('admin')
@@ -87,6 +88,24 @@ export class AdminController {
     }
 
     await this.adminService.updateUserRole(user, payload);
+
+    res.status(HttpStatus.SUCCESS).send();
+  }
+
+  @Put('user/:user_id/update-password')
+  @Validate({ body: PutUserPasswordSchema })
+  async updateUserPassword(
+    @Body() payload: PutUserPassword,
+    @Param('user_id') userId: string,
+    @Res() res: Response,
+  ) {
+    const user = await this.userService.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.adminService.updateUserPassword(user, payload);
 
     res.status(HttpStatus.SUCCESS).send();
   }
