@@ -8,10 +8,10 @@ export const PostUserNewRequestSchema = Joi.object({
   phoneNumber: Joi.string().required(),
   address: Joi.string().required(),
   roleIds: Joi.array(),
-  // tawkto: Joi.object({
-  //   propertyId: Joi.string().optional().allow(null),
-  //   widgetId: Joi.string().optional().allow(null),
-  // }),
+  tawkto: Joi.object({
+    propertyId: Joi.string().optional().allow(null),
+    widgetId: Joi.string().optional().allow(null),
+  }).optional(),
 });
 
 export interface PostUserNewRequest {
@@ -22,10 +22,10 @@ export interface PostUserNewRequest {
   phoneNumber: string;
   address: string;
   roleIds: string[];
-  // tawkto: {
-  //   propertyId: string;
-  //   widgetId: string;
-  // };
+  tawkto?: {
+    propertyId: string;
+    widgetId: string;
+  };
 }
 
 export interface PostUserNewResponse {
