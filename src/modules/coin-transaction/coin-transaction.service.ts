@@ -1,7 +1,7 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository, TreeRepository } from 'typeorm';
+import { DataSource, ILike, In, Repository, TreeRepository } from 'typeorm';
 import { CoinTransaction } from './entities/coin-transaction.entity';
 import { CoinRequestPaginateDTO, PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
@@ -69,17 +69,64 @@ export class CoinTransactionService {
     return parseFloat(debit || 0) - parseFloat(credit || 0);
   }
 
-  async findAllPaginated(user: User, config: PaginationDTO, playerId?: string) {
-    const { page = 1, pageSize = 10, sortBy = 'createdAt', sortOrder = 'asc' } = config;
+  async findSelfPaginated(user: User, config: PaginationDTO) {
+    const { page = 1, pageSize = 10, search, sortBy = 'createdAt', sortOrder = 'asc' } = config;
 
+    const amount = parseFloat(search);
+    console.log(amount, !Number.isNaN(amount));
+    const [tx, count] = await this.coinRepo.findAndCount({
+      where: [
+        {
+          player: {
+            id: user.id,
+            email: ILike(`%${search}%`),
+          },
+          ...(!Number.isNaN(amount) && { amount: parseFloat(amount.toFixed(8)) }),
+        },
+        {
+          createdBy: { id: user.id },
+          player: {
+            email: ILike(`%${search}%`),
+          },
+          ...(!Number.isNaN(amount) && { amount: parseFloat(amount.toFixed(8)) }),
+        },
+      ],
+      relations: { player: true, createdBy: true, coinRequests: true },
+      select: {
+        createdBy: {
+          id: true,
+          email: true,
+        },
+        player: {
+          id: true,
+          email: true,
+        },
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      order: { [sortBy]: sortOrder },
+    });
+
+    return {
+      total: count,
+      totalPages: Math.ceil(count / pageSize),
+      page,
+      pageSize,
+      items: tx,
+    };
+  }
+
+  async findAllPaginated(user: User, config: PaginationDTO) {
+    const { page = 1, pageSize = 10, search, sortBy = 'createdAt', sortOrder = 'asc' } = config;
+
+    const amount = parseFloat(search);
     const [tx, count] = await this.coinRepo.findAndCount({
       where: {
-        ...(playerId && { player: { id: playerId } }),
-        ...(!playerId && {
-          player: {
-            id: In([user.id, ...(await this._getUserChildrenIds(user))]),
-          },
-        }),
+        player: {
+          id: In([user.id, ...(await this._getUserChildrenIds(user))]),
+          email: ILike(`%${search}%`),
+        },
+        ...(!Number.isNaN(amount) && { amount }),
       },
       relations: { player: true, createdBy: true, coinRequests: true },
       select: {
