@@ -1,5 +1,4 @@
 import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
-import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
 import { CoinRequest } from 'src/modules/coin-transaction/entities/coin-request.entity';
 import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 import { GameSession } from 'src/modules/game/entities/game-session.entity';
@@ -91,9 +90,6 @@ export class User {
   @ManyToOne(() => UserTawk, (tawk) => tawk.users, { nullable: true })
   @JoinColumn({ name: 'tawk_id' })
   tawkto: UserTawk;
-
-  @OneToMany(() => CashTransaction, (cointx) => cointx.player)
-  cashTransactions: CashTransaction[];
 
   @OneToMany(() => CoinTransaction, (cointx) => cointx.player)
   coinTransactions: CoinTransaction[];

@@ -20,6 +20,30 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE INDEX "idx_game_name_category" ON "game" ("name", "category") `,
     );
     await queryRunner.query(
+      `CREATE TABLE "payment_channel" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "description" character varying NOT NULL DEFAULT '', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "created_by_id" uuid, "updated_by_id" uuid, CONSTRAINT "UQ_197a99efb311a9f24706e33bfb2" UNIQUE ("name"), CONSTRAINT "PK_f280a94d71fb8ec321a3a7a1208" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."coin_transaction_type_enum" AS ENUM('DEBIT', 'CREDIT')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."coin_transaction_type_category_enum" AS ENUM('DEPOSIT', 'REBATE', 'REFUND', 'ROLL_BACK', 'CASH_BACK', 'BET_DEBIT', 'WIN', 'LOSS', 'PAYOUT', 'BET', 'WITHDRAW', 'TIP', 'PARTIAL_REFUND', 'BUY_IN', 'CASH_OUT', 'FREEROUND_WIN', 'TOURNAMENT_WIN', 'CAMPAIGN_WIN', 'FREEGAME_WIN', 'CONFISCATE')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "coin_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."coin_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."coin_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "transaction_id" character varying, "round_id" character varying, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "coin_transaction_id" uuid, "payment_channel_id" uuid, "game_id" uuid, "user_player_id" uuid, "created_by_id" uuid, CONSTRAINT "PK_038fe0990ab9f6c09993c7761ea" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "fk_cash_transaction_round_id" ON "coin_transaction" ("round_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_coin_transaction_game_id" ON "coin_transaction" ("game_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_coin_transaction_transaction_id_type" ON "coin_transaction" ("transaction_id", "type") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_coin_transaction_user_player_id_type_id" ON "coin_transaction" ("user_player_id", "type") `,
+    );
+    await queryRunner.query(
       `CREATE TYPE "public"."coin_request_status_enum" AS ENUM('PENDING', 'APPROVED', 'REJECTED')`,
     );
     await queryRunner.query(
@@ -39,39 +63,6 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     );
     await queryRunner.query(
       `CREATE INDEX "fk_coin_request_coin_transaction_id" ON "coin_request" ("coin_transaction_id") `,
-    );
-    await queryRunner.query(
-      `CREATE TYPE "public"."coin_transaction_type_enum" AS ENUM('DEBIT', 'CREDIT')`,
-    );
-    await queryRunner.query(
-      `CREATE TYPE "public"."coin_transaction_type_category_enum" AS ENUM('DEPOSIT', 'REBATE', 'REFUND', 'ROLL_BACK', 'CASH_BACK', 'BET_DEBIT', 'WIN', 'LOSS', 'PAYOUT', 'BET', 'WITHDRAW', 'TIP', 'PARTIAL_REFUND', 'BUY_IN', 'CASH_OUT', 'FREEROUND_WIN', 'TOURNAMENT_WIN', 'CAMPAIGN_WIN', 'FREEGAME_WIN', 'CONFISCATE')`,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "coin_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."coin_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."coin_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "transaction_id" character varying, "round_id" character varying, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "cash_transaction_id" uuid, "game_id" uuid, "user_player_id" uuid, "created_by_id" uuid, CONSTRAINT "PK_038fe0990ab9f6c09993c7761ea" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "fk_cash_transaction_round_id" ON "coin_transaction" ("round_id") `,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "idx_coin_transaction_game_id" ON "coin_transaction" ("game_id") `,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "idx_coin_transaction_transaction_id_type" ON "coin_transaction" ("transaction_id", "type") `,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "idx_coin_transaction_user_player_id_type_id" ON "coin_transaction" ("user_player_id", "type") `,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "payment_channel" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "description" character varying NOT NULL DEFAULT '', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "created_by_id" uuid, "updated_by_id" uuid, CONSTRAINT "UQ_197a99efb311a9f24706e33bfb2" UNIQUE ("name"), CONSTRAINT "PK_f280a94d71fb8ec321a3a7a1208" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
-      `CREATE TYPE "public"."cash_transaction_type_enum" AS ENUM('DEBIT', 'CREDIT')`,
-    );
-    await queryRunner.query(
-      `CREATE TYPE "public"."cash_transaction_type_category_enum" AS ENUM('DEPOSIT', 'REBATE', 'REFUND', 'ROLL_BACK', 'CASH_BACK', 'BET_DEBIT', 'WIN', 'LOSS', 'PAYOUT', 'BET', 'WITHDRAW', 'TIP', 'PARTIAL_REFUND', 'BUY_IN', 'CASH_OUT', 'FREEROUND_WIN', 'TOURNAMENT_WIN', 'CAMPAIGN_WIN', 'FREEGAME_WIN', 'CONFISCATE')`,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "cash_transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "note" character varying NOT NULL DEFAULT '', "type" "public"."cash_transaction_type_enum" NOT NULL DEFAULT 'DEBIT', "type_category" "public"."cash_transaction_type_category_enum" NOT NULL DEFAULT 'DEPOSIT', "amount" numeric(18,8) NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "user_player_id" uuid, "payment_channel_id" uuid, "created_by_id" uuid, CONSTRAINT "PK_d4d82b6912d82a7f4f519bd0d86" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "game_session" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "token" character varying NOT NULL, "user_id" uuid, CONSTRAINT "PK_58b630233711ccafbb0b2a904fc" PRIMARY KEY ("id"))`,
@@ -121,19 +112,16 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "game_image" ADD CONSTRAINT "FK_3fb15621133985aa37e6318ed19" FOREIGN KEY ("game_id") REFERENCES "game"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_request" ADD CONSTRAINT "FK_87794c73600c17477600748883d" FOREIGN KEY ("coin_transaction_id") REFERENCES "coin_transaction"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "payment_channel" ADD CONSTRAINT "FK_3446f926695c9b6dc9393a85858" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_request" ADD CONSTRAINT "FK_ee6fead258f8697f46c2cca1461" FOREIGN KEY ("requesting_user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "payment_channel" ADD CONSTRAINT "FK_ec4b96ff769b6a4a469dd43a9de" FOREIGN KEY ("updated_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_request" ADD CONSTRAINT "FK_7351269d275fa85f9141f26dac8" FOREIGN KEY ("reviewing_user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "coin_transaction" ADD CONSTRAINT "FK_6ca6f2b31dac3439e14f5458b33" FOREIGN KEY ("coin_transaction_id") REFERENCES "coin_transaction"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_request" ADD CONSTRAINT "FK_939e3ff9d7e7bbdbfc0fdbb6580" FOREIGN KEY ("action_agent_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "coin_transaction" ADD CONSTRAINT "FK_7ba1299eb0d050da6b9f78971a6" FOREIGN KEY ("cash_transaction_id") REFERENCES "cash_transaction"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "coin_transaction" ADD CONSTRAINT "FK_bdd143ec3582b69c15eb0558dff" FOREIGN KEY ("payment_channel_id") REFERENCES "payment_channel"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "coin_transaction" ADD CONSTRAINT "FK_a3a204ff85e67240c2f93eb7720" FOREIGN KEY ("game_id") REFERENCES "game"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -145,19 +133,16 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "coin_transaction" ADD CONSTRAINT "FK_becc40d1d633c36916da858e5b5" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "payment_channel" ADD CONSTRAINT "FK_3446f926695c9b6dc9393a85858" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "coin_request" ADD CONSTRAINT "FK_87794c73600c17477600748883d" FOREIGN KEY ("coin_transaction_id") REFERENCES "coin_transaction"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "payment_channel" ADD CONSTRAINT "FK_ec4b96ff769b6a4a469dd43a9de" FOREIGN KEY ("updated_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "coin_request" ADD CONSTRAINT "FK_ee6fead258f8697f46c2cca1461" FOREIGN KEY ("requesting_user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "cash_transaction" ADD CONSTRAINT "FK_79bf308e1f99c88834b943278f6" FOREIGN KEY ("user_player_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "coin_request" ADD CONSTRAINT "FK_7351269d275fa85f9141f26dac8" FOREIGN KEY ("reviewing_user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "cash_transaction" ADD CONSTRAINT "FK_612a340c4e61196646a71eafe25" FOREIGN KEY ("payment_channel_id") REFERENCES "payment_channel"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "cash_transaction" ADD CONSTRAINT "FK_d6a07ed6ba24ce4ee3523e1b942" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "coin_request" ADD CONSTRAINT "FK_939e3ff9d7e7bbdbfc0fdbb6580" FOREIGN KEY ("action_agent_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "game_session" ADD CONSTRAINT "FK_e771dcf69ac8e0a2cfe4da708f2" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -201,19 +186,16 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "game_session" DROP CONSTRAINT "FK_e771dcf69ac8e0a2cfe4da708f2"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "cash_transaction" DROP CONSTRAINT "FK_d6a07ed6ba24ce4ee3523e1b942"`,
+      `ALTER TABLE "coin_request" DROP CONSTRAINT "FK_939e3ff9d7e7bbdbfc0fdbb6580"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "cash_transaction" DROP CONSTRAINT "FK_612a340c4e61196646a71eafe25"`,
+      `ALTER TABLE "coin_request" DROP CONSTRAINT "FK_7351269d275fa85f9141f26dac8"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "cash_transaction" DROP CONSTRAINT "FK_79bf308e1f99c88834b943278f6"`,
+      `ALTER TABLE "coin_request" DROP CONSTRAINT "FK_ee6fead258f8697f46c2cca1461"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "payment_channel" DROP CONSTRAINT "FK_ec4b96ff769b6a4a469dd43a9de"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "payment_channel" DROP CONSTRAINT "FK_3446f926695c9b6dc9393a85858"`,
+      `ALTER TABLE "coin_request" DROP CONSTRAINT "FK_87794c73600c17477600748883d"`,
     );
     await queryRunner.query(
       `ALTER TABLE "coin_transaction" DROP CONSTRAINT "FK_becc40d1d633c36916da858e5b5"`,
@@ -225,19 +207,16 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "coin_transaction" DROP CONSTRAINT "FK_a3a204ff85e67240c2f93eb7720"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_transaction" DROP CONSTRAINT "FK_7ba1299eb0d050da6b9f78971a6"`,
+      `ALTER TABLE "coin_transaction" DROP CONSTRAINT "FK_bdd143ec3582b69c15eb0558dff"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_request" DROP CONSTRAINT "FK_939e3ff9d7e7bbdbfc0fdbb6580"`,
+      `ALTER TABLE "coin_transaction" DROP CONSTRAINT "FK_6ca6f2b31dac3439e14f5458b33"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_request" DROP CONSTRAINT "FK_7351269d275fa85f9141f26dac8"`,
+      `ALTER TABLE "payment_channel" DROP CONSTRAINT "FK_ec4b96ff769b6a4a469dd43a9de"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "coin_request" DROP CONSTRAINT "FK_ee6fead258f8697f46c2cca1461"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "coin_request" DROP CONSTRAINT "FK_87794c73600c17477600748883d"`,
+      `ALTER TABLE "payment_channel" DROP CONSTRAINT "FK_3446f926695c9b6dc9393a85858"`,
     );
     await queryRunner.query(
       `ALTER TABLE "game_image" DROP CONSTRAINT "FK_3fb15621133985aa37e6318ed19"`,
@@ -266,17 +245,6 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "user_tawk"`);
     await queryRunner.query(`DROP INDEX "public"."fb_game_session_user_id"`);
     await queryRunner.query(`DROP TABLE "game_session"`);
-    await queryRunner.query(`DROP TABLE "cash_transaction"`);
-    await queryRunner.query(`DROP TYPE "public"."cash_transaction_type_category_enum"`);
-    await queryRunner.query(`DROP TYPE "public"."cash_transaction_type_enum"`);
-    await queryRunner.query(`DROP TABLE "payment_channel"`);
-    await queryRunner.query(`DROP INDEX "public"."idx_coin_transaction_user_player_id_type_id"`);
-    await queryRunner.query(`DROP INDEX "public"."idx_coin_transaction_transaction_id_type"`);
-    await queryRunner.query(`DROP INDEX "public"."idx_coin_transaction_game_id"`);
-    await queryRunner.query(`DROP INDEX "public"."fk_cash_transaction_round_id"`);
-    await queryRunner.query(`DROP TABLE "coin_transaction"`);
-    await queryRunner.query(`DROP TYPE "public"."coin_transaction_type_category_enum"`);
-    await queryRunner.query(`DROP TYPE "public"."coin_transaction_type_enum"`);
     await queryRunner.query(`DROP INDEX "public"."fk_coin_request_coin_transaction_id"`);
     await queryRunner.query(`DROP INDEX "public"."fk_coin_request_requesting_user_id"`);
     await queryRunner.query(`DROP INDEX "public"."fk_coin_request_reviewing_user_id"`);
@@ -284,6 +252,14 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "coin_request"`);
     await queryRunner.query(`DROP TYPE "public"."coin_request_type_enum"`);
     await queryRunner.query(`DROP TYPE "public"."coin_request_status_enum"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_coin_transaction_user_player_id_type_id"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_coin_transaction_transaction_id_type"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_coin_transaction_game_id"`);
+    await queryRunner.query(`DROP INDEX "public"."fk_cash_transaction_round_id"`);
+    await queryRunner.query(`DROP TABLE "coin_transaction"`);
+    await queryRunner.query(`DROP TYPE "public"."coin_transaction_type_category_enum"`);
+    await queryRunner.query(`DROP TYPE "public"."coin_transaction_type_enum"`);
+    await queryRunner.query(`DROP TABLE "payment_channel"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_name_category"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_category"`);
     await queryRunner.query(`DROP INDEX "public"."idx_game_code"`);

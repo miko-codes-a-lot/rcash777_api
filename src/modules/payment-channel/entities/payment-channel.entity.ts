@@ -1,4 +1,4 @@
-import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
+import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
   Column,
@@ -22,8 +22,8 @@ export class PaymentChannel {
   @Column({ default: '' })
   description: string;
 
-  @OneToMany(() => CashTransaction, (cointx) => cointx.paymentChannel)
-  cashTransactions: CashTransaction[];
+  @OneToMany(() => CoinTransaction, (cointx) => cointx.coinTransaction)
+  coinTransactions: CoinTransaction[];
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by_id' })

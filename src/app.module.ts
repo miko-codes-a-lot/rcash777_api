@@ -8,7 +8,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/user/user.module';
 import { dataSourceOptions } from 'db/data-source';
 import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module';
-import { CashTransactionModule } from './modules/cash-transaction/cash-transaction.module';
 import { CoinTransactionModule } from './modules/coin-transaction/coin-transaction.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
@@ -25,7 +24,6 @@ import { WalletModule } from './modules/wallet/wallet.module';
     HealthCheckModule,
     UserModule,
     PaymentChannelModule,
-    CashTransactionModule,
     CoinTransactionModule,
     GameModule,
     WalletModule,
