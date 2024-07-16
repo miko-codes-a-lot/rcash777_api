@@ -1,13 +1,13 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { DataSource, ILike, Repository, TreeRepository } from 'typeorm';
+import { DataSource, ILike, In, Repository, TreeRepository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Pagination, PaginationResponse } from 'src/schemas/pagination.schema';
 import { BaseService } from 'src/services/base.service';
 import { PostUserNewRequest } from './schemas/post-user-new.schema';
 import { PostUserUpdateRequest } from './schemas/put-user-update.schema';
-import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { UserPaginateDTO } from 'src/schemas/paginate-query.dto';
 import { UserTawk } from './entities/user-tawk.entity';
 
 @Injectable()
@@ -117,18 +117,46 @@ export class UserService extends BaseService<User> {
     return await this.userRepository.findOne({ where: { email } });
   }
 
-  async findAllPaginated(config: PaginationDTO) {
-    const { page = 1, pageSize = 10, search, sortBy = 'createdAt', sortOrder = 'asc' } = config;
+  private async _findDescendantsId(user: User) {
+    const children = await this.treeUserRepo.findDescendants(user);
+    return children.map((u) => u.id);
+  }
+
+  async findAllPaginated(user: User, config: UserPaginateDTO) {
+    const {
+      page = 1,
+      pageSize = 10,
+      search,
+      role,
+      sortBy = 'createdAt',
+      sortOrder = 'asc',
+    } = config;
+
+    const ids = await this._findDescendantsId(user);
 
     const [users, count] = await this.userRepository.findAndCount({
-      ...(search && {
-        where: [
-          { email: ILike(`%${search}%`) },
-          { firstName: ILike(`%${search}%`) },
-          { lastName: ILike(`%${search}%`) },
-          { phoneNumber: ILike(`%${search}%`) },
-        ],
-      }),
+      where: [
+        {
+          email: ILike(`%${search}%`),
+          ...(role && { [role]: true }),
+          parent: { id: In(ids) },
+        },
+        {
+          firstName: ILike(`%${search}%`),
+          ...(role && { [role]: true }),
+          parent: { id: In(ids) },
+        },
+        {
+          lastName: ILike(`%${search}%`),
+          ...(role && { [role]: true }),
+          parent: { id: In(ids) },
+        },
+        {
+          phoneNumber: ILike(`%${search}%`),
+          ...(role && { [role]: true }),
+          parent: { id: In(ids) },
+        },
+      ],
       skip: (page - 1) * pageSize,
       take: pageSize,
       order: { [sortBy]: sortOrder },

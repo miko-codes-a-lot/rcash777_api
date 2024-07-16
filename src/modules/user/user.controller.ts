@@ -22,7 +22,7 @@ import {
   PostUserUpdateRequest,
   PutUserUpdateRequestSchema,
 } from './schemas/put-user-update.schema';
-import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { UserPaginateDTO } from 'src/schemas/paginate-query.dto';
 
 @AuthRequired()
 @ApiTags('user')
@@ -47,11 +47,11 @@ export class UserController {
   }
 
   @Get('admin')
-  async findAll(@Query() query: PaginationDTO, @Res() res: Response) {
+  async findAll(@RequestUser() user: User, @Query() query: UserPaginateDTO, @Res() res: Response) {
     query.page *= 1;
     query.pageSize *= 1;
 
-    const paged = await this.userService.findAllPaginated(query);
+    const paged = await this.userService.findAllPaginated(user, query);
 
     return res.status(HttpStatus.SUCCESS).json(paged);
   }
