@@ -23,13 +23,13 @@ export default class UserSeeder implements Seeder {
     const users = [
       {
         id: admin.id,
-        email: 'admin@thefirmtech.one',
-        firstName: 'The',
-        lastName: 'Firm',
-        phoneNumber: '+639394252236',
-        address: 'random address 1',
+        email: 'owner@rcash777.com',
+        firstName: 'Juan',
+        lastName: 'Della Cruz',
+        phoneNumber: '+639392221212',
+        address: 'random address 5',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        isAdmin: true,
+        isOwner: true,
       },
       {
         id: admin2.id,
@@ -43,16 +43,6 @@ export default class UserSeeder implements Seeder {
         updatedBy: admin,
         tawkto: tawk,
         isAdmin: true,
-      },
-      {
-        id: '7c6e8107-01f1-4fbe-90a4-b28a006662a5',
-        email: 'owner@rcash777.com',
-        firstName: 'Juan',
-        lastName: 'Della Cruz',
-        phoneNumber: '+639392221212',
-        address: 'random address 5',
-        password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        isOwner: true,
       },
       {
         id: '27b017e0-bd4a-40d6-80f2-2133e3e7fc90',
