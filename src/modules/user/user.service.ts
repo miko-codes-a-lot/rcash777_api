@@ -78,10 +78,6 @@ export class UserService extends BaseService<User> {
     user.address = data.address || user.address;
     user.updatedBy = updater;
 
-    if (data.tawkto) {
-      await this._assignTawkTo(user, data.tawkto);
-    }
-
     return this.treeUserRepo.save(user);
   }
 
