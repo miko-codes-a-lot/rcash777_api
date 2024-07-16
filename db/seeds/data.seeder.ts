@@ -9,20 +9,24 @@ export default class UserSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
     const paymentFactory = factoryManager.get(PaymentChannel);
 
-    const admin = { id: '008347f6-0c9b-41e1-86bc-19978e9de440' } as User;
-    const admin2 = { id: '3e86f702-a335-46fe-8685-a70dd02b720e' } as User;
-
     // self.crypto.randomUUID
 
-    const tawk = new UserTawk();
-    tawk.propertyId = '668803c39d7f358570d771e7';
-    tawk.widgetId = '1i21ktd2a';
+    const admin = { id: '3e86f702-a335-46fe-8685-a70dd02b720e' } as User;
 
-    await dataSource.getRepository(UserTawk).save(tawk);
+    const owner = { id: 'b83638ae-d32f-497c-b0d5-fad0054ddb92' } as User;
+    const cm = { id: '0ac0fbc4-39aa-4425-9b4d-a79a4b93ea2b' } as User;
+    const ma = { id: '86d8bc80-6d9d-472e-bc2d-78786963fa79' } as User;
+    const agent = { id: '1e116311-d18c-4338-b0c1-f446d267c10a' } as User;
+    const player = { id: '2340a756-4573-40e0-88f4-a99162d9498a' } as User;
+
+    const tawk = await dataSource.getRepository(UserTawk).save({
+      propertyId: '668803c39d7f358570d771e7',
+      widgetId: '1i21ktd2a',
+    } as UserTawk);
 
     const users = [
       {
-        id: admin.id,
+        id: owner.id,
         email: 'owner@rcash777.com',
         firstName: 'Juan',
         lastName: 'Della Cruz',
@@ -32,17 +36,64 @@ export default class UserSeeder implements Seeder {
         isOwner: true,
       },
       {
-        id: admin2.id,
+        id: cm.id,
+        email: 'cm@rcash777.com',
+        firstName: 'City',
+        lastName: 'Manager',
+        phoneNumber: '+639392221212',
+        address: 'random address 5',
+        password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
+        parent: owner,
+        updatedBy: owner,
+        isCityManager: true,
+      },
+      {
+        id: ma.id,
+        email: 'ma@rcash777.com',
+        firstName: 'Master',
+        lastName: 'Agent',
+        phoneNumber: '+639392221212',
+        address: 'random address 5',
+        password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
+        parent: cm,
+        updatedBy: cm,
+        isMasterAgent: true,
+      },
+      {
+        id: agent.id,
+        email: 'agent@rcash777.com',
+        firstName: 'Agent',
+        lastName: 'Lname',
+        phoneNumber: '+639392221212',
+        address: 'random address 5',
+        password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
+        parent: ma,
+        updatedBy: ma,
+        isAgent: true,
+      },
+      {
+        id: player.id,
+        email: 'player@rcash777.com',
+        firstName: 'Player',
+        lastName: 'Lname',
+        phoneNumber: '+639392221212',
+        address: 'random address 5',
+        password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
+        parent: agent,
+        updatedBy: agent,
+        isPlayer: true,
+      },
+      {
+        id: admin.id,
         email: 'isabelle@gmail.com',
         firstName: 'Isabelle',
         lastName: 'Sanchez',
         phoneNumber: '+639394254444',
         address: 'random address 4',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        parent: admin,
-        updatedBy: admin,
-        tawkto: tawk,
-        isAdmin: true,
+        parent: ma,
+        updatedBy: ma,
+        isAgent: true,
       },
       {
         id: '27b017e0-bd4a-40d6-80f2-2133e3e7fc90',
@@ -64,8 +115,9 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394251111',
         address: 'random address 2',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        parent: admin2,
-        updatedBy: admin2,
+        tawkto: tawk,
+        parent: admin,
+        updatedBy: admin,
         isPlayer: true,
       },
       {
