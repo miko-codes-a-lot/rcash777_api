@@ -73,7 +73,7 @@ export class CoinTransactionService {
         ...(playerId && { player: { id: playerId } }),
         ...(!playerId && {
           player: {
-            id: In(await this._getUserChildrenIds(user)),
+            id: In([user.id, ...(await this._getUserChildrenIds(user))]),
           },
         }),
       },
