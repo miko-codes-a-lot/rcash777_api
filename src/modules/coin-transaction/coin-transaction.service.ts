@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository, TreeRepository } from 'typeorm';
@@ -10,6 +10,10 @@ import httpStatus from 'http-status';
 import { CoinRequestDTO } from './dto/coin-request.dto';
 import { CoinRequest } from './entities/coin-request.entity';
 import { CoinRequestType } from 'src/enums/coin-request.enum';
+import { PaymentChannel } from '../payment-channel/entities/payment-channel.entity';
+
+const REBATE_PERCENT = 0.03; // 3%
+const REBATE_AFTER_ELAPSED_MS = 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class CoinTransactionService {
@@ -77,7 +81,7 @@ export class CoinTransactionService {
           },
         }),
       },
-      relations: { player: true, cashTransaction: true, createdBy: true, coinRequests: true },
+      relations: { player: true, createdBy: true, coinRequests: true },
       select: {
         createdBy: {
           id: true,
@@ -183,6 +187,108 @@ export class CoinTransactionService {
         .build();
 
       return requestRepo.save(request);
+    });
+  }
+
+  async deposit(user: User, data: any) {
+    return this.dataSource.transaction(async (manager) => {
+      const userRepo = manager.getRepository(User);
+      const coinRepo = manager.getRepository(CoinTransaction);
+      const paymentRepo = manager.getRepository(PaymentChannel);
+
+      const targetUser = await userRepo.findOneBy({ id: data.userId });
+      const payment = await paymentRepo.findOneBy({ id: data.paymentChannelId });
+
+      if (!targetUser) throw new NotFoundException('User not found');
+      if (!payment) throw new NotFoundException('Payment channel not found');
+
+      if (!user.isOwner && targetUser.isCityManager) {
+        throw new BadRequestException('Only an Owner can topup the City Manager');
+      } else if (!user.isCityManager && targetUser.isMasterAgent) {
+        throw new BadRequestException('Only a City Manager can topup the Master Agent');
+      } else if (!user.isMasterAgent && targetUser.isAgent) {
+        throw new BadRequestException('Only a Master Agent can topup the Agent');
+      } else if (!user.isAgent && targetUser.isPlayer) {
+        throw new BadRequestException('Only an Agent can topup the Player');
+      }
+
+      const txDepositData = CoinTransaction.builder()
+        .amount(data.amount)
+        .type(TransactionType.DEBIT)
+        .typeCategory(TransactionTypeCategory.DEPOSIT)
+        .paymentChannel(payment)
+        .player(targetUser)
+        .createdBy(user)
+        .build();
+
+      const txDeposit = await coinRepo.save(txDepositData);
+
+      const coinMasterBalance = await this.computeBalance(user.id);
+      const txCredit = CoinTransaction.builder()
+        .amount(data.amount)
+        .coinTransaction(txDeposit)
+        .type(TransactionType.CREDIT)
+        .typeCategory(TransactionTypeCategory.DEPOSIT)
+        .player(user)
+        .createdBy(user)
+        .build();
+
+      await coinRepo.save(txCredit);
+
+      if (!user.isOwner && data.amount > coinMasterBalance) {
+        throw new BadRequestException('Not enough balance to topup the user');
+      }
+
+      if (targetUser.isPlayer) {
+        const lastRebate = await coinRepo.findOne({
+          where: {
+            player: { id: targetUser.id },
+            type: TransactionType.DEBIT,
+            typeCategory: TransactionTypeCategory.REBATE,
+          },
+          order: { createdAt: 'DESC' },
+        });
+
+        const now = new Date().getTime();
+        const elapsed = now - lastRebate?.createdAt?.getTime();
+
+        if (!lastRebate || elapsed >= REBATE_AFTER_ELAPSED_MS) {
+          const totalRebate = data.amount * REBATE_PERCENT;
+          if (totalRebate > coinMasterBalance - data.amount - totalRebate) {
+            throw new BadRequestException('Not enough balance to topup the user');
+          }
+
+          // agent to pay the rebate
+          const txCreditRebate = CoinTransaction.builder()
+            .player(user)
+            .coinTransaction(txDeposit)
+            .type(TransactionType.CREDIT)
+            .typeCategory(TransactionTypeCategory.REBATE)
+            .amount(totalRebate)
+            .createdBy(user)
+            .build();
+          await coinRepo.save(txCreditRebate);
+
+          const coinRebateTx = CoinTransaction.builder()
+            .player(targetUser)
+            .coinTransaction(txDeposit)
+            .type(TransactionType.DEBIT)
+            .typeCategory(TransactionTypeCategory.REBATE)
+            .amount(totalRebate)
+            .createdBy(user)
+            .build();
+
+          targetUser.coinDeposit += totalRebate;
+
+          await coinRepo.save(coinRebateTx);
+        }
+      }
+
+      targetUser.coinDeposit += data.amount;
+
+      await userRepo.save(targetUser);
+
+      return txDeposit;
     });
   }
 
