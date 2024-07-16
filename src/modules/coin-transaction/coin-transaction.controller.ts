@@ -25,8 +25,8 @@ export class CoinTransactionController {
   }
 
   // @TODO - Miko Chu - 2024-06-13: must be admin or agent or the player itself
-  @Get('player/:id?')
-  async findAllUser(
+  @Get('user/:id?')
+  async findUserTransactions(
     // @RequestUser() user: User,
     @Query() query: PaginationDTO,
     @Param('id') id: string,
