@@ -122,6 +122,16 @@ export class UserService extends BaseService<User> {
     return children.map((u) => u.id);
   }
 
+  async findOne(id: string) {
+    const user = await this.userRepository.findOneBy({ id });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
   async findAllPaginated(user: User, config: UserPaginateDTO) {
     const {
       page = 1,

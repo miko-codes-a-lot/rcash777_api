@@ -46,6 +46,17 @@ export class UserController {
     return res.status(HttpStatus.SUCCESS).json(user);
   }
 
+  @Get('admin/:id')
+  async findOne(@Param('id') id: string) {
+    return this.userService.findOne(id);
+  }
+
+  @Get('admin/:id/tree')
+  async getTree(@Param('id') id: string, @Query() query: UserPaginateDTO) {
+    const user = await this.userService.findOne(id);
+    return this.userService.findAllPaginated(user, query);
+  }
+
   @Get('admin')
   async findAll(@RequestUser() user: User, @Query() query: UserPaginateDTO, @Res() res: Response) {
     query.page *= 1;
