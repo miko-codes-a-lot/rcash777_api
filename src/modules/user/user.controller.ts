@@ -64,7 +64,7 @@ export class UserController {
     @Res() res: Response,
   ) {
     const { id } = user;
-    const result = await this.userService.update(id, user, payload);
+    const result = await this.userService.updateSelf(id, user, payload);
 
     res.status(HttpStatus.SUCCESS).send(result);
   }

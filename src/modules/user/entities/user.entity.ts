@@ -3,23 +3,29 @@ import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-tran
 import { CoinRequest } from 'src/modules/coin-transaction/entities/coin-request.entity';
 import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 import { GameSession } from 'src/modules/game/entities/game-session.entity';
-import { Role } from 'src/modules/role/entities/role.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   Index,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Tree,
+  TreeChildren,
+  TreeParent,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserTawk } from './user-tawk.entity';
 
-@Index('fk_user_created_by_id', ['createdBy'])
+@Index('fk_user_isOwner', ['isOwner'])
+@Index('fk_user_isAdmin', ['isAdmin'])
+@Index('fk_user_isCityManager', ['isCityManager'])
+@Index('fk_user_isMasterAgent', ['isMasterAgent'])
+@Index('fk_user_isAgent', ['isAgent'])
+@Index('fk_user_isPlayer', ['isPlayer'])
+@Index('fk_user_parent', ['parent'])
 @Index('fk_user_updated_by_id', ['updatedBy'])
 @Index('fk_user_deactivated_by_id', ['deactivatedBy'])
 @Index('fk_user_activated_by_id', ['activatedBy'])
@@ -30,6 +36,7 @@ import { UserTawk } from './user-tawk.entity';
   'phoneNumber',
   'createdAt',
 ])
+@Tree('closure-table')
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -63,19 +70,23 @@ export class User {
   @Column({ nullable: false, select: false })
   password: string;
 
-  @ManyToMany(() => Role, (role) => role.users, { onDelete: 'NO ACTION', onUpdate: 'NO ACTION' })
-  @JoinTable({
-    name: 'user_role',
-    joinColumn: {
-      name: 'user_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'role_id',
-      referencedColumnName: 'id',
-    },
-  })
-  roles: Role[];
+  @Column({ name: 'is_owner', default: false })
+  isOwner: boolean;
+
+  @Column({ name: 'is_admin', default: false })
+  isAdmin: boolean;
+
+  @Column({ name: 'is_city_manager', default: false })
+  isCityManager: boolean;
+
+  @Column({ name: 'is_master_agent', default: false })
+  isMasterAgent: boolean;
+
+  @Column({ name: 'is_agent', default: false })
+  isAgent: boolean;
+
+  @Column({ name: 'is_player', default: false })
+  isPlayer: boolean;
 
   @ManyToOne(() => UserTawk, (tawk) => tawk.users, { nullable: true })
   @JoinColumn({ name: 'tawk_id' })
@@ -99,9 +110,11 @@ export class User {
   @OneToMany(() => GameSession, (gs) => gs.user)
   gameSessions: GameSession[];
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'created_by_id' })
-  createdBy: User;
+  @TreeChildren()
+  children: User[];
+
+  @TreeParent()
+  parent: User;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'updated_by_id' })
@@ -188,13 +201,43 @@ class UserBuilder {
     return this;
   }
 
-  roles(roles: Role[]): UserBuilder {
-    this.user.roles = roles;
+  isOwner(isOwner: boolean) {
+    this.user.isOwner = isOwner;
     return this;
   }
 
-  createdBy(createdBy: User): UserBuilder {
-    this.user.createdBy = createdBy;
+  isAdmin(isAdmin: boolean) {
+    this.user.isAdmin = isAdmin;
+    return this;
+  }
+
+  isCityManager(isCityManager: boolean) {
+    this.user.isCityManager = isCityManager;
+    return this;
+  }
+
+  isMasterAgent(isMasterAgent: boolean) {
+    this.user.isMasterAgent = isMasterAgent;
+    return this;
+  }
+
+  isAgent(isAgent: boolean) {
+    this.user.isAgent = isAgent;
+    return this;
+  }
+
+  isPlayer(isPlayer: boolean) {
+    this.user.isPlayer = isPlayer;
+    return this;
+  }
+
+  parent(parent: User): UserBuilder {
+    this.user.parent = parent;
+    return this;
+  }
+
+  children(children: User[]) {
+    this.user.children = children;
     return this;
   }
 

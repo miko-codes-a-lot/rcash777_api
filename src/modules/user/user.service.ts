@@ -1,24 +1,27 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { ILike, Repository } from 'typeorm';
+import { DataSource, ILike, Repository, TreeRepository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Pagination, PaginationResponse } from 'src/schemas/pagination.schema';
 import { BaseService } from 'src/services/base.service';
 import { PostUserNewRequest } from './schemas/post-user-new.schema';
 import { PostUserUpdateRequest } from './schemas/put-user-update.schema';
 import { PaginationDTO } from 'src/schemas/paginate-query.dto';
-import { Role } from '../role/entities/role.entity';
 import { UserTawk } from './entities/user-tawk.entity';
 
 @Injectable()
 export class UserService extends BaseService<User> {
+  private treeUserRepo: TreeRepository<User>;
+
   constructor(
+    private dataSource: DataSource,
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(UserTawk) private tawkRepository: Repository<UserTawk>,
   ) {
     super();
     this.repository = userRepository;
+    this.treeUserRepo = dataSource.manager.getTreeRepository(User);
   }
 
   private async _assignTawkTo(user: User, tawkto: { propertyId: string; widgetId: string }) {
@@ -44,13 +47,17 @@ export class UserService extends BaseService<User> {
     user.phoneNumber = data.phoneNumber;
     user.address = data.address;
     user.password = bcrypt.hashSync(data.password, 10);
-    user.createdBy = creator;
-    user.roles = data.roleIds.map((id) => {
-      return { id } as Role;
-    });
+    user.parent = creator;
+
+    user.isOwner = data.isOwner;
+    user.isAdmin = data.isAdmin;
+    user.isCityManager = data.isCityManager;
+    user.isMasterAgent = data.isMasterAgent;
+    user.isAgent = data.isAgent;
+    user.isPlayer = data.isPlayer;
 
     try {
-      await this.userRepository.save(user);
+      await this.treeUserRepo.save(user);
 
       if (data.tawkto) {
         await this._assignTawkTo(user, data.tawkto);
@@ -62,7 +69,7 @@ export class UserService extends BaseService<User> {
     }
   }
 
-  async update(id: string, updater: User, data: PostUserUpdateRequest) {
+  async updateSelf(id: string, updater: User, data: PostUserUpdateRequest) {
     const user = await this.findById(id, { tawkto: true });
 
     user.firstName = data.firstName || user.firstName;
@@ -70,15 +77,32 @@ export class UserService extends BaseService<User> {
     user.phoneNumber = data.phoneNumber || user.phoneNumber;
     user.address = data.address || user.address;
     user.updatedBy = updater;
-    user.roles = data.roleIds.map((id) => {
-      return { id } as Role;
-    });
+
+    return this.treeUserRepo.save(user);
+  }
+
+  async update(id: string, updater: User, data: PostUserUpdateRequest) {
+    const user = await this.findById(id, { tawkto: true });
+    if (!user) throw new NotFoundException('User not found');
+
+    user.firstName = data.firstName || user.firstName;
+    user.lastName = data.lastName || user.lastName;
+    user.phoneNumber = data.phoneNumber || user.phoneNumber;
+    user.address = data.address || user.address;
+    user.updatedBy = updater;
+
+    user.isOwner = data.isOwner;
+    user.isAdmin = data.isAdmin;
+    user.isCityManager = data.isCityManager;
+    user.isMasterAgent = data.isMasterAgent;
+    user.isAgent = data.isAgent;
+    user.isPlayer = data.isPlayer;
 
     if (data.tawkto) {
       await this._assignTawkTo(user, data.tawkto);
     }
 
-    return this.userRepository.save(user);
+    return this.treeUserRepo.save(user);
   }
 
   async findByEmail(email: string) {
@@ -117,7 +141,6 @@ export class UserService extends BaseService<User> {
         id,
       },
       relations: {
-        roles: { permissions: true },
         tawkto: true,
       },
     });

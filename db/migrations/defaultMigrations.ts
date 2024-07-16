@@ -80,16 +80,10 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE INDEX "fb_game_session_user_id" ON "game_session" ("user_id") `,
     );
     await queryRunner.query(
-      `CREATE TABLE "permission" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "code" character varying NOT NULL, "description" character varying NOT NULL DEFAULT '', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "created_by_id" uuid, "updated_by_id" uuid, CONSTRAINT "UQ_30e166e8c6359970755c5727a23" UNIQUE ("code"), CONSTRAINT "PK_3b8b97af9d9d8807e41e6f48362" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "role" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "description" character varying NOT NULL DEFAULT '', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "created_by_id" uuid, "updated_by_id" uuid, CONSTRAINT "UQ_ae4578dcaed5adff96595e61660" UNIQUE ("name"), CONSTRAINT "PK_b36bcfe02fc8de3c57a8b2391c2" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
       `CREATE TABLE "user_tawk" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "property_id" character varying NOT NULL, "widget_id" character varying NOT NULL, CONSTRAINT "PK_cd333c55e14cb5662361fdbf112" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "user" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "email" character varying NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "phone_number" character varying NOT NULL, "address" character varying NOT NULL, "coin_deposit" numeric(18,8) NOT NULL DEFAULT '0', "password" character varying NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "deactivated_at" TIMESTAMP WITH TIME ZONE, "activated_at" TIMESTAMP WITH TIME ZONE, "tawk_id" uuid, "created_by_id" uuid, "updated_by_id" uuid, "deactivated_by_id" uuid, "activated_by_id" uuid, CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "user" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "email" character varying NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "phone_number" character varying NOT NULL, "address" character varying NOT NULL, "coin_deposit" numeric(18,8) NOT NULL DEFAULT '0', "password" character varying NOT NULL, "is_owner" boolean NOT NULL DEFAULT false, "is_admin" boolean NOT NULL DEFAULT false, "is_city_manager" boolean NOT NULL DEFAULT false, "is_master_agent" boolean NOT NULL DEFAULT false, "is_agent" boolean NOT NULL DEFAULT false, "is_player" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "deactivated_at" TIMESTAMP WITH TIME ZONE, "activated_at" TIMESTAMP WITH TIME ZONE, "tawk_id" uuid, "parentId" uuid, "updated_by_id" uuid, "deactivated_by_id" uuid, "activated_by_id" uuid, CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "idx_user_email_first_name_last_name_phone_number_created_at" ON "user" ("first_name", "last_name", "phone_number", "created_at") `,
@@ -104,27 +98,24 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE INDEX "fk_user_deactivated_by_id" ON "user" ("deactivated_by_id") `,
     );
     await queryRunner.query(`CREATE INDEX "fk_user_updated_by_id" ON "user" ("updated_by_id") `);
-    await queryRunner.query(`CREATE INDEX "fk_user_created_by_id" ON "user" ("created_by_id") `);
-    await queryRunner.query(
-      `CREATE TABLE "user_role" ("user_id" uuid NOT NULL, "role_id" uuid NOT NULL, CONSTRAINT "PK_f634684acb47c1a158b83af5150" PRIMARY KEY ("user_id", "role_id"))`,
-    );
+    await queryRunner.query(`CREATE INDEX "fk_user_parent" ON "user" ("parentId") `);
+    await queryRunner.query(`CREATE INDEX "fk_user_isPlayer" ON "user" ("is_player") `);
+    await queryRunner.query(`CREATE INDEX "fk_user_isAgent" ON "user" ("is_agent") `);
+    await queryRunner.query(`CREATE INDEX "fk_user_isMasterAgent" ON "user" ("is_master_agent") `);
+    await queryRunner.query(`CREATE INDEX "fk_user_isCityManager" ON "user" ("is_city_manager") `);
+    await queryRunner.query(`CREATE INDEX "fk_user_isAdmin" ON "user" ("is_admin") `);
+    await queryRunner.query(`CREATE INDEX "fk_user_isOwner" ON "user" ("is_owner") `);
     await queryRunner.query(
       `CREATE TABLE "auth" ("user_id" uuid NOT NULL, "access_token" character varying NOT NULL, "refresh_token" character varying NOT NULL, CONSTRAINT "PK_9922406dc7d70e20423aeffadf3" PRIMARY KEY ("user_id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "role_permission" ("role_id" uuid NOT NULL, "permission_id" uuid NOT NULL, CONSTRAINT "PK_19a94c31d4960ded0dcd0397759" PRIMARY KEY ("role_id", "permission_id"))`,
+      `CREATE TABLE "user_closure" ("id_ancestor" uuid NOT NULL, "id_descendant" uuid NOT NULL, CONSTRAINT "PK_117e57e38a6cabe49d52592c939" PRIMARY KEY ("id_ancestor", "id_descendant"))`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_3d0a7155eafd75ddba5a701336" ON "role_permission" ("role_id") `,
+      `CREATE INDEX "IDX_dcba9530799a881bdb55f5080b" ON "user_closure" ("id_ancestor") `,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_e3a3ba47b7ca00fd23be4ebd6c" ON "role_permission" ("permission_id") `,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "IDX_d0e5815877f7395a198a4cb0a4" ON "user_role" ("user_id") `,
-    );
-    await queryRunner.query(
-      `CREATE INDEX "IDX_32a6fc2fcb019d8e3a8ace0f55" ON "user_role" ("role_id") `,
+      `CREATE INDEX "IDX_45880eda1f98d31b4400d153a4" ON "user_closure" ("id_descendant") `,
     );
     await queryRunner.query(
       `ALTER TABLE "game_image" ADD CONSTRAINT "FK_3fb15621133985aa37e6318ed19" FOREIGN KEY ("game_id") REFERENCES "game"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -172,22 +163,10 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "game_session" ADD CONSTRAINT "FK_e771dcf69ac8e0a2cfe4da708f2" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "permission" ADD CONSTRAINT "FK_0e65d1f8b3cf7bef8f47b0e5bcc" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "permission" ADD CONSTRAINT "FK_bce01da30939f991292e607078e" FOREIGN KEY ("updated_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "role" ADD CONSTRAINT "FK_db92db78f9478b3e2fea19934b3" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "role" ADD CONSTRAINT "FK_41385dfda73d566335406898746" FOREIGN KEY ("updated_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
       `ALTER TABLE "user" ADD CONSTRAINT "FK_cd333c55e14cb5662361fdbf112" FOREIGN KEY ("tawk_id") REFERENCES "user_tawk"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "user" ADD CONSTRAINT "FK_b489bba7c2e3d5afcd98a445ff8" FOREIGN KEY ("created_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "user" ADD CONSTRAINT "FK_c86f56da7bb30c073e3cbed4e50" FOREIGN KEY ("parentId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "user" ADD CONSTRAINT "FK_7a4f92de626d8dc4b05f06ad181" FOREIGN KEY ("updated_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -199,45 +178,25 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "user" ADD CONSTRAINT "FK_f5cfe53ba9f38fc26dafa29500f" FOREIGN KEY ("activated_by_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "user_role" ADD CONSTRAINT "FK_d0e5815877f7395a198a4cb0a46" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "user_closure" ADD CONSTRAINT "FK_dcba9530799a881bdb55f5080bd" FOREIGN KEY ("id_ancestor") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "user_role" ADD CONSTRAINT "FK_32a6fc2fcb019d8e3a8ace0f55f" FOREIGN KEY ("role_id") REFERENCES "role"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "role_permission" ADD CONSTRAINT "FK_3d0a7155eafd75ddba5a7013368" FOREIGN KEY ("role_id") REFERENCES "role"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "role_permission" ADD CONSTRAINT "FK_e3a3ba47b7ca00fd23be4ebd6cf" FOREIGN KEY ("permission_id") REFERENCES "permission"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "user_closure" ADD CONSTRAINT "FK_45880eda1f98d31b4400d153a4c" FOREIGN KEY ("id_descendant") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "role_permission" DROP CONSTRAINT "FK_e3a3ba47b7ca00fd23be4ebd6cf"`,
+      `ALTER TABLE "user_closure" DROP CONSTRAINT "FK_45880eda1f98d31b4400d153a4c"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "role_permission" DROP CONSTRAINT "FK_3d0a7155eafd75ddba5a7013368"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_role" DROP CONSTRAINT "FK_32a6fc2fcb019d8e3a8ace0f55f"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_role" DROP CONSTRAINT "FK_d0e5815877f7395a198a4cb0a46"`,
+      `ALTER TABLE "user_closure" DROP CONSTRAINT "FK_dcba9530799a881bdb55f5080bd"`,
     );
     await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_f5cfe53ba9f38fc26dafa29500f"`);
     await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_1ca4322739d8e1101b0bb655d71"`);
     await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_7a4f92de626d8dc4b05f06ad181"`);
-    await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_b489bba7c2e3d5afcd98a445ff8"`);
+    await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_c86f56da7bb30c073e3cbed4e50"`);
     await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_cd333c55e14cb5662361fdbf112"`);
-    await queryRunner.query(`ALTER TABLE "role" DROP CONSTRAINT "FK_41385dfda73d566335406898746"`);
-    await queryRunner.query(`ALTER TABLE "role" DROP CONSTRAINT "FK_db92db78f9478b3e2fea19934b3"`);
-    await queryRunner.query(
-      `ALTER TABLE "permission" DROP CONSTRAINT "FK_bce01da30939f991292e607078e"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "permission" DROP CONSTRAINT "FK_0e65d1f8b3cf7bef8f47b0e5bcc"`,
-    );
     await queryRunner.query(
       `ALTER TABLE "game_session" DROP CONSTRAINT "FK_e771dcf69ac8e0a2cfe4da708f2"`,
     );
@@ -283,14 +242,17 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "game_image" DROP CONSTRAINT "FK_3fb15621133985aa37e6318ed19"`,
     );
-    await queryRunner.query(`DROP INDEX "public"."IDX_32a6fc2fcb019d8e3a8ace0f55"`);
-    await queryRunner.query(`DROP INDEX "public"."IDX_d0e5815877f7395a198a4cb0a4"`);
-    await queryRunner.query(`DROP INDEX "public"."IDX_e3a3ba47b7ca00fd23be4ebd6c"`);
-    await queryRunner.query(`DROP INDEX "public"."IDX_3d0a7155eafd75ddba5a701336"`);
-    await queryRunner.query(`DROP TABLE "role_permission"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_45880eda1f98d31b4400d153a4"`);
+    await queryRunner.query(`DROP INDEX "public"."IDX_dcba9530799a881bdb55f5080b"`);
+    await queryRunner.query(`DROP TABLE "user_closure"`);
     await queryRunner.query(`DROP TABLE "auth"`);
-    await queryRunner.query(`DROP TABLE "user_role"`);
-    await queryRunner.query(`DROP INDEX "public"."fk_user_created_by_id"`);
+    await queryRunner.query(`DROP INDEX "public"."fk_user_isOwner"`);
+    await queryRunner.query(`DROP INDEX "public"."fk_user_isAdmin"`);
+    await queryRunner.query(`DROP INDEX "public"."fk_user_isCityManager"`);
+    await queryRunner.query(`DROP INDEX "public"."fk_user_isMasterAgent"`);
+    await queryRunner.query(`DROP INDEX "public"."fk_user_isAgent"`);
+    await queryRunner.query(`DROP INDEX "public"."fk_user_isPlayer"`);
+    await queryRunner.query(`DROP INDEX "public"."fk_user_parent"`);
     await queryRunner.query(`DROP INDEX "public"."fk_user_updated_by_id"`);
     await queryRunner.query(`DROP INDEX "public"."fk_user_deactivated_by_id"`);
     await queryRunner.query(`DROP INDEX "public"."fk_user_activated_by_id"`);
@@ -302,8 +264,6 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     );
     await queryRunner.query(`DROP TABLE "user"`);
     await queryRunner.query(`DROP TABLE "user_tawk"`);
-    await queryRunner.query(`DROP TABLE "role"`);
-    await queryRunner.query(`DROP TABLE "permission"`);
     await queryRunner.query(`DROP INDEX "public"."fb_game_session_user_id"`);
     await queryRunner.query(`DROP TABLE "game_session"`);
     await queryRunner.query(`DROP TABLE "cash_transaction"`);

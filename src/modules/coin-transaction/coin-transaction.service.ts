@@ -1,9 +1,9 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository, TreeRepository } from 'typeorm';
 import { CoinTransaction } from './entities/coin-transaction.entity';
-import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { CoinRequestPaginateDTO, PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { User } from '../user/entities/user.entity';
 import httpStatus from 'http-status';
@@ -13,6 +13,8 @@ import { CoinRequestType } from 'src/enums/coin-request.enum';
 
 @Injectable()
 export class CoinTransactionService {
+  private treeUserRepo: TreeRepository<User>;
+
   constructor(
     private dataSource: DataSource,
 
@@ -24,7 +26,9 @@ export class CoinTransactionService {
 
     @InjectRepository(User)
     private userRepo: Repository<User>,
-  ) {}
+  ) {
+    this.treeUserRepo = dataSource.manager.getTreeRepository(User);
+  }
 
   create(createCoinTransactionDto: FormCoinTransactionDto) {
     return 'This action adds a new coinTransaction' + createCoinTransactionDto;
@@ -61,11 +65,18 @@ export class CoinTransactionService {
     return parseFloat(debit || 0) - parseFloat(credit || 0);
   }
 
-  async findAllPaginated(config: PaginationDTO, playerId?: string) {
+  async findAllPaginated(user: User, config: PaginationDTO, playerId?: string) {
     const { page = 1, pageSize = 10, sortBy = 'createdAt', sortOrder = 'asc' } = config;
 
     const [tx, count] = await this.coinRepo.findAndCount({
-      ...(playerId && { where: { player: { id: playerId } } }),
+      where: {
+        ...(playerId && { player: { id: playerId } }),
+        ...(!playerId && {
+          player: {
+            id: In(await this._getUserChildrenIds(user)),
+          },
+        }),
+      },
       relations: { player: true, cashTransaction: true, createdBy: true, coinRequests: true },
       select: {
         createdBy: {
@@ -91,13 +102,36 @@ export class CoinTransactionService {
     };
   }
 
-  async findRequests(user: User, config: PaginationDTO) {
-    const { page = 1, pageSize = 10, sortBy = 'createdAt', sortOrder = 'asc' } = config;
+  private async _getUserChildrenIds(user: User) {
+    const children = await this.treeUserRepo.findDescendants(user);
+    return children.map((u) => u.id);
+  }
+
+  async findRequests(user: User, config: CoinRequestPaginateDTO) {
+    const {
+      page = 1,
+      pageSize = 10,
+      status,
+      type,
+      sortBy = 'createdAt',
+      sortOrder = 'asc',
+    } = config;
+
+    const ids = await this._getUserChildrenIds(user);
 
     const [tx, count] = await this.requestRepo.findAndCount({
-      where: {
-        reviewingUser: { id: user.id },
-      },
+      where: [
+        {
+          reviewingUser: { id: user.id },
+          status,
+          type,
+        },
+        {
+          requestingUser: { id: In(ids) },
+          status,
+          type,
+        },
+      ],
       relations: { requestingUser: true },
       select: {
         requestingUser: {
@@ -123,7 +157,7 @@ export class CoinTransactionService {
     const { amount } = data;
     const fullUser = await this.userRepo.findOne({
       where: { id: user.id },
-      relations: { createdBy: true },
+      relations: { parent: true },
     });
 
     return this.dataSource.transaction(async (manager) => {
@@ -144,7 +178,7 @@ export class CoinTransactionService {
         .amount(amount)
         .coinTransaction(txDeposit)
         .requestingUser(fullUser)
-        .actionAgent(fullUser.createdBy)
+        .reviewingUser(fullUser.parent)
         .type(CoinRequestType.DEPOSIT)
         .build();
 
@@ -156,7 +190,7 @@ export class CoinTransactionService {
     const { amount } = data;
     const fullUser = await this.userRepo.findOne({
       where: { id: user.id },
-      relations: { createdBy: true },
+      relations: { parent: true },
     });
 
     const balance = await this.computeBalance(user.id);
@@ -182,7 +216,7 @@ export class CoinTransactionService {
         .amount(amount)
         .coinTransaction(txWithdraw)
         .requestingUser(fullUser)
-        .reviewingUser(fullUser.createdBy)
+        .reviewingUser(fullUser.parent)
         .type(CoinRequestType.WITHDRAW)
         .build();
 

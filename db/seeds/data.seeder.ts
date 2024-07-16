@@ -2,22 +2,23 @@ import { Seeder, SeederFactoryManager } from 'typeorm-extension';
 
 import { User } from 'src/modules/user/entities/user.entity';
 import { PaymentChannel } from 'src/modules/payment-channel/entities/payment-channel.entity';
-import { Role } from 'src/modules/role/entities/role.entity';
-import { Permission } from 'src/modules/permission/entities/permission.entity';
 import { DataSource } from 'typeorm';
 import { UserTawk } from 'src/modules/user/entities/user-tawk.entity';
 
 export default class UserSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
     const paymentFactory = factoryManager.get(PaymentChannel);
-    const permissionFactory = factoryManager.get(Permission);
-    const roleFactory = factoryManager.get(Role);
-    const userTawkFactory = factoryManager.get(UserTawk);
 
     const admin = { id: '008347f6-0c9b-41e1-86bc-19978e9de440' } as User;
     const admin2 = { id: '3e86f702-a335-46fe-8685-a70dd02b720e' } as User;
 
     // self.crypto.randomUUID
+
+    const tawk = new UserTawk();
+    tawk.propertyId = '668803c39d7f358570d771e7';
+    tawk.widgetId = '1i21ktd2a';
+
+    await dataSource.getRepository(UserTawk).save(tawk);
 
     const users = [
       {
@@ -28,8 +29,7 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394252236',
         address: 'random address 1',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin,
-        updatedBy: admin,
+        isAdmin: true,
       },
       {
         id: admin2.id,
@@ -39,8 +39,10 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394254444',
         address: 'random address 4',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin,
+        parent: admin,
         updatedBy: admin,
+        tawkto: tawk,
+        isAdmin: true,
       },
       {
         id: '7c6e8107-01f1-4fbe-90a4-b28a006662a5',
@@ -50,8 +52,7 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639392221212',
         address: 'random address 5',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin,
-        updatedBy: admin,
+        isOwner: true,
       },
       {
         id: '27b017e0-bd4a-40d6-80f2-2133e3e7fc90',
@@ -61,8 +62,9 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394253333',
         address: 'random address 5',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin,
+        parent: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
       {
         id: 'fee363ca-a909-453f-ae8b-9d5ce739394e',
@@ -72,8 +74,9 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394251111',
         address: 'random address 2',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin2,
+        parent: admin2,
         updatedBy: admin2,
+        isPlayer: true,
       },
       {
         id: '723f51ea-9c22-496d-abdb-85901e392900',
@@ -83,8 +86,9 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394257777',
         address: 'random address 6',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin,
+        parent: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
       {
         id: '4c74684d-538b-4fec-848b-cef6640ce342',
@@ -94,8 +98,9 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394258888',
         address: 'random address 7',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin,
+        parent: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
       {
         id: 'e62d259d-2d56-4399-ae57-de767159a5fe',
@@ -105,8 +110,9 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394255454',
         address: 'random address 8',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin,
+        parent: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
       {
         id: 'aa9ca67f-081f-4ca0-b014-606ab3b5ccf5',
@@ -116,8 +122,9 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394251331',
         address: 'random address 9',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin,
+        parent: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
       {
         id: '01658469-9043-4d28-9afc-540caeec545b',
@@ -127,17 +134,18 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639394257878',
         address: 'random address 3',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        createdBy: admin,
+        parent: admin,
         updatedBy: admin,
+        isPlayer: true,
       },
     ];
 
-    const userRepo = dataSource.getRepository(User);
-    await userRepo.insert(users);
+    const treeUser = dataSource.manager.getTreeRepository(User);
+
+    for (const user of users) {
+      await treeUser.save(user);
+    }
 
     await paymentFactory.save();
-    await permissionFactory.save();
-    await roleFactory.save();
-    await userTawkFactory.save();
   }
 }
