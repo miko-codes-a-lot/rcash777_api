@@ -48,7 +48,7 @@ services:
     container_name: rcash-api
     build:
       context: .
-      dockerfile: ./docker/remote/Dockerfile
+      dockerfile: ./docker/local/Dockerfile
     restart: always
     env_file: .env
     expose:
