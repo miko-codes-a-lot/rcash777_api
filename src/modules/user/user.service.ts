@@ -38,8 +38,16 @@ export class UserService extends BaseService<User> {
     return tawk;
   }
 
+  private _validateOwner(isOwner: boolean) {
+    if (isOwner) {
+      throw new BadRequestException('There can only be one Owner');
+    }
+  }
+
   async create(creator: User, data: PostUserNewRequest) {
     const user = new User();
+
+    this._validateOwner(data.isOwner);
 
     user.email = data.email;
     user.firstName = data.firstName;
@@ -49,7 +57,6 @@ export class UserService extends BaseService<User> {
     user.password = bcrypt.hashSync(data.password, 10);
     user.parent = creator;
 
-    user.isOwner = data.isOwner;
     user.isAdmin = data.isAdmin;
     user.isCityManager = data.isCityManager;
     user.isMasterAgent = data.isMasterAgent;
@@ -85,13 +92,14 @@ export class UserService extends BaseService<User> {
     const user = await this.findById(id, { tawkto: true });
     if (!user) throw new NotFoundException('User not found');
 
+    this._validateOwner(data.isOwner);
+
     user.firstName = data.firstName || user.firstName;
     user.lastName = data.lastName || user.lastName;
     user.phoneNumber = data.phoneNumber || user.phoneNumber;
     user.address = data.address || user.address;
     user.updatedBy = updater;
 
-    user.isOwner = data.isOwner;
     user.isAdmin = data.isAdmin;
     user.isCityManager = data.isCityManager;
     user.isMasterAgent = data.isMasterAgent;
