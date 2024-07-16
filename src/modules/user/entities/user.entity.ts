@@ -12,6 +12,9 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Tree,
+  TreeChildren,
+  TreeParent,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserTawk } from './user-tawk.entity';
@@ -22,7 +25,7 @@ import { UserTawk } from './user-tawk.entity';
 @Index('fk_user_isMasterAgent', ['isMasterAgent'])
 @Index('fk_user_isAgent', ['isAgent'])
 @Index('fk_user_isPlayer', ['isPlayer'])
-@Index('fk_user_created_by_id', ['createdBy'])
+@Index('fk_user_parent', ['parent'])
 @Index('fk_user_updated_by_id', ['updatedBy'])
 @Index('fk_user_deactivated_by_id', ['deactivatedBy'])
 @Index('fk_user_activated_by_id', ['activatedBy'])
@@ -33,6 +36,7 @@ import { UserTawk } from './user-tawk.entity';
   'phoneNumber',
   'createdAt',
 ])
+@Tree('closure-table')
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -106,9 +110,11 @@ export class User {
   @OneToMany(() => GameSession, (gs) => gs.user)
   gameSessions: GameSession[];
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'created_by_id' })
-  createdBy: User;
+  @TreeChildren()
+  children: User[];
+
+  @TreeParent()
+  parent: User;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'updated_by_id' })
@@ -195,8 +201,43 @@ class UserBuilder {
     return this;
   }
 
-  createdBy(createdBy: User): UserBuilder {
-    this.user.createdBy = createdBy;
+  isOwner(isOwner: boolean) {
+    this.user.isOwner = isOwner;
+    return this;
+  }
+
+  isAdmin(isAdmin: boolean) {
+    this.user.isAdmin = isAdmin;
+    return this;
+  }
+
+  isCityManager(isCityManager: boolean) {
+    this.user.isCityManager = isCityManager;
+    return this;
+  }
+
+  isMasterAgent(isMasterAgent: boolean) {
+    this.user.isMasterAgent = isMasterAgent;
+    return this;
+  }
+
+  isAgent(isAgent: boolean) {
+    this.user.isAgent = isAgent;
+    return this;
+  }
+
+  isPlayer(isPlayer: boolean) {
+    this.user.isPlayer = isPlayer;
+    return this;
+  }
+
+  parent(parent: User): UserBuilder {
+    this.user.parent = parent;
+    return this;
+  }
+
+  children(children: User[]) {
+    this.user.children = children;
     return this;
   }
 

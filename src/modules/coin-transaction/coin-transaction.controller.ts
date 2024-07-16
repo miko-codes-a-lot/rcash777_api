@@ -26,11 +26,15 @@ export class CoinTransactionController {
 
   // @TODO - Miko Chu - 2024-06-13: must be admin or agent or the player itself
   @Get('player/:id?')
-  async findAllUser(@Query() query: PaginationDTO, @Param('id') id?: string) {
+  async findAllUser(
+    @RequestUser() user: User,
+    @Query() query: PaginationDTO,
+    @Param('id') id?: string,
+  ) {
     query.page *= 1;
     query.pageSize *= 1;
 
-    return await this.coinService.findAllPaginated(query, id);
+    return await this.coinService.findAllPaginated(user, query, id);
   }
 
   @Get('self')
@@ -38,13 +42,13 @@ export class CoinTransactionController {
     query.page *= 1;
     query.pageSize *= 1;
 
-    return await this.coinService.findAllPaginated(query, user.id);
+    return await this.coinService.findAllPaginated(user, query, user.id);
   }
 
   // @TODO - Miko Chu - 2024-06-13: must be admin
   @Get()
-  async findAll(@Query() query: PaginationDTO) {
-    return await this.coinService.findAllPaginated(query);
+  async findAll(@RequestUser() user: User, @Query() query: PaginationDTO) {
+    return await this.coinService.findAllPaginated(user, query);
   }
 
   @Get('self/balance')
