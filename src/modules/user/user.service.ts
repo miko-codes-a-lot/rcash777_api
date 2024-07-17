@@ -125,7 +125,7 @@ export class UserService extends BaseService<User> {
   async findOne(id: string) {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: { tawkto: true }
+      relations: { tawkto: true },
     });
 
     if (!user) {
