@@ -168,7 +168,7 @@ export class CoinTransactionService {
       sortOrder = 'asc',
     } = config;
 
-    const ids = await this._getUserChildrenIds(user);
+    // const ids = await this._getUserChildrenIds(user);
 
     const [tx, count] = await this.requestRepo.findAndCount({
       where: [
@@ -177,11 +177,11 @@ export class CoinTransactionService {
           status,
           type,
         },
-        {
-          requestingUser: { id: In(ids) },
-          status,
-          type,
-        },
+        // {
+        //   requestingUser: { id: In(ids) },
+        //   status,
+        //   type,
+        // },
       ],
       relations: { requestingUser: true },
       select: {
@@ -345,6 +345,10 @@ export class CoinTransactionService {
       where: { id: user.id },
       relations: { parent: true },
     });
+
+    if (fullUser.coinDeposit > 0) {
+      throw new BadRequestException('Please bet your deposit first');
+    }
 
     const balance = await this.computeBalance(user.id);
     if (amount > balance) {
