@@ -12,8 +12,8 @@ export const PutUserUpdateRequestSchema = Joi.object({
   isAgent: Joi.boolean().allow(null).default(false),
   isPlayer: Joi.boolean().allow(null).default(false),
   tawkto: Joi.object({
-    propertyId: Joi.string().optional().allow(null),
-    widgetId: Joi.string().optional().allow(null),
+    propertyId: Joi.string().allow('').optional(),
+    widgetId: Joi.string().allow('').optional(),
   }).optional(),
 });
 

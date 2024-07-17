@@ -66,7 +66,7 @@ export class UserService extends BaseService<User> {
     try {
       await this.treeUserRepo.save(user);
 
-      if (data.tawkto) {
+      if (data.tawkto && data.tawkto?.propertyId) {
         await this._assignTawkTo(user, data.tawkto);
       }
 
@@ -123,7 +123,10 @@ export class UserService extends BaseService<User> {
   }
 
   async findOne(id: string) {
-    const user = await this.userRepository.findOneBy({ id });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: { tawkto: true }
+    });
 
     if (!user) {
       throw new NotFoundException('User not found');
