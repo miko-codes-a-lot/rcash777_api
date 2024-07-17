@@ -66,7 +66,7 @@ export class UserService extends BaseService<User> {
     try {
       await this.treeUserRepo.save(user);
 
-      if (data.tawkto) {
+      if (data.tawkto && data.tawkto?.propertyId) {
         await this._assignTawkTo(user, data.tawkto);
       }
 
