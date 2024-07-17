@@ -24,7 +24,6 @@ export class RolesGuard implements CanActivate {
 
     const validatedRoles = this.requiredRoles.map((role) => user[role]);
     const isValid = validatedRoles.some((role) => !!role);
-    console.log({ validatedRoles });
 
     if (!isValid) {
       throw new UnauthorizedException(this.requiredRoles.toString() + ' role is required');
