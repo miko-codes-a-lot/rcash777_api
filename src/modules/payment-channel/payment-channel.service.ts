@@ -34,6 +34,10 @@ export class PaymentChannelService {
     return this.channelRepo.save(channelData);
   }
 
+  async getOptions() {
+    return this.channelRepo.find({ select: { id: true, name: true } });
+  }
+
   async findAllPaginated(config: PaginationDTO) {
     const { page = 1, pageSize = 10, search, sortBy = 'createdAt', sortOrder = 'asc' } = config;
 

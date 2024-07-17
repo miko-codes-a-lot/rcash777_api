@@ -35,6 +35,11 @@ export class PaymentChannelController {
     return await this.channelService.findAllPaginated(query);
   }
 
+  @Get('options')
+  async getOptions() {
+    return await this.channelService.getOptions();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.channelService.findOne(id);
