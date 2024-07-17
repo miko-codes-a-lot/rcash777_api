@@ -108,7 +108,7 @@ export class NextralService {
         client: 'GF77',
         currency: 'PHP',
         testAccount: !isProd,
-        country: 'PHP',
+        country: 'PH',
         affiliate: 'aff-1',
         jurisdiction: '',
         player: session.user.id,
