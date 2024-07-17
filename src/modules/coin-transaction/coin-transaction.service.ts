@@ -175,7 +175,7 @@ export class CoinTransactionService {
       where: [
         {
           reviewingUser: { id: user.id },
-          status,
+          status: In(status),
           type,
         },
         // {
@@ -243,6 +243,9 @@ export class CoinTransactionService {
     });
   }
 
+  /**
+   * @TODO: Miko - Reduce rebate to Owner instead of Agent
+   */
   async _optionalRebate(
     actioner: User,
     targetUser: User,

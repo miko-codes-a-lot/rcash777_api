@@ -13,7 +13,7 @@ export class UserPaginateDTO extends PaginationDTO {
 }
 
 export class CoinRequestPaginateDTO extends PaginationDTO {
-  status: CoinRequestStatus = CoinRequestStatus.PENDING;
+  status: CoinRequestStatus[] = [CoinRequestStatus.PENDING];
   type: CoinRequestType;
 }
 
