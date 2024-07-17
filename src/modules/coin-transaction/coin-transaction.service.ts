@@ -1,7 +1,7 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, ILike, In, Repository, TreeRepository } from 'typeorm';
+import { DataSource, EntityManager, ILike, In, Repository, TreeRepository } from 'typeorm';
 import { CoinTransaction } from './entities/coin-transaction.entity';
 import { CoinRequestPaginateDTO, PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
@@ -9,8 +9,9 @@ import { User } from '../user/entities/user.entity';
 import httpStatus from 'http-status';
 import { CoinRequestDTO } from './dto/coin-request.dto';
 import { CoinRequest } from './entities/coin-request.entity';
-import { CoinRequestType } from 'src/enums/coin-request.enum';
+import { CoinRequestStatus, CoinRequestType } from 'src/enums/coin-request.enum';
 import { PaymentChannel } from '../payment-channel/entities/payment-channel.entity';
+import { DepositDataDTO } from './dto/deposit-data.dt';
 
 const REBATE_PERCENT = 0.03; // 3%
 const REBATE_AFTER_ELAPSED_MS = 24 * 60 * 60 * 1000;
@@ -49,17 +50,18 @@ export class CoinTransactionService {
     return player;
   }
 
-  async computeBalance(playerId: string) {
+  async computeBalance(playerId: string, coinRepo?: Repository<CoinTransaction>) {
     await this.findPlayerById(playerId);
+    const repo = coinRepo ?? this.coinRepo;
 
-    const { debit } = await this.coinRepo
+    const { debit } = await repo
       .createQueryBuilder('coin_transaction')
       .select('SUM(coin_transaction.amount)', 'debit')
       .where('coin_transaction.type = :type', { type: TransactionType.DEBIT })
       .andWhere('coin_transaction.player = :playerId', { playerId })
       .getRawOne();
 
-    const { credit } = await this.coinRepo
+    const { credit } = await repo
       .createQueryBuilder('coin_transaction')
       .select('SUM(coin_transaction.amount)', 'credit')
       .where('coin_transaction.type = :type', { type: TransactionType.CREDIT })
@@ -73,7 +75,6 @@ export class CoinTransactionService {
     const { page = 1, pageSize = 10, search, sortBy = 'createdAt', sortOrder = 'asc' } = config;
 
     const amount = parseFloat(search);
-    console.log(amount, !Number.isNaN(amount));
     const [tx, count] = await this.coinRepo.findAndCount({
       where: [
         {
@@ -212,8 +213,12 @@ export class CoinTransactionService {
     });
 
     return this.dataSource.transaction(async (manager) => {
+      const channelRepo = manager.getRepository(PaymentChannel);
       const coinRepo = manager.getRepository(CoinTransaction);
       const requestRepo = manager.getRepository(CoinRequest);
+
+      const channel = await channelRepo.findOneBy({ id: data.paymentChannelId });
+      if (!channel) throw new NotFoundException('Channel not found');
 
       const txDeposit = CoinTransaction.builder()
         .player(fullUser)
@@ -221,6 +226,7 @@ export class CoinTransactionService {
         .typeCategory(TransactionTypeCategory.DEPOSIT)
         .amount(0) // later we update once approved
         .createdBy(fullUser)
+        .paymentChannel(channel)
         .build();
 
       await coinRepo.save(txDeposit);
@@ -237,7 +243,63 @@ export class CoinTransactionService {
     });
   }
 
-  async deposit(user: User, data: any) {
+  async _optionalRebate(
+    actioner: User,
+    targetUser: User,
+    manager: EntityManager,
+    amount: number,
+    coinMasterBalance: number,
+    txDeposit: CoinTransaction,
+  ) {
+    if (targetUser.isPlayer) {
+      const coinRepo = manager.getRepository(CoinTransaction);
+
+      const lastRebate = await coinRepo.findOne({
+        where: {
+          player: { id: targetUser.id },
+          type: TransactionType.DEBIT,
+          typeCategory: TransactionTypeCategory.REBATE,
+        },
+        order: { createdAt: 'DESC' },
+      });
+
+      const now = new Date().getTime();
+      const elapsed = now - lastRebate?.createdAt?.getTime();
+
+      if (!lastRebate || elapsed >= REBATE_AFTER_ELAPSED_MS) {
+        const totalRebate = amount * REBATE_PERCENT;
+        if (totalRebate > coinMasterBalance - amount - totalRebate) {
+          throw new BadRequestException('Not enough balance to topup the user');
+        }
+
+        // agent to pay the rebate
+        const txCreditRebate = CoinTransaction.builder()
+          .player(actioner)
+          .coinTransaction(txDeposit)
+          .type(TransactionType.CREDIT)
+          .typeCategory(TransactionTypeCategory.REBATE)
+          .amount(totalRebate)
+          .createdBy(actioner)
+          .build();
+        await coinRepo.save(txCreditRebate);
+
+        const coinRebateTx = CoinTransaction.builder()
+          .player(targetUser)
+          .coinTransaction(txDeposit)
+          .type(TransactionType.DEBIT)
+          .typeCategory(TransactionTypeCategory.REBATE)
+          .amount(totalRebate)
+          .createdBy(actioner)
+          .build();
+
+        targetUser.coinDeposit += totalRebate;
+
+        await coinRepo.save(coinRebateTx);
+      }
+    }
+  }
+
+  async deposit(user: User, data: DepositDataDTO) {
     return this.dataSource.transaction(async (manager) => {
       const userRepo = manager.getRepository(User);
       const coinRepo = manager.getRepository(CoinTransaction);
@@ -286,54 +348,71 @@ export class CoinTransactionService {
         throw new BadRequestException('Not enough balance to topup the user');
       }
 
-      if (targetUser.isPlayer) {
-        const lastRebate = await coinRepo.findOne({
-          where: {
-            player: { id: targetUser.id },
-            type: TransactionType.DEBIT,
-            typeCategory: TransactionTypeCategory.REBATE,
-          },
-          order: { createdAt: 'DESC' },
-        });
-
-        const now = new Date().getTime();
-        const elapsed = now - lastRebate?.createdAt?.getTime();
-
-        if (!lastRebate || elapsed >= REBATE_AFTER_ELAPSED_MS) {
-          const totalRebate = data.amount * REBATE_PERCENT;
-          if (totalRebate > coinMasterBalance - data.amount - totalRebate) {
-            throw new BadRequestException('Not enough balance to topup the user');
-          }
-
-          // agent to pay the rebate
-          const txCreditRebate = CoinTransaction.builder()
-            .player(user)
-            .coinTransaction(txDeposit)
-            .type(TransactionType.CREDIT)
-            .typeCategory(TransactionTypeCategory.REBATE)
-            .amount(totalRebate)
-            .createdBy(user)
-            .build();
-          await coinRepo.save(txCreditRebate);
-
-          const coinRebateTx = CoinTransaction.builder()
-            .player(targetUser)
-            .coinTransaction(txDeposit)
-            .type(TransactionType.DEBIT)
-            .typeCategory(TransactionTypeCategory.REBATE)
-            .amount(totalRebate)
-            .createdBy(user)
-            .build();
-
-          targetUser.coinDeposit += totalRebate;
-
-          await coinRepo.save(coinRebateTx);
-        }
-      }
+      await this._optionalRebate(
+        user,
+        targetUser,
+        manager,
+        data.amount,
+        coinMasterBalance,
+        txDeposit,
+      );
 
       targetUser.coinDeposit += data.amount;
 
       await userRepo.save(targetUser);
+
+      return txDeposit;
+    });
+  }
+
+  async approveDeposit(id: string, user: User) {
+    return this.dataSource.transaction(async (manager) => {
+      const userRepo = manager.getRepository(User);
+      const requestRepo = manager.getRepository(CoinRequest);
+      const coinRepo = manager.getRepository(CoinTransaction);
+
+      const fullUser = await userRepo.findOneBy({ id: user.id });
+      if (!fullUser) throw new NotFoundException('User not found');
+
+      const request = await requestRepo.findOne({
+        where: { id },
+        relations: { coinTransaction: true, requestingUser: true },
+      });
+      if (!request) throw new NotFoundException('Transaction not found');
+
+      const targetUser = request.requestingUser;
+
+      const txDepositData = CoinTransaction.builder()
+        .amount(request.amount)
+        .type(TransactionType.DEBIT)
+        .typeCategory(TransactionTypeCategory.DEPOSIT)
+        .paymentChannel(request.coinTransaction.paymentChannel)
+        .player(targetUser)
+        .createdBy(user)
+        .build();
+
+      targetUser.coinDeposit += request.amount;
+
+      const coinMasterBalance = await this.computeBalance(user.id, coinRepo);
+      const txDeposit = await coinRepo.save(txDepositData);
+
+      await this._optionalRebate(
+        user,
+        targetUser,
+        manager,
+        request.amount,
+        coinMasterBalance,
+        txDeposit,
+      );
+
+      const oldDeposit = { id: request.coinTransaction.id };
+
+      request.coinTransaction = txDeposit;
+      request.status = CoinRequestStatus.APPROVED;
+
+      await requestRepo.save(request);
+      await userRepo.save(targetUser);
+      await coinRepo.delete(oldDeposit);
 
       return txDeposit;
     });
@@ -356,8 +435,12 @@ export class CoinTransactionService {
     }
 
     return this.dataSource.transaction(async (manager) => {
+      const channelRepo = manager.getRepository(PaymentChannel);
       const coinRepo = manager.getRepository(CoinTransaction);
       const requestRepo = manager.getRepository(CoinRequest);
+
+      const channel = await channelRepo.findOneBy({ id: data.paymentChannelId });
+      if (!channel) throw new NotFoundException('Channel not found');
 
       const txWithdraw = CoinTransaction.builder()
         .player(fullUser)
@@ -365,6 +448,7 @@ export class CoinTransactionService {
         .typeCategory(TransactionTypeCategory.WITHDRAW)
         .amount(amount)
         .createdBy(fullUser)
+        .paymentChannel(channel)
         .build();
 
       await coinRepo.save(txWithdraw);

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Put } from '@nestjs/common';
 import { CoinTransactionService } from './coin-transaction.service';
 import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
 import { CoinRequestPaginateDTO, PaginationDTO } from 'src/schemas/paginate-query.dto';
@@ -12,6 +12,7 @@ import {
   WithdrawRequestSchema,
 } from './dto/coin-request.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { DepositDataDTO } from './dto/deposit-data.dt';
 
 @AuthRequired()
 @ApiTags('coin-transaction')
@@ -62,7 +63,7 @@ export class CoinTransactionController {
   }
 
   @Post('deposit')
-  async deposit(@RequestUser() user: User, @Body() data: any) {
+  async deposit(@RequestUser() user: User, @Body() data: DepositDataDTO) {
     return await this.coinService.deposit(user, data);
   }
 
@@ -70,6 +71,11 @@ export class CoinTransactionController {
   @Validate({ body: WithdrawRequestSchema })
   async requestWithdraw(@RequestUser() user: User, @Body() data: CoinRequestDTO) {
     return await this.coinService.requestWithdraw(user, data);
+  }
+
+  @Put('deposit/:id/approve')
+  async approveDeposit(@RequestUser() user: User, @Param('id') id: string) {
+    return await this.coinService.approveDeposit(id, user);
   }
 
   @Post('request/deposit')
