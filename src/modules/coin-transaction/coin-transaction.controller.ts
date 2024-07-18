@@ -93,4 +93,9 @@ export class CoinTransactionController {
   async approveWithdraw(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.approveWithdraw(id, user);
   }
+
+  @Put('withdraw/:id/reject')
+  async rejectWithdraw(@RequestUser() user: User, @Param('id') id: string) {
+    return await this.coinService.rejectWithdraw(id, user);
+  }
 }

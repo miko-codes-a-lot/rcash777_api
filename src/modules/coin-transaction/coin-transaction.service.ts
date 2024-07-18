@@ -369,11 +369,17 @@ export class CoinTransactionService {
     });
   }
 
-  async rejectDeposit(id: string, user: User) {
+  async findOneRequest(id: string) {
     const request = await this.requestRepo.findOne({
       where: { id },
+      relations: { coinTransaction: true },
     });
+    if (!request) throw new NotFoundException('Request transaction not found');
+    return request;
+  }
 
+  async rejectDeposit(id: string, user: User) {
+    const request = await this.findOneRequest(id);
     request.status = CoinRequestStatus.REJECTED;
     request.actionAgent = user;
 
@@ -478,6 +484,35 @@ export class CoinTransactionService {
         .build();
 
       return requestRepo.save(request);
+    });
+  }
+
+  async rejectWithdraw(id: string, user: User) {
+    return this.dataSource.transaction(async (manager) => {
+      const requestRepo = manager.getRepository(CoinRequest);
+      const coinRepo = manager.getRepository(CoinTransaction);
+
+      const request = await requestRepo.findOne({
+        where: { id },
+        relations: { coinTransaction: true },
+      });
+      if (!request) throw new NotFoundException('Request transaction not found');
+
+      const oldWithdraw = { id: request.coinTransaction.id };
+
+      const newWithdrawData = request.coinTransaction;
+      delete newWithdrawData.id;
+      newWithdrawData.amount = 0;
+      const newWithdraw = await coinRepo.save(newWithdrawData);
+
+      request.coinTransaction = newWithdraw;
+      request.status = CoinRequestStatus.REJECTED;
+      request.actionAgent = user;
+      await requestRepo.save(request);
+
+      await coinRepo.delete(oldWithdraw);
+
+      return request;
     });
   }
 
