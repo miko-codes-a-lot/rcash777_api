@@ -23,6 +23,7 @@ import {
   PutUserUpdateRequestSchema,
 } from './schemas/put-user-update.schema';
 import { UserPaginateDTO } from 'src/schemas/paginate-query.dto';
+import { AuthIsNot } from 'src/decorators/auth-is-not';
 
 @AuthRequired()
 @ApiTags('user')
@@ -30,6 +31,7 @@ import { UserPaginateDTO } from 'src/schemas/paginate-query.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @AuthIsNot(['isPlayer'])
   @Post('admin')
   @Validate({ body: PostUserNewRequestSchema })
   async addUser(
@@ -46,17 +48,20 @@ export class UserController {
     return res.status(HttpStatus.SUCCESS).json(user);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Get('admin/:id')
   async findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Get('admin/:id/tree')
   async getTree(@Param('id') id: string, @Query() query: UserPaginateDTO) {
     const user = await this.userService.findOne(id);
     return this.userService.findAllPaginated(user, query);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Get('admin')
   async findAll(@RequestUser() user: User, @Query() query: UserPaginateDTO, @Res() res: Response) {
     query.page *= 1;
@@ -80,6 +85,7 @@ export class UserController {
     res.status(HttpStatus.SUCCESS).send(result);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Put('admin/:id')
   @Validate({ body: PutUserUpdateRequestSchema })
   async updateUser(

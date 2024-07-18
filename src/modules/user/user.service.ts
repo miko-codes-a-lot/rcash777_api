@@ -9,6 +9,7 @@ import { PostUserNewRequest } from './schemas/post-user-new.schema';
 import { PostUserUpdateRequest } from './schemas/put-user-update.schema';
 import { UserPaginateDTO } from 'src/schemas/paginate-query.dto';
 import { UserTawk } from './entities/user-tawk.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UserService extends BaseService<User> {
@@ -25,15 +26,10 @@ export class UserService extends BaseService<User> {
   }
 
   private async _assignTawkTo(user: User, tawkto: { propertyId: string; widgetId: string }) {
-    const tawk = new UserTawk();
-    tawk.id = user.tawkto?.id;
-    tawk.propertyId = tawkto.propertyId;
-    tawk.widgetId = tawkto.widgetId;
-    tawk.users = [user];
+    const tawkData = this.tawkRepository.merge(new UserTawk(), tawkto);
+    tawkData.id = user.tawkto?.id;
 
-    delete tawk.users;
-
-    await this.tawkRepository.save(tawk);
+    const tawk = await this.tawkRepository.save(tawkData);
     user.tawkto = tawk;
 
     return tawk;
@@ -50,6 +46,7 @@ export class UserService extends BaseService<User> {
 
     this._validateOwner(data.isOwner);
 
+    user.id = uuidv4();
     user.email = data.email;
     user.firstName = data.firstName;
     user.lastName = data.lastName;
@@ -65,12 +62,11 @@ export class UserService extends BaseService<User> {
     user.isPlayer = data.isPlayer;
 
     try {
-      await this.treeUserRepo.save(user);
-
       if (data.tawkto && data.tawkto?.propertyId) {
         await this._assignTawkTo(user, data.tawkto);
       }
 
+      await this.treeUserRepo.save(user);
       return user;
     } catch (error) {
       throw new BadRequestException(error.message);
