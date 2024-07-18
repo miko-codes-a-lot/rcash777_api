@@ -25,7 +25,8 @@ export class UserService extends BaseService<User> {
   }
 
   private async _assignTawkTo(user: User, tawkto: { propertyId: string; widgetId: string }) {
-    const tawk = user.tawkto || new UserTawk();
+    const tawk = new UserTawk();
+    tawk.id = user.tawkto?.id;
     tawk.propertyId = tawkto.propertyId;
     tawk.widgetId = tawkto.widgetId;
     tawk.users = [user];
