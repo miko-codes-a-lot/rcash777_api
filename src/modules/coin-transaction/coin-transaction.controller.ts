@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Param, Query, Put } from '@nestjs/common';
 import { CoinTransactionService } from './coin-transaction.service';
-import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
 import { CoinRequestPaginateDTO, PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
 import { RequestUser } from 'src/decorators/request-user.decorator';
@@ -12,6 +11,7 @@ import {
   WithdrawRequestSchema,
 } from './dto/coin-request.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthIsNot } from 'src/decorators/auth-is-not';
 
 @AuthRequired()
 @ApiTags('coin-transaction')
@@ -19,12 +19,7 @@ import { ApiTags } from '@nestjs/swagger';
 export class CoinTransactionController {
   constructor(private readonly coinService: CoinTransactionService) {}
 
-  @Post()
-  create(@Body() createCoinTransactionDto: FormCoinTransactionDto) {
-    return this.coinService.create(createCoinTransactionDto);
-  }
-
-  // @TODO - Miko Chu - 2024-06-13: must be admin or agent or the player itself
+  @AuthIsNot(['isPlayer'])
   @Get('user/:id?')
   async findUserTransactions(
     // @RequestUser() user: User,
@@ -37,6 +32,7 @@ export class CoinTransactionController {
     return await this.coinService.findSelfPaginated({ id } as User, query);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Get('/user/:id/balance')
   async computeBalanceOf(@Param('id') id: string) {
     return await this.coinService.computeBalance(id);
@@ -50,7 +46,7 @@ export class CoinTransactionController {
     return await this.coinService.findSelfPaginated(user, query);
   }
 
-  // @TODO - Miko Chu - 2024-06-13: must be admin
+  @AuthIsNot(['isPlayer'])
   @Get()
   async findAll(@RequestUser() user: User, @Query() query: PaginationDTO) {
     return await this.coinService.findAllPaginated(user, query);
@@ -61,6 +57,7 @@ export class CoinTransactionController {
     return await this.coinService.computeBalance(user.id);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Get('request')
   async requests(@RequestUser() user: User, @Query() query: CoinRequestPaginateDTO) {
     return await this.coinService.findRequests(user, query);
@@ -72,11 +69,13 @@ export class CoinTransactionController {
     return await this.coinService.requestWithdraw(user, data);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Put('request/deposit/:id/approve')
   async approveDeposit(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.approveDeposit(id, user);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Put('request/deposit/:id/reject')
   async rejectDeposit(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.rejectDeposit(id, user);
@@ -88,16 +87,19 @@ export class CoinTransactionController {
     return await this.coinService.requestDeposit(user, data);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Put('request/withdraw/:id/approve')
   async approveWithdraw(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.approveWithdraw(id, user);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Put('request/withdraw/:id/reject')
   async rejectWithdraw(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.rejectWithdraw(id, user);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Put('request/:id/transfer')
   async rejectTransfer(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.transferRequest(id, user);

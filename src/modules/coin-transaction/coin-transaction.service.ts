@@ -1,5 +1,4 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { FormCoinTransactionDto } from './dto/form-coin-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, ILike, In, Repository, TreeRepository } from 'typeorm';
 import { CoinTransaction } from './entities/coin-transaction.entity';
@@ -37,10 +36,6 @@ export class CoinTransactionService {
     private userRepo: Repository<User>,
   ) {
     this.treeUserRepo = dataSource.manager.getTreeRepository(User);
-  }
-
-  create(createCoinTransactionDto: FormCoinTransactionDto) {
-    return 'This action adds a new coinTransaction' + createCoinTransactionDto;
   }
 
   async findPlayerById(playerId: string) {
