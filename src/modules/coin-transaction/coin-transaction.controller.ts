@@ -98,4 +98,9 @@ export class CoinTransactionController {
   async rejectWithdraw(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.rejectWithdraw(id, user);
   }
+
+  @Put('request/:id/transfer')
+  async rejectTransfer(@RequestUser() user: User, @Param('id') id: string) {
+    return await this.coinService.transferRequest(id, user);
+  }
 }

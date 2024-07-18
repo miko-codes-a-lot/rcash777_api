@@ -516,6 +516,22 @@ export class CoinTransactionService {
     });
   }
 
+  async transferRequest(id: string, user: User) {
+    const fullUser = await this.userRepo.findOne({
+      where: { id: user.id },
+      relations: { parent: true },
+    });
+    if (!fullUser) throw new NotFoundException('User not found');
+
+    const request = await this.requestRepo.findOne({
+      where: { id },
+    });
+
+    request.reviewingUser = fullUser.parent;
+
+    return this.requestRepo.save(request);
+  }
+
   async approveWithdraw(id: string, user: User) {
     return this.dataSource.transaction(async (manager) => {
       const userRepo = manager.getRepository(User);
