@@ -16,6 +16,11 @@ import { DepositDataDTO } from './dto/deposit-data.dt';
 const REBATE_PERCENT = 0.03; // 3%
 const REBATE_AFTER_ELAPSED_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * Commission of internal users are saved in another table
+ * Non player can request credits withdrawal without the need to bet it
+ * Cash In of player must Credit away from Agent or other admin
+ */
 @Injectable()
 export class CoinTransactionService {
   private treeUserRepo: TreeRepository<User>;
@@ -129,7 +134,7 @@ export class CoinTransactionService {
         },
         ...(!Number.isNaN(amount) && { amount }),
       },
-      relations: { player: true, createdBy: true, coinRequests: true },
+      relations: { player: true, createdBy: true, coinRequests: { reviewingUser: true } },
       select: {
         createdBy: {
           id: true,
@@ -380,6 +385,9 @@ export class CoinTransactionService {
 
   async rejectDeposit(id: string, user: User) {
     const request = await this.findOneRequest(id);
+    if (request.status !== CoinRequestStatus.PENDING)
+      throw new BadRequestException('Request has already been processed');
+
     request.status = CoinRequestStatus.REJECTED;
     request.actionAgent = user;
 
@@ -400,6 +408,9 @@ export class CoinTransactionService {
         relations: { coinTransaction: true, requestingUser: true },
       });
       if (!request) throw new NotFoundException('Transaction not found');
+
+      if (request.status !== CoinRequestStatus.PENDING)
+        throw new BadRequestException('Request has already been processed');
 
       const targetUser = request.requestingUser;
 
@@ -498,6 +509,9 @@ export class CoinTransactionService {
       });
       if (!request) throw new NotFoundException('Request transaction not found');
 
+      if (request.status !== CoinRequestStatus.PENDING)
+        throw new BadRequestException('Request has already been processed');
+
       const oldWithdraw = { id: request.coinTransaction.id };
 
       const newWithdrawData = request.coinTransaction;
@@ -527,7 +541,11 @@ export class CoinTransactionService {
       where: { id },
     });
 
+    if (request.status !== CoinRequestStatus.PENDING)
+      throw new BadRequestException('Request has already been processed');
+
     request.reviewingUser = fullUser.parent;
+    request.status = CoinRequestStatus.TRANSFERRED;
 
     return this.requestRepo.save(request);
   }
@@ -546,6 +564,9 @@ export class CoinTransactionService {
         relations: { coinTransaction: true, requestingUser: true },
       });
       if (!request) throw new NotFoundException('Transaction not found');
+
+      if (request.status !== CoinRequestStatus.PENDING)
+        throw new BadRequestException('Request has already been processed');
 
       const targetUser = request.requestingUser;
 

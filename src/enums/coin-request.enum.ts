@@ -1,5 +1,6 @@
 export enum CoinRequestStatus {
   PENDING = 'PENDING',
+  TRANSFERRED = 'TRANSFERRED',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
 }
