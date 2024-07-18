@@ -38,6 +38,11 @@ export class CoinTransactionController {
     return await this.coinService.findSelfPaginated({ id } as User, query);
   }
 
+  @Get('/user/:id/balance')
+  async computeBalanceOf(@Param('id') id: string) {
+    return await this.coinService.computeBalance(id);
+  }
+
   @Get('self')
   async findSelfTransactions(@RequestUser() user: User, @Query() query: PaginationDTO) {
     query.page *= 1;
