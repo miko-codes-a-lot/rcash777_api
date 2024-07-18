@@ -22,7 +22,8 @@ import {
   PostUserUpdateRequest,
   PutUserUpdateRequestSchema,
 } from './schemas/put-user-update.schema';
-import { PaginationDTO } from 'src/schemas/paginate-query.dto';
+import { UserPaginateDTO } from 'src/schemas/paginate-query.dto';
+import { AuthIsNot } from 'src/decorators/auth-is-not';
 
 @AuthRequired()
 @ApiTags('user')
@@ -30,6 +31,7 @@ import { PaginationDTO } from 'src/schemas/paginate-query.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @AuthIsNot(['isPlayer'])
   @Post('admin')
   @Validate({ body: PostUserNewRequestSchema })
   async addUser(
@@ -46,12 +48,26 @@ export class UserController {
     return res.status(HttpStatus.SUCCESS).json(user);
   }
 
+  @AuthIsNot(['isPlayer'])
+  @Get('admin/:id')
+  async findOne(@Param('id') id: string) {
+    return this.userService.findOne(id);
+  }
+
+  @AuthIsNot(['isPlayer'])
+  @Get('admin/:id/tree')
+  async getTree(@Param('id') id: string, @Query() query: UserPaginateDTO) {
+    const user = await this.userService.findOne(id);
+    return this.userService.findAllPaginated(user, query);
+  }
+
+  @AuthIsNot(['isPlayer'])
   @Get('admin')
-  async findAll(@Query() query: PaginationDTO, @Res() res: Response) {
+  async findAll(@RequestUser() user: User, @Query() query: UserPaginateDTO, @Res() res: Response) {
     query.page *= 1;
     query.pageSize *= 1;
 
-    const paged = await this.userService.findAllPaginated(query);
+    const paged = await this.userService.findAllPaginated(user, query);
 
     return res.status(HttpStatus.SUCCESS).json(paged);
   }
@@ -64,11 +80,12 @@ export class UserController {
     @Res() res: Response,
   ) {
     const { id } = user;
-    const result = await this.userService.update(id, user, payload);
+    const result = await this.userService.updateSelf(id, user, payload);
 
     res.status(HttpStatus.SUCCESS).send(result);
   }
 
+  @AuthIsNot(['isPlayer'])
   @Put('admin/:id')
   @Validate({ body: PutUserUpdateRequestSchema })
   async updateUser(

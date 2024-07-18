@@ -1,6 +1,5 @@
 import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
-import { CashTransaction } from 'src/modules/cash-transaction/entities/cash-transaction.entity';
 import { Game } from 'src/modules/game/entities/game.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
@@ -14,6 +13,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CoinRequest } from './coin-request.entity';
+import { PaymentChannel } from 'src/modules/payment-channel/entities/payment-channel.entity';
 
 @Index('idx_coin_transaction_user_player_id_type_id', ['player', 'type'])
 @Index('idx_coin_transaction_transaction_id_type', ['transactionId', 'type'])
@@ -50,9 +50,13 @@ export class CoinTransaction {
   })
   amount: number;
 
-  @ManyToOne(() => CashTransaction, (cashtx) => cashtx.coinTransactions)
-  @JoinColumn({ name: 'cash_transaction_id' })
-  cashTransaction: CashTransaction;
+  @ManyToOne(() => CoinTransaction)
+  @JoinColumn({ name: 'coin_transaction_id' })
+  coinTransaction: CoinTransaction;
+
+  @ManyToOne(() => PaymentChannel, (channel) => channel.coinTransactions, { nullable: true })
+  @JoinColumn({ name: 'payment_channel_id' })
+  paymentChannel: PaymentChannel;
 
   @Column({ name: 'transaction_id', nullable: true })
   transactionId: string;
@@ -88,73 +92,78 @@ export class CoinTransaction {
 }
 
 class CoinTransactionBuilder {
-  private coinTransaction: CoinTransaction;
+  private transaction: CoinTransaction;
 
   constructor() {
-    this.coinTransaction = new CoinTransaction();
+    this.transaction = new CoinTransaction();
   }
 
   id(id: string): CoinTransactionBuilder {
-    this.coinTransaction.id = id;
+    this.transaction.id = id;
     return this;
   }
 
   note(note: string): CoinTransactionBuilder {
-    this.coinTransaction.note = note;
+    this.transaction.note = note;
     return this;
   }
 
   type(type: TransactionType): CoinTransactionBuilder {
-    this.coinTransaction.type = type;
+    this.transaction.type = type;
     return this;
   }
 
   typeCategory(typeCategory: TransactionTypeCategory): CoinTransactionBuilder {
-    this.coinTransaction.typeCategory = typeCategory;
+    this.transaction.typeCategory = typeCategory;
     return this;
   }
 
   amount(amount: number): CoinTransactionBuilder {
-    this.coinTransaction.amount = amount;
+    this.transaction.amount = amount;
     return this;
   }
 
-  cashTransaction(cashTransaction: CashTransaction): CoinTransactionBuilder {
-    this.coinTransaction.cashTransaction = cashTransaction;
+  coinTransaction(coinTransaction: CoinTransaction): CoinTransactionBuilder {
+    this.transaction.coinTransaction = coinTransaction;
+    return this;
+  }
+
+  paymentChannel(paymentChannel: PaymentChannel): CoinTransactionBuilder {
+    this.transaction.paymentChannel = paymentChannel;
     return this;
   }
 
   roundId(roundId: string): CoinTransactionBuilder {
-    this.coinTransaction.roundId = roundId;
+    this.transaction.roundId = roundId;
     return this;
   }
 
   transactionId(transactionId: string): CoinTransactionBuilder {
-    this.coinTransaction.transactionId = transactionId;
+    this.transaction.transactionId = transactionId;
     return this;
   }
 
   game(game: Game): CoinTransactionBuilder {
-    this.coinTransaction.game = game;
+    this.transaction.game = game;
     return this;
   }
 
   player(player: User): CoinTransactionBuilder {
-    this.coinTransaction.player = player;
+    this.transaction.player = player;
     return this;
   }
 
   createdBy(createdBy: User): CoinTransactionBuilder {
-    this.coinTransaction.createdBy = createdBy;
+    this.transaction.createdBy = createdBy;
     return this;
   }
 
   createdAt(createdAt: Date): CoinTransactionBuilder {
-    this.coinTransaction.createdAt = createdAt;
+    this.transaction.createdAt = createdAt;
     return this;
   }
 
   build(): CoinTransaction {
-    return this.coinTransaction;
+    return this.transaction;
   }
 }

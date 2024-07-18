@@ -13,7 +13,6 @@ import {
 
 import { AdminService } from './admin.service';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthAdminOnly } from 'src/decorators/auth-admin-only';
 import { Validate } from 'src/decorators/validate.decorator';
 import { UserService } from '../user/user.service';
 import { Pagination, PaginationSchema } from 'src/schemas/pagination.schema';
@@ -22,10 +21,11 @@ import { HttpStatus } from 'src/enums/http-status.enum';
 import { PutUserInfoRequest, PutUserInfoRequestSchema } from './schemas/put-user-info.schema';
 import { DeleteUserRequest, DeleteUserRequestSchema } from './schemas/delete-user.schema';
 import { PutUserPassword, PutUserPasswordSchema } from './schemas/put-user-password.schema';
+import { AuthIsNot } from 'src/decorators/auth-is-not';
 
 @Controller('admin')
 @ApiTags('admin')
-@AuthAdminOnly()
+@AuthIsNot(['isPlayer'])
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,

@@ -7,7 +7,12 @@ export const PostUserNewRequestSchema = Joi.object({
   lastName: Joi.string().required(),
   phoneNumber: Joi.string().required(),
   address: Joi.string().required(),
-  roleIds: Joi.array(),
+  isOwner: Joi.boolean().allow(null).default(false),
+  isAdmin: Joi.boolean().allow(null).default(false),
+  isCityManager: Joi.boolean().allow(null).default(false),
+  isMasterAgent: Joi.boolean().allow(null).default(false),
+  isAgent: Joi.boolean().allow(null).default(false),
+  isPlayer: Joi.boolean().allow(null).default(false),
   tawkto: Joi.object({
     propertyId: Joi.string().optional().allow(null),
     widgetId: Joi.string().optional().allow(null),
@@ -21,7 +26,12 @@ export interface PostUserNewRequest {
   lastName: string;
   phoneNumber: string;
   address: string;
-  roleIds: string[];
+  isOwner: boolean;
+  isAdmin: boolean;
+  isCityManager: boolean;
+  isMasterAgent: boolean;
+  isAgent: boolean;
+  isPlayer: boolean;
   tawkto?: {
     propertyId: string;
     widgetId: string;

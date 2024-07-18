@@ -75,29 +75,37 @@ export class WalletService {
     this.isValidCurrency(data.currency);
 
     const remainingBalance = await this.coinService.computeBalance(data.player);
-    if (remainingBalance - data.amount <= 0) {
-      throw new HttpException(
-        { currency: 'PHP', balance: remainingBalance },
-        HttpStatus.PAYMENT_REQUIRED,
-      );
-    }
-
     const [player, game] = await this._getPlayerAndGame(data.player, data.game);
 
-    const txCredit = CoinTransaction.builder()
-      .player(player)
-      .transactionId(data.transId)
-      .roundId(data.roundId)
-      .game(game)
-      .type(TransactionType.CREDIT)
-      .typeCategory(data.reason)
-      .amount(data.amount)
-      .createdBy(player)
-      .build();
+    return this.dataSource.transaction(async (manager) => {
+      const coinRepo = manager.getRepository(CoinTransaction);
+      const userRepo = manager.getRepository(User);
 
-    await this.coinRepo.save(txCredit);
+      if (remainingBalance - data.amount <= 0) {
+        throw new HttpException(
+          { currency: 'PHP', balance: remainingBalance },
+          HttpStatus.PAYMENT_REQUIRED,
+        );
+      }
 
-    return remainingBalance - txCredit.amount;
+      const txCredit = CoinTransaction.builder()
+        .player(player)
+        .transactionId(data.transId)
+        .roundId(data.roundId)
+        .game(game)
+        .type(TransactionType.CREDIT)
+        .typeCategory(data.reason)
+        .amount(data.amount)
+        .createdBy(player)
+        .build();
+
+      player.coinDeposit = Math.min(0, player.coinDeposit - data.amount);
+
+      await userRepo.save(player);
+      await coinRepo.save(txCredit);
+
+      return remainingBalance - txCredit.amount;
+    });
   }
 
   // rolling back a player deposit from the game
@@ -216,6 +224,7 @@ export class WalletService {
     }
 
     return this.dataSource.transaction(async (manager) => {
+      const userRepo = manager.getRepository(User);
       const coinRepo = manager.getRepository(CoinTransaction);
 
       const txBet = CoinTransaction.builder()
@@ -242,7 +251,10 @@ export class WalletService {
         .createdBy(player)
         .build();
 
+      player.coinDeposit = Math.min(0, player.coinDeposit - data.bet);
+
       await coinRepo.save(txWin);
+      await userRepo.save(player);
 
       return balance - data.bet + data.win;
     });

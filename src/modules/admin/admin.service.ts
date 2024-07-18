@@ -38,7 +38,6 @@ export class AdminService {
 
   async updateUserPassword(user: User, payload: PutUserPassword) {
     try {
-      console.log('aaa', payload.new_password, bcrypt.hashSync(payload.new_password, 10));
       user.password = bcrypt.hashSync(payload.new_password, 10);
 
       return await this.userService.set(user);
