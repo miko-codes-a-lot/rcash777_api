@@ -73,12 +73,12 @@ export class CoinTransactionController {
     return await this.coinService.requestWithdraw(user, data);
   }
 
-  @Put('deposit/:id/approve')
+  @Put('request/deposit/:id/approve')
   async approveDeposit(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.approveDeposit(id, user);
   }
 
-  @Put('deposit/:id/reject')
+  @Put('request/deposit/:id/reject')
   async rejectDeposit(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.rejectDeposit(id, user);
   }
@@ -89,12 +89,12 @@ export class CoinTransactionController {
     return await this.coinService.requestDeposit(user, data);
   }
 
-  @Put('withdraw/:id/approve')
+  @Put('request/withdraw/:id/approve')
   async approveWithdraw(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.approveWithdraw(id, user);
   }
 
-  @Put('withdraw/:id/reject')
+  @Put('request/withdraw/:id/reject')
   async rejectWithdraw(@RequestUser() user: User, @Param('id') id: string) {
     return await this.coinService.rejectWithdraw(id, user);
   }
