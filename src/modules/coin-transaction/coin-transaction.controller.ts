@@ -12,7 +12,6 @@ import {
   WithdrawRequestSchema,
 } from './dto/coin-request.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { DepositDataDTO } from './dto/deposit-data.dt';
 
 @AuthRequired()
 @ApiTags('coin-transaction')
