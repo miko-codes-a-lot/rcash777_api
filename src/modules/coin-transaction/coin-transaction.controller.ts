@@ -67,11 +67,6 @@ export class CoinTransactionController {
     return await this.coinService.findRequests(user, query);
   }
 
-  @Post('deposit')
-  async deposit(@RequestUser() user: User, @Body() data: DepositDataDTO) {
-    return await this.coinService.deposit(user, data);
-  }
-
   @Post('request/withdraw')
   @Validate({ body: WithdrawRequestSchema })
   async requestWithdraw(@RequestUser() user: User, @Body() data: CoinRequestDTO) {
