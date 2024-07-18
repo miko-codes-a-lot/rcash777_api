@@ -78,6 +78,11 @@ export class CoinTransactionController {
     return await this.coinService.approveDeposit(id, user);
   }
 
+  @Put('deposit/:id/reject')
+  async rejectDeposit(@RequestUser() user: User, @Param('id') id: string) {
+    return await this.coinService.rejectDeposit(id, user);
+  }
+
   @Post('request/deposit')
   @Validate({ body: DepositRequestSchema })
   async requestDeposit(@RequestUser() user: User, @Body() data: CoinRequestDTO) {

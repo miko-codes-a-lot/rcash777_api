@@ -369,6 +369,17 @@ export class CoinTransactionService {
     });
   }
 
+  async rejectDeposit(id: string, user: User) {
+    const request = await this.requestRepo.findOne({
+      where: { id },
+    });
+
+    request.status = CoinRequestStatus.REJECTED;
+    request.actionAgent = user;
+
+    return await this.requestRepo.save(request);
+  }
+
   async approveDeposit(id: string, user: User) {
     return this.dataSource.transaction(async (manager) => {
       const userRepo = manager.getRepository(User);
