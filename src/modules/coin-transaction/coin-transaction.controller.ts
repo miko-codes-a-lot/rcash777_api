@@ -83,4 +83,9 @@ export class CoinTransactionController {
   async requestDeposit(@RequestUser() user: User, @Body() data: CoinRequestDTO) {
     return await this.coinService.requestDeposit(user, data);
   }
+
+  @Put('withdraw/:id/approve')
+  async approveWithdraw(@RequestUser() user: User, @Param('id') id: string) {
+    return await this.coinService.approveWithdraw(id, user);
+  }
 }
