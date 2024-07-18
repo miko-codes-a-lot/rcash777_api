@@ -11,7 +11,6 @@ import { CoinRequestDTO } from './dto/coin-request.dto';
 import { CoinRequest } from './entities/coin-request.entity';
 import { CoinRequestStatus, CoinRequestType } from 'src/enums/coin-request.enum';
 import { PaymentChannel } from '../payment-channel/entities/payment-channel.entity';
-import { DepositDataDTO } from './dto/deposit-data.dt';
 
 const REBATE_PERCENT = 0.03; // 3%
 const REBATE_AFTER_ELAPSED_MS = 24 * 60 * 60 * 1000;
