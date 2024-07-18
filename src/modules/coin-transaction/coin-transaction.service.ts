@@ -243,9 +243,6 @@ export class CoinTransactionService {
     });
   }
 
-  /**
-   * @TODO: Miko - Reduce rebate to Owner instead of Agent
-   */
   async _optionalRebate(
     actioner: User,
     targetUser: User,
@@ -256,6 +253,7 @@ export class CoinTransactionService {
   ) {
     if (targetUser.isPlayer) {
       const coinRepo = manager.getRepository(CoinTransaction);
+      const userRepo = manager.getRepository(User);
 
       const lastRebate = await coinRepo.findOne({
         where: {
@@ -275,14 +273,17 @@ export class CoinTransactionService {
           throw new BadRequestException('Not enough balance to topup the user');
         }
 
-        // agent to pay the rebate
+        const owner = await userRepo.findOneBy({ isOwner: true });
+        if (!owner) throw new NotFoundException('Owner not found to shoulder the rebate');
+
+        // owner to pay the rebate
         const txCreditRebate = CoinTransaction.builder()
-          .player(actioner)
+          .player(owner)
           .coinTransaction(txDeposit)
           .type(TransactionType.CREDIT)
           .typeCategory(TransactionTypeCategory.REBATE)
           .amount(totalRebate)
-          .createdBy(actioner)
+          .createdBy(owner)
           .build();
         await coinRepo.save(txCreditRebate);
 
@@ -412,6 +413,7 @@ export class CoinTransactionService {
 
       request.coinTransaction = txDeposit;
       request.status = CoinRequestStatus.APPROVED;
+      request.actionAgent = user;
 
       await requestRepo.save(request);
       await userRepo.save(targetUser);
@@ -465,6 +467,48 @@ export class CoinTransactionService {
         .build();
 
       return requestRepo.save(request);
+    });
+  }
+
+  async approveWithdraw(id: string, user: User) {
+    return this.dataSource.transaction(async (manager) => {
+      const userRepo = manager.getRepository(User);
+      const requestRepo = manager.getRepository(CoinRequest);
+      const coinRepo = manager.getRepository(CoinTransaction);
+
+      const fullUser = await userRepo.findOneBy({ id: user.id });
+      if (!fullUser) throw new NotFoundException('User not found');
+
+      const request = await requestRepo.findOne({
+        where: { id },
+        relations: { coinTransaction: true, requestingUser: true },
+      });
+      if (!request) throw new NotFoundException('Transaction not found');
+
+      const targetUser = request.requestingUser;
+
+      const txCreditData = CoinTransaction.builder()
+        .amount(request.amount)
+        .type(TransactionType.CREDIT)
+        .typeCategory(TransactionTypeCategory.WITHDRAW)
+        .paymentChannel(request.coinTransaction.paymentChannel)
+        .player(targetUser)
+        .createdBy(user)
+        .build();
+
+      // we proceed without validation because this withdraw transaction is locked in
+      const txCredit = await coinRepo.save(txCreditData);
+
+      const oldWithdraw = { id: request.coinTransaction.id };
+
+      request.coinTransaction = txCredit;
+      request.status = CoinRequestStatus.APPROVED;
+      request.actionAgent = user;
+
+      await requestRepo.save(request);
+      await coinRepo.delete(oldWithdraw);
+
+      return txCredit;
     });
   }
 
