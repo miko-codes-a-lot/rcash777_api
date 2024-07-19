@@ -247,7 +247,6 @@ export class CoinTransactionService {
     targetUser: User,
     manager: EntityManager,
     amount: number,
-    coinMasterBalance: number,
     txDeposit: CoinTransaction,
   ) {
     if (targetUser.isPlayer) {
@@ -268,9 +267,6 @@ export class CoinTransactionService {
 
       if (!lastRebate || elapsed >= REBATE_AFTER_ELAPSED_MS) {
         const totalRebate = amount * REBATE_PERCENT;
-        if (totalRebate > coinMasterBalance - amount - totalRebate) {
-          throw new BadRequestException('Not enough balance to topup the user');
-        }
 
         const owner = await userRepo.findOneBy({ isOwner: true });
         if (!owner) throw new NotFoundException('Owner not found to shoulder the rebate');
@@ -353,17 +349,9 @@ export class CoinTransactionService {
 
       targetUser.coinDeposit += request.amount;
 
-      const coinMasterBalance = await this.computeBalance(user.id, coinRepo);
       const txDeposit = await coinRepo.save(txDepositData);
 
-      await this._optionalRebate(
-        user,
-        targetUser,
-        manager,
-        request.amount,
-        coinMasterBalance,
-        txDeposit,
-      );
+      await this._optionalRebate(user, targetUser, manager, request.amount, txDeposit);
 
       const oldDeposit = { id: request.coinTransaction.id };
 
