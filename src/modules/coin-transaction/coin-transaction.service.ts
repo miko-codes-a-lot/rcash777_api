@@ -14,6 +14,7 @@ import { PaymentChannel } from '../payment-channel/entities/payment-channel.enti
 const REBATE_PERCENT = 0.03; // 3%
 const REBATE_AFTER_ELAPSED_MS = 24 * 60 * 60 * 1000;
 const PLAYER_MAX_DEPOSIT_PER_REQUEST = 50000;
+const PLAYER_MAX_WITHDRAWAL_PER_DAY = 200000;
 
 /**
  * Commission of internal users are saved in another table
@@ -205,6 +206,27 @@ export class CoinTransactionService {
     };
   }
 
+  async computeTodayWithdrawalTotal(userId: string) {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const result = await this.requestRepo
+      .createQueryBuilder('coin_request')
+      .select('SUM(coin_request.amount)', 'total')
+      .where('coin_request.requesting_user_id = :userId', { userId })
+      .andWhere('coin_request.type = :type', { type: CoinRequestType.WITHDRAW })
+      .andWhere('coin_request.created_at BETWEEN :startOfDay AND :endOfDay', {
+        startOfDay,
+        endOfDay,
+      })
+      .getRawOne();
+
+    return parseFloat(result.total || 0);
+  }
+
   async requestDeposit(user: User, data: CoinRequestDTO) {
     const { amount } = data;
     if (user.isPlayer && amount > PLAYER_MAX_DEPOSIT_PER_REQUEST) {
@@ -391,6 +413,13 @@ export class CoinTransactionService {
 
   async requestWithdraw(user: User, data: CoinRequestDTO) {
     const { amount } = data;
+    const todayWithdrawTotal = await this.computeTodayWithdrawalTotal(user.id);
+    if (todayWithdrawTotal + amount > PLAYER_MAX_WITHDRAWAL_PER_DAY) {
+      throw new BadRequestException(
+        `You have reached the daily withdrawal limit of ${PLAYER_MAX_WITHDRAWAL_PER_DAY}`,
+      );
+    }
+
     const fullUser = await this.userRepo.findOne({
       where: { id: user.id },
       relations: { parent: true },
