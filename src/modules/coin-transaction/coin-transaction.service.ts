@@ -13,6 +13,7 @@ import { PaymentChannel } from '../payment-channel/entities/payment-channel.enti
 
 const REBATE_PERCENT = 0.03; // 3%
 const REBATE_AFTER_ELAPSED_MS = 24 * 60 * 60 * 1000;
+const PLAYER_MAX_DEPOSIT_PER_REQUEST = 50000;
 
 /**
  * Commission of internal users are saved in another table
@@ -206,6 +207,10 @@ export class CoinTransactionService {
 
   async requestDeposit(user: User, data: CoinRequestDTO) {
     const { amount } = data;
+    if (user.isPlayer && amount > PLAYER_MAX_DEPOSIT_PER_REQUEST) {
+      throw new BadRequestException(`Request must not exceed ${PLAYER_MAX_DEPOSIT_PER_REQUEST}`);
+    }
+
     const fullUser = await this.userRepo.findOne({
       where: { id: user.id },
       relations: { parent: true },
@@ -336,6 +341,11 @@ export class CoinTransactionService {
       if (request.status !== CoinRequestStatus.PENDING)
         throw new BadRequestException('Request has already been processed');
 
+      const approverBalance = await this.computeBalance(user.id, coinRepo);
+      if (!fullUser.isOwner && request.amount > approverBalance) {
+        throw new BadRequestException('Not enough balance to aprove the deposit');
+      }
+
       const targetUser = request.requestingUser;
 
       const txDepositData = CoinTransaction.builder()
@@ -350,6 +360,18 @@ export class CoinTransactionService {
       targetUser.coinDeposit += request.amount;
 
       const txDeposit = await coinRepo.save(txDepositData);
+
+      const txCreditData = CoinTransaction.builder()
+        .amount(request.amount)
+        .type(TransactionType.CREDIT)
+        .typeCategory(TransactionTypeCategory.DEPOSIT)
+        .paymentChannel(request.coinTransaction.paymentChannel)
+        .coinTransaction(txDeposit)
+        .player(user)
+        .createdBy(user)
+        .build();
+
+      await coinRepo.save(txCreditData);
 
       await this._optionalRebate(user, targetUser, manager, request.amount, txDeposit);
 
