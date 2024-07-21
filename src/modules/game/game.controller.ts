@@ -9,7 +9,7 @@ import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
-import { HttpService } from '@nestjs/axios';
+import { AuthIsNot } from 'src/decorators/auth-is-not';
 
 @ApiTags('game')
 @Controller('game')
@@ -17,12 +17,12 @@ export class GameController {
   constructor(
     private readonly gameService: GameService,
     private readonly nextralService: NextralService,
-    private readonly http: HttpService,
   ) {}
 
-  @Post('nextral/launch')
-  @Validate({ body: FormLaunchGameSchema })
   @AuthRequired()
+  @AuthIsNot(['isPlayer'])
+  @Validate({ body: FormLaunchGameSchema })
+  @Post('nextral/launch')
   async getURI(@RequestUser() user: User, @Body() data: FormLaunchGameDTO, @Res() res: Response) {
     const uri = await this.nextralService.launch(user, data);
     return uri.subscribe({
