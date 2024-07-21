@@ -99,7 +99,7 @@ export class WalletService {
         .createdBy(player)
         .build();
 
-      player.coinDeposit = Math.min(0, player.coinDeposit - data.amount);
+      player.coinDeposit = Math.max(0, player.coinDeposit - data.amount);
 
       await userRepo.save(player);
       await coinRepo.save(txCredit);
@@ -251,7 +251,7 @@ export class WalletService {
         .createdBy(player)
         .build();
 
-      player.coinDeposit = Math.min(0, player.coinDeposit - data.bet);
+      player.coinDeposit = Math.max(0, player.coinDeposit - data.bet);
 
       await coinRepo.save(txWin);
       await userRepo.save(player);
