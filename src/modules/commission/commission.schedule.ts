@@ -15,7 +15,7 @@ export class CommissionSchedule {
 
   constructor(private dataSource: DataSource) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS, {
+  @Cron(CronExpression.EVERY_WEEK, {
     name: 'compute_commission',
     timeZone: 'Asia/Singapore',
   })
