@@ -17,6 +17,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserTawk } from './user-tawk.entity';
+import { CommissionPool } from 'src/modules/commission/entities/commission-pool.entity';
 
 @Index('fk_user_isOwner', ['isOwner'])
 @Index('fk_user_isAdmin', ['isAdmin'])
@@ -69,6 +70,9 @@ export class User {
   @Column({ default: 0 })
   commission: number;
 
+  @Column({ default: 5 })
+  rebate: number;
+
   @Column({ nullable: false, select: false })
   password: string;
 
@@ -102,6 +106,9 @@ export class User {
 
   @OneToMany(() => CoinRequest, (r) => r.reviewingUser)
   actionedRequests: CoinRequest[];
+
+  @OneToMany(() => CommissionPool, (cointx) => cointx.player)
+  commissionPools: CommissionPool[];
 
   @OneToMany(() => CoinRequest, (r) => r.actionAgent)
   defaultReviewRequests: CoinRequest[];

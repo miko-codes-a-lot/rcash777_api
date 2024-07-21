@@ -74,7 +74,16 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `CREATE TABLE "user_tawk" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "property_id" character varying NOT NULL, "widget_id" character varying NOT NULL, CONSTRAINT "PK_cd333c55e14cb5662361fdbf112" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "user" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "email" character varying NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "phone_number" character varying NOT NULL, "address" character varying NOT NULL, "coin_deposit" numeric(18,8) NOT NULL DEFAULT '0', "commission" integer NOT NULL DEFAULT '0', "password" character varying NOT NULL, "is_owner" boolean NOT NULL DEFAULT false, "is_admin" boolean NOT NULL DEFAULT false, "is_city_manager" boolean NOT NULL DEFAULT false, "is_master_agent" boolean NOT NULL DEFAULT false, "is_agent" boolean NOT NULL DEFAULT false, "is_player" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "deactivated_at" TIMESTAMP WITH TIME ZONE, "activated_at" TIMESTAMP WITH TIME ZONE, "tawk_id" uuid, "parentId" uuid, "updated_by_id" uuid, "deactivated_by_id" uuid, "activated_by_id" uuid, CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "commission" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "rate" integer NOT NULL, "amount" numeric(18,8) NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "commission_pool_id" uuid, "user_player_id" uuid, CONSTRAINT "PK_d108d70411783e2a3a84e386601" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."commission-pool_type_enum" AS ENUM('GAIN', 'LOSS')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "commission-pool" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "amount" numeric(18,8) NOT NULL, "type" "public"."commission-pool_type_enum" NOT NULL DEFAULT 'GAIN', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "user_player_id" uuid, CONSTRAINT "PK_28e2beaa999d399f9553210a5d3" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "user" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "email" character varying NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "phone_number" character varying NOT NULL, "address" character varying NOT NULL, "coin_deposit" numeric(18,8) NOT NULL DEFAULT '0', "commission" integer NOT NULL DEFAULT '0', "rebate" integer NOT NULL DEFAULT '5', "password" character varying NOT NULL, "is_owner" boolean NOT NULL DEFAULT false, "is_admin" boolean NOT NULL DEFAULT false, "is_city_manager" boolean NOT NULL DEFAULT false, "is_master_agent" boolean NOT NULL DEFAULT false, "is_agent" boolean NOT NULL DEFAULT false, "is_player" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT ('now'::text)::timestamp(6) with time zone, "deactivated_at" TIMESTAMP WITH TIME ZONE, "activated_at" TIMESTAMP WITH TIME ZONE, "tawk_id" uuid, "parentId" uuid, "updated_by_id" uuid, "deactivated_by_id" uuid, "activated_by_id" uuid, CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "idx_user_email_first_name_last_name_phone_number_created_at" ON "user" ("first_name", "last_name", "phone_number", "created_at") `,
@@ -148,6 +157,15 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `ALTER TABLE "game_session" ADD CONSTRAINT "FK_e771dcf69ac8e0a2cfe4da708f2" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
+      `ALTER TABLE "commission" ADD CONSTRAINT "FK_7c459b63ac801a5cefe553b2d94" FOREIGN KEY ("commission_pool_id") REFERENCES "commission-pool"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "commission" ADD CONSTRAINT "FK_aef746bb7b963ab1cb3508fe3df" FOREIGN KEY ("user_player_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "commission-pool" ADD CONSTRAINT "FK_70d85afffa55880e26d1ef9a457" FOREIGN KEY ("user_player_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "user" ADD CONSTRAINT "FK_cd333c55e14cb5662361fdbf112" FOREIGN KEY ("tawk_id") REFERENCES "user_tawk"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
@@ -182,6 +200,15 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_7a4f92de626d8dc4b05f06ad181"`);
     await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_c86f56da7bb30c073e3cbed4e50"`);
     await queryRunner.query(`ALTER TABLE "user" DROP CONSTRAINT "FK_cd333c55e14cb5662361fdbf112"`);
+    await queryRunner.query(
+      `ALTER TABLE "commission-pool" DROP CONSTRAINT "FK_70d85afffa55880e26d1ef9a457"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "commission" DROP CONSTRAINT "FK_aef746bb7b963ab1cb3508fe3df"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "commission" DROP CONSTRAINT "FK_7c459b63ac801a5cefe553b2d94"`,
+    );
     await queryRunner.query(
       `ALTER TABLE "game_session" DROP CONSTRAINT "FK_e771dcf69ac8e0a2cfe4da708f2"`,
     );
@@ -242,6 +269,9 @@ export class LocalMigrations1715769943648 implements MigrationInterface {
       `DROP INDEX "public"."idx_user_email_first_name_last_name_phone_number_created_at"`,
     );
     await queryRunner.query(`DROP TABLE "user"`);
+    await queryRunner.query(`DROP TABLE "commission-pool"`);
+    await queryRunner.query(`DROP TYPE "public"."commission-pool_type_enum"`);
+    await queryRunner.query(`DROP TABLE "commission"`);
     await queryRunner.query(`DROP TABLE "user_tawk"`);
     await queryRunner.query(`DROP INDEX "public"."fb_game_session_user_id"`);
     await queryRunner.query(`DROP TABLE "game_session"`);
