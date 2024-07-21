@@ -33,6 +33,7 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639392221212',
         address: 'random address 5',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
+        commission: 50,
         isOwner: true,
       },
       {
@@ -45,6 +46,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         parent: owner,
         updatedBy: owner,
+        commission: 10,
         isCityManager: true,
       },
       {
@@ -57,6 +59,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         parent: cm,
         updatedBy: cm,
+        commission: 5,
         isMasterAgent: true,
       },
       {
@@ -69,6 +72,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         parent: ma,
         updatedBy: ma,
+        commission: 35,
         isAgent: true,
       },
       {
@@ -93,6 +97,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         parent: ma,
         updatedBy: ma,
+        commission: 35,
         isAgent: true,
       },
       {
@@ -174,6 +179,18 @@ export default class UserSeeder implements Seeder {
         firstName: 'Ryan',
         lastName: 'Cruz',
         phoneNumber: '+639394257878',
+        address: 'random address 3',
+        password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
+        parent: admin,
+        updatedBy: admin,
+        isPlayer: true,
+      },
+      {
+        id: 'f6f50bea-96d1-4368-9f08-6d6b7e4f7271',
+        email: 'kenez@nextral.com',
+        firstName: 'Kenez',
+        lastName: 'Herczeg',
+        phoneNumber: '+639394257888',
         address: 'random address 3',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         parent: admin,

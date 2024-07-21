@@ -66,6 +66,9 @@ export class User {
   })
   coinDeposit: number;
 
+  @Column({ default: 0 })
+  commission: number;
+
   @Column({ nullable: false, select: false })
   password: string;
 
