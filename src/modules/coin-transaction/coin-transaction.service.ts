@@ -11,7 +11,7 @@ import { CoinRequest } from './entities/coin-request.entity';
 import { CoinRequestStatus, CoinRequestType } from 'src/enums/coin-request.enum';
 import { PaymentChannel } from '../payment-channel/entities/payment-channel.entity';
 
-const REBATE_PERCENT = 0.03; // 3%
+const DEFAULT_REBATE_PERCENT = 5;
 const REBATE_AFTER_ELAPSED_MS = 24 * 60 * 60 * 1000;
 const PLAYER_MAX_DEPOSIT_PER_REQUEST = 50000;
 const PLAYER_MAX_WITHDRAWAL_PER_DAY = 200000;
@@ -279,6 +279,8 @@ export class CoinTransactionService {
     if (targetUser.isPlayer) {
       const coinRepo = manager.getRepository(CoinTransaction);
       const userRepo = manager.getRepository(User);
+
+      const REBATE_PERCENT = (targetUser.rebate || DEFAULT_REBATE_PERCENT) / 100;
 
       const lastRebate = await coinRepo.findOne({
         where: {

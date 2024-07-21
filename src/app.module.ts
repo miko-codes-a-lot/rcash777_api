@@ -13,6 +13,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { GameModule } from './modules/game/game.module';
 import { WalletModule } from './modules/wallet/wallet.module';
+import { CommissionModule } from './modules/commission/commission.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { WalletModule } from './modules/wallet/wallet.module';
     UserModule,
     PaymentChannelModule,
     CoinTransactionModule,
+    CommissionModule,
     GameModule,
     WalletModule,
   ],

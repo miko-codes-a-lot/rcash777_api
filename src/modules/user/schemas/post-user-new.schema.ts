@@ -7,6 +7,8 @@ export const PostUserNewRequestSchema = Joi.object({
   lastName: Joi.string().required(),
   phoneNumber: Joi.string().required(),
   address: Joi.string().required(),
+  commission: Joi.number().min(0).max(100).default(0),
+  rebate: Joi.number().min(0).max(100).default(0),
   isOwner: Joi.boolean().allow(null).default(false),
   isAdmin: Joi.boolean().allow(null).default(false),
   isCityManager: Joi.boolean().allow(null).default(false),
@@ -26,6 +28,8 @@ export interface PostUserNewRequest {
   lastName: string;
   phoneNumber: string;
   address: string;
+  commission: number;
+  rebate: number;
   isOwner: boolean;
   isAdmin: boolean;
   isCityManager: boolean;

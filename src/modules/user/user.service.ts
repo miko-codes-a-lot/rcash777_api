@@ -52,6 +52,8 @@ export class UserService extends BaseService<User> {
     user.lastName = data.lastName;
     user.phoneNumber = data.phoneNumber;
     user.address = data.address;
+    user.commission = data.isPlayer ? 0 : data.commission;
+    user.rebate = !data.isPlayer ? 0 : data.rebate;
     user.password = bcrypt.hashSync(data.password, 10);
     user.parent = creator;
 
@@ -96,6 +98,8 @@ export class UserService extends BaseService<User> {
     user.phoneNumber = data.phoneNumber || user.phoneNumber;
     user.address = data.address || user.address;
     user.updatedBy = updater;
+    user.commission = data.isPlayer ? 0 : data.commission || user.commission;
+    user.rebate = !data.isPlayer ? 0 : data.rebate || user.rebate;
 
     user.isAdmin = data.isAdmin;
     user.isCityManager = data.isCityManager;
