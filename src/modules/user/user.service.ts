@@ -41,20 +41,20 @@ export class UserService extends BaseService<User> {
     }
   }
 
-  // Assigned commission must not exceed 100 for everyone
-  private async _checkRemainingCommission(
-    user: User,
-    commission: number,
-    excludeUserId: string = '',
-  ) {
-    const descendants = await this.treeUserRepo.findDescendants(user);
-    const totalCommission = descendants
-      .filter((d) => d.id === excludeUserId)
-      .reduce((a, v) => v.commission + a, 0);
-    if (totalCommission + commission > 100) {
-      throw new BadRequestException(
-        `Remaining commission you can assign is ${totalCommission - commission}`,
-      );
+  /**
+   * CM 50-100
+   * MA 40-45
+   * A 30-35
+   */
+  private floorAndCeilCommission(user: User, commission: number) {
+    if (user.isOwner && commission < 100) {
+      throw new Error('Owner must have a shareable commission of 100');
+    } else if (user.isCityManager && (commission < 50 || commission > 100)) {
+      throw new Error('City Manager commission must be between 50 to 100');
+    } else if (user.isMasterAgent && (commission < 40 || commission > 45)) {
+      throw new Error('Master Agent commission must be between 40 to 45');
+    } else if (user.isAgent && (commission < 30 || commission > 35)) {
+      throw new Error('Agent commission must be between 30 to 35');
     }
   }
 
@@ -62,7 +62,7 @@ export class UserService extends BaseService<User> {
     const user = new User();
 
     this._validateOwner(data.isOwner);
-    await this._checkRemainingCommission(user, data.commission);
+    await this.floorAndCeilCommission(creator, data.commission);
 
     user.id = uuidv4();
     user.email = data.email;
@@ -110,7 +110,7 @@ export class UserService extends BaseService<User> {
     if (!user) throw new NotFoundException('User not found');
 
     this._validateOwner(data.isOwner);
-    await this._checkRemainingCommission(user, data.commission, id);
+    await this.floorAndCeilCommission(updater, data.commission);
 
     user.firstName = data.firstName || user.firstName;
     user.lastName = data.lastName || user.lastName;
@@ -204,15 +204,18 @@ export class UserService extends BaseService<User> {
     };
   }
 
-  getSelf(id: string) {
-    return this.userRepository.findOne({
+  async getSelf(id: string) {
+    const user = await this.userRepository.findOne({
       where: {
         id,
       },
-      relations: {
-        tawkto: true,
-      },
     });
+    const parents = await this.treeUserRepo.findAncestors(user, { relations: ['tawkto'] });
+    const cm = parents.find((u) => u.isCityManager);
+    if (cm) {
+      user.tawkto = cm.tawkto;
+    }
+    return user;
   }
 
   async findAllUserPaginate(pagination: Pagination): Promise<PaginationResponse<User>> {

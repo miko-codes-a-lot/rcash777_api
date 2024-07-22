@@ -9,7 +9,7 @@ import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthIsNot } from 'src/decorators/auth-is-not';
+import { AuthHasAccess } from 'src/decorators/auth-has-access';
 
 @ApiTags('game')
 @Controller('game')
@@ -20,7 +20,7 @@ export class GameController {
   ) {}
 
   @AuthRequired()
-  @AuthIsNot(['isPlayer'])
+  @AuthHasAccess(['isPlayer'])
   @Validate({ body: FormLaunchGameSchema })
   @Post('nextral/launch')
   async getURI(@RequestUser() user: User, @Body() data: FormLaunchGameDTO, @Res() res: Response) {
