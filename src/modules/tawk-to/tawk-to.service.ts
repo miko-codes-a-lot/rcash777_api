@@ -1,14 +1,15 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import axios, { AxiosInstance } from 'axios';
+import config from 'src/config/config';
 
 @Injectable()
 export class TawkToService {
   private tawkToApi: AxiosInstance;
 
   constructor(private httpService: HttpService) {
-    const apiBaseUrl = 'https://api.tawk.to/v1';
-    const apiKey = 'ak00f69408141a884f069c66ba900e742cc5';
+    const apiBaseUrl = config.tawkto.baseUrl;
+    const apiKey = config.tawkto.apiKey;
 
     this.tawkToApi = axios.create({
       baseURL: apiBaseUrl,
