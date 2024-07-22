@@ -210,7 +210,7 @@ export class UserService extends BaseService<User> {
         id,
       },
     });
-    const parents = await this.treeUserRepo.findAncestors(user);
+    const parents = await this.treeUserRepo.findAncestors(user, { relations: ['tawkto'] });
     const cm = parents.find((u) => u.isCityManager);
     if (cm) {
       user.tawkto = cm.tawkto;
