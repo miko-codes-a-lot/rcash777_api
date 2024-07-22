@@ -41,10 +41,28 @@ export class UserService extends BaseService<User> {
     }
   }
 
+  // Assigned commission must not exceed 100 for everyone
+  private async _checkRemainingCommission(
+    user: User,
+    commission: number,
+    excludeUserId: string = '',
+  ) {
+    const descendants = await this.treeUserRepo.findDescendants(user);
+    const totalCommission = descendants
+      .filter((d) => d.id === excludeUserId)
+      .reduce((a, v) => v.commission + a, 0);
+    if (totalCommission + commission > 100) {
+      throw new BadRequestException(
+        `Remaining commission you can assign is ${totalCommission - commission}`,
+      );
+    }
+  }
+
   async create(creator: User, data: PostUserNewRequest) {
     const user = new User();
 
     this._validateOwner(data.isOwner);
+    await this._checkRemainingCommission(user, data.commission);
 
     user.id = uuidv4();
     user.email = data.email;
@@ -92,6 +110,7 @@ export class UserService extends BaseService<User> {
     if (!user) throw new NotFoundException('User not found');
 
     this._validateOwner(data.isOwner);
+    await this._checkRemainingCommission(user, data.commission, id);
 
     user.firstName = data.firstName || user.firstName;
     user.lastName = data.lastName || user.lastName;

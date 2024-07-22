@@ -23,6 +23,8 @@ const envVarsSchema = Joi.object()
     GAME_API_ZENITH_URI: Joi.string().required().description('Zenith URI'),
     GAME_API_ZENITH_EXIT_URI: Joi.string().required().description('Game Lobby'),
     GAME_API_ZENITH_DEPOSIT_URI: Joi.string().required().description('Deposit Page'),
+    TAWKTO_API_KEY: Joi.string().required().description('Tawk.to API KEY'),
+    TAWKTO_BASE_URL: Joi.string().required().description('Tawk.to BASE URL'),
   })
   .unknown();
 
@@ -60,6 +62,10 @@ const config = {
       depositURI: envVars.GAME_API_ZENITH_DEPOSIT_URI,
     }
   },
+  tawkto: {
+    apiKey: envVars.TAWKTO_API_KEY,
+    baseUrl: envVars.TAWKTO_BASE_URL,
+  }
 };
 
 export default config;
