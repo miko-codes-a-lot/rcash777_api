@@ -14,6 +14,7 @@ import { HttpModule } from '@nestjs/axios';
 import { GameModule } from './modules/game/game.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { CommissionModule } from './modules/commission/commission.module';
+import { TawkToModule } from './modules/tawk-to/tawk-to.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { CommissionModule } from './modules/commission/commission.module';
     CommissionModule,
     GameModule,
     WalletModule,
+    TawkToModule,
   ],
   controllers: [],
   providers: [
