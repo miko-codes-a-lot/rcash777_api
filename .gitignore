@@ -55,6 +55,7 @@ Thumbs.db
 .env.test.local
 .env.production.local
 .env.local
+.production-rcash.env
 
 db/migrations/*
 !db/migrations/defaultMigrations.ts
