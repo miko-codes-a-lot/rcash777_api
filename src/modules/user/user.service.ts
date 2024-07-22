@@ -204,15 +204,18 @@ export class UserService extends BaseService<User> {
     };
   }
 
-  getSelf(id: string) {
-    return this.userRepository.findOne({
+  async getSelf(id: string) {
+    const user = await this.userRepository.findOne({
       where: {
         id,
       },
-      relations: {
-        tawkto: true,
-      },
     });
+    const parents = await this.treeUserRepo.findAncestors(user, { relations: ['tawkto'] });
+    const cm = parents.find((u) => u.isCityManager);
+    if (cm) {
+      user.tawkto = cm.tawkto;
+    }
+    return user;
   }
 
   async findAllUserPaginate(pagination: Pagination): Promise<PaginationResponse<User>> {
