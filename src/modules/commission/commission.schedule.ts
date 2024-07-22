@@ -11,7 +11,6 @@ import { CommissionType } from 'src/enums/commission.enum';
 @Injectable()
 export class CommissionSchedule {
   private readonly logger = new Logger(CommissionSchedule.name);
-  private debounce = false;
 
   constructor(private dataSource: DataSource) {}
 
@@ -20,11 +19,6 @@ export class CommissionSchedule {
     timeZone: 'Asia/Singapore',
   })
   performTask() {
-    if (!this.debounce) {
-      this.debounce = true;
-    } else {
-      return;
-    }
     this.logger.debug('Calculating commisions');
 
     return this.dataSource.transaction(async (manager) => {
@@ -87,13 +81,20 @@ export class CommissionSchedule {
         const pool = await commPoolRepo.save(poolData);
 
         if (commissionStatus === CommissionType.GAIN) {
-          for (const user of parents) {
-            if (user.id === partialPlayer.id) continue;
-            const rate = user.commission / 100;
+          const owner = parents.find((p) => p.isOwner);
+          const cm = parents.find((p) => p.isCityManager);
+          const ma = parents.find((p) => p.isMasterAgent);
+          const agent = parents.find((p) => p.isAgent);
 
+          owner.rate = (owner.commission - cm.commission) / 100;
+          cm.rate = (cm.commission - ma.commission) / 100;
+          ma.rate = (ma.commission - agent.commission) / 100;
+          agent.rate = agent.commission / 100;
+
+          for (const user of [owner, cm, ma, agent]) {
             const commissionData = Commission.builder()
               .rate(user.commission)
-              .amount(pool.amount * rate)
+              .amount(pool.amount * user.rate)
               .user(user)
               .pool(pool)
               .createdAt(now)

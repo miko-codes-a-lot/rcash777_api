@@ -70,6 +70,8 @@ export class User {
   @Column({ default: 0 })
   commission: number;
 
+  rate: number;
+
   @Column({ default: 5 })
   rebate: number;
 
