@@ -33,7 +33,7 @@ export default class UserSeeder implements Seeder {
         phoneNumber: '+639392221212',
         address: 'random address 5',
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
-        commission: 50,
+        commission: 100,
         isOwner: true,
       },
       {
@@ -46,7 +46,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         parent: owner,
         updatedBy: owner,
-        commission: 10,
+        commission: 50,
         isCityManager: true,
       },
       {
@@ -59,7 +59,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         parent: cm,
         updatedBy: cm,
-        commission: 5,
+        commission: 40,
         isMasterAgent: true,
       },
       {
@@ -72,7 +72,7 @@ export default class UserSeeder implements Seeder {
         password: '$2a$10$35llA99Kf0S5bnYRyFdrtuk/uQjJOXoZLy0RxNe9bOOtY0t0o12Jy',
         parent: ma,
         updatedBy: ma,
-        commission: 35,
+        commission: 30,
         isAgent: true,
       },
       {
