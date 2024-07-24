@@ -5,6 +5,7 @@ import { AuthRequired } from 'src/decorators/auth-required.decorator';
 import { AuthIsNot } from 'src/decorators/auth-is-not';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
+import { UserTopCommissionDTO } from './dto/user-top-commission';
 
 @AuthRequired()
 @AuthIsNot(['isPlayer'])
@@ -15,6 +16,11 @@ export class CommissionController {
   @Get()
   findAll(@RequestUser() user: User, @Query() query: CommissionPaginateDTO) {
     return this.commissionService.findAllPools(user, query);
+  }
+
+  @Get('top/user')
+  findTopUsers(@Query() query: UserTopCommissionDTO) {
+    return this.commissionService.findTopUserByCommission(query);
   }
 
   @Get('unit')
