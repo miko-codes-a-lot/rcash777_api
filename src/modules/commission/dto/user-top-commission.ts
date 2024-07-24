@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsNumberString, Max, Min } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, Max, Min } from 'class-validator';
 import { UserRole } from 'src/enums/user-role.enum';
 
 export class UserTopCommissionDTO {
