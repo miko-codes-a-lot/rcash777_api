@@ -62,7 +62,6 @@ export class UserService extends BaseService<User> {
     const user = new User();
 
     this._validateOwner(data.isOwner);
-    await this.floorAndCeilCommission(creator, data.commission);
 
     user.id = uuidv4();
     user.email = data.email;
@@ -74,6 +73,8 @@ export class UserService extends BaseService<User> {
     user.rebate = !data.isPlayer ? 0 : data.rebate;
     user.password = bcrypt.hashSync(data.password, 10);
     user.parent = creator;
+
+    await this.floorAndCeilCommission(user, data.commission);
 
     user.isAdmin = data.isAdmin;
     user.isCityManager = data.isCityManager;
@@ -110,7 +111,7 @@ export class UserService extends BaseService<User> {
     if (!user) throw new NotFoundException('User not found');
 
     this._validateOwner(data.isOwner);
-    await this.floorAndCeilCommission(updater, data.commission);
+    await this.floorAndCeilCommission(user, data.commission);
 
     user.firstName = data.firstName || user.firstName;
     user.lastName = data.lastName || user.lastName;
