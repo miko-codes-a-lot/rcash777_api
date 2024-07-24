@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository, TreeRepository } from 'typeorm';
-import { CommissionPaginateDTO } from 'src/schemas/paginate-query.dto';
+import { Brackets, DataSource, Repository, TreeRepository } from 'typeorm';
+import { CommissionPaginateDTO, CommissionUnitPaginateDTO } from 'src/schemas/paginate-query.dto';
 import { CommissionPool } from './entities/commission-pool.entity';
 import { User } from '../user/entities/user.entity';
 import { Commission } from './entities/commission.entity';
@@ -14,6 +14,9 @@ export class CommissionService {
     @InjectRepository(CommissionPool)
     private readonly poolRepo: Repository<CommissionPool>,
 
+    @InjectRepository(Commission)
+    private readonly commissionRepo: Repository<Commission>,
+
     readonly dataSource: DataSource,
   ) {
     this.treeUserRepo = dataSource.manager.getTreeRepository(User);
@@ -24,7 +27,39 @@ export class CommissionService {
     return children.map((u) => u.id);
   }
 
-  async findAll(user: User, query: CommissionPaginateDTO) {
+  async findAllCommissions(user: User, query: CommissionUnitPaginateDTO) {
+    const { page, pageSize, sortOrder, types, roles, startDate, endDate } = query;
+    const descendants = await this._getUserChildrenIds(user);
+
+    const roleParams = roles.reduce((a, v) => ({ ...a, [v]: true }), {});
+    const roleConditions = roles.map((role) => `user.${role} = :${role}`).join(' OR ');
+    const [tx, count] = await this.commissionRepo
+      .createQueryBuilder('commission')
+      .leftJoinAndSelect('commission.user', 'user')
+      .leftJoinAndSelect('commission.pool', 'pool')
+      .where('user.id IN (:...descendants)', { descendants })
+      .andWhere('commission.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
+      .andWhere('pool.type IN (:...types)', { types })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where(roleConditions, roleParams);
+        }),
+      )
+      .orderBy('commission.createdAt', sortOrder)
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getManyAndCount();
+
+    return {
+      total: count,
+      totalPages: Math.ceil(count / pageSize),
+      page,
+      pageSize,
+      items: tx,
+    };
+  }
+
+  async findAllPools(user: User, query: CommissionPaginateDTO) {
     const { page, pageSize, sortOrder, types, startDate, endDate } = query;
 
     const descendants = await this._getUserChildrenIds(user);

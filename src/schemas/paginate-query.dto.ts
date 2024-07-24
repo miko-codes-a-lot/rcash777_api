@@ -19,6 +19,10 @@ export class CommissionPaginateDTO extends PaginationDTO {
   endDate: Date;
 }
 
+export class CommissionUnitPaginateDTO extends CommissionPaginateDTO {
+  roles?: Array<'isOwner' | 'isCityManager' | 'isMasterAgent' | 'isAgent'>;
+}
+
 export class CoinRequestPaginateDTO extends PaginationDTO {
   status: CoinRequestStatus[] = [CoinRequestStatus.PENDING];
   type: CoinRequestType;

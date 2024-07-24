@@ -14,7 +14,12 @@ export class CommissionController {
 
   @Get()
   findAll(@RequestUser() user: User, @Query() query: CommissionPaginateDTO) {
-    return this.commissionService.findAll(user, query);
+    return this.commissionService.findAllPools(user, query);
+  }
+
+  @Get('unit')
+  findAllUnit(@RequestUser() user: User, @Query() query: CommissionPaginateDTO) {
+    return this.commissionService.findAllCommissions(user, query);
   }
 
   @Get(':id')
