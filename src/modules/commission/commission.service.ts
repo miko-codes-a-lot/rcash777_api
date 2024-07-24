@@ -5,6 +5,8 @@ import { CommissionPaginateDTO, CommissionUnitPaginateDTO } from 'src/schemas/pa
 import { CommissionPool } from './entities/commission-pool.entity';
 import { User } from '../user/entities/user.entity';
 import { Commission } from './entities/commission.entity';
+import { CommissionType } from 'src/enums/commission.enum';
+import { UserTopCommissionDTO } from './dto/user-top-commission';
 
 @Injectable()
 export class CommissionService {
@@ -25,6 +27,30 @@ export class CommissionService {
   private async _getUserChildrenIds(user: User) {
     const children = await this.treeUserRepo.findDescendants(user);
     return children.map((u) => u.id);
+  }
+
+  async findTopUserByCommission(query: UserTopCommissionDTO) {
+    const { top, role } = query;
+    return this.commissionRepo
+      .createQueryBuilder('commission')
+      .select('SUM(commission.amount)', 'total')
+      .addSelect('user.id', 'userId')
+      .addSelect('user.email', 'userEmail')
+      .addSelect('user.firstName', 'userFirstName')
+      .addSelect('user.lastName', 'userLastName')
+      .addSelect('user.phoneNumber', 'userPhoneNumber')
+      .leftJoin('commission.user', 'user')
+      .leftJoin('commission.pool', 'pool')
+      .where('pool.type = :type', { type: CommissionType.GAIN })
+      .andWhere(`user.${role} = :isTrue`, { isTrue: true })
+      .groupBy('user.id')
+      .addGroupBy('user.email')
+      .addGroupBy('user.firstName')
+      .addGroupBy('user.lastName')
+      .addGroupBy('user.phoneNumber')
+      .orderBy('total', 'DESC')
+      .limit(top)
+      .getRawMany();
   }
 
   async findAllCommissions(user: User, query: CommissionUnitPaginateDTO) {
