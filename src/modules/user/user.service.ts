@@ -48,13 +48,13 @@ export class UserService extends BaseService<User> {
    */
   private floorAndCeilCommission(user: User, commission: number) {
     if (user.isOwner && commission < 100) {
-      throw new Error('Owner must have a shareable commission of 100');
+      throw new BadRequestException('Owner must have a shareable commission of 100');
     } else if (user.isCityManager && (commission < 50 || commission > 100)) {
-      throw new Error('City Manager commission must be between 50 to 100');
+      throw new BadRequestException('City Manager commission must be between 50 to 100');
     } else if (user.isMasterAgent && (commission < 40 || commission > 45)) {
-      throw new Error('Master Agent commission must be between 40 to 45');
+      throw new BadRequestException('Master Agent commission must be between 40 to 45');
     } else if (user.isAgent && (commission < 30 || commission > 35)) {
-      throw new Error('Agent commission must be between 30 to 35');
+      throw new BadRequestException('Agent commission must be between 30 to 35');
     }
   }
 
@@ -62,7 +62,6 @@ export class UserService extends BaseService<User> {
     const user = new User();
 
     this._validateOwner(data.isOwner);
-    await this.floorAndCeilCommission(creator, data.commission);
 
     user.id = uuidv4();
     user.email = data.email;
@@ -74,6 +73,8 @@ export class UserService extends BaseService<User> {
     user.rebate = !data.isPlayer ? 0 : data.rebate;
     user.password = bcrypt.hashSync(data.password, 10);
     user.parent = creator;
+
+    await this.floorAndCeilCommission(user, data.commission);
 
     user.isAdmin = data.isAdmin;
     user.isCityManager = data.isCityManager;
@@ -110,7 +111,7 @@ export class UserService extends BaseService<User> {
     if (!user) throw new NotFoundException('User not found');
 
     this._validateOwner(data.isOwner);
-    await this.floorAndCeilCommission(updater, data.commission);
+    await this.floorAndCeilCommission(user, data.commission);
 
     user.firstName = data.firstName || user.firstName;
     user.lastName = data.lastName || user.lastName;
