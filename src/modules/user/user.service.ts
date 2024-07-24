@@ -48,13 +48,13 @@ export class UserService extends BaseService<User> {
    */
   private floorAndCeilCommission(user: User, commission: number) {
     if (user.isOwner && commission < 100) {
-      throw new Error('Owner must have a shareable commission of 100');
+      throw new BadRequestException('Owner must have a shareable commission of 100');
     } else if (user.isCityManager && (commission < 50 || commission > 100)) {
-      throw new Error('City Manager commission must be between 50 to 100');
+      throw new BadRequestException('City Manager commission must be between 50 to 100');
     } else if (user.isMasterAgent && (commission < 40 || commission > 45)) {
-      throw new Error('Master Agent commission must be between 40 to 45');
+      throw new BadRequestException('Master Agent commission must be between 40 to 45');
     } else if (user.isAgent && (commission < 30 || commission > 35)) {
-      throw new Error('Agent commission must be between 30 to 35');
+      throw new BadRequestException('Agent commission must be between 30 to 35');
     }
   }
 
