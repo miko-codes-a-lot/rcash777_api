@@ -3,20 +3,29 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
 import config from './config/config';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('RCash777 API')
-    .setDescription('RCash777 API. [Get JSON](/api/swagger-json)')
-    .setVersion('1.0')
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  if (config.env === 'development') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('RCash777 API')
+      .setDescription('RCash777 API. [Get JSON](/api/swagger-json)')
+      .setVersion('1.0')
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
 
-  SwaggerModule.setup('api/swagger', app, document);
+    SwaggerModule.setup('api/swagger', app, document);
+  }
 
   app.enableCors({
     allowedHeaders: [

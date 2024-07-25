@@ -41,6 +41,18 @@ export class UserService extends BaseService<User> {
     }
   }
 
+  private _validateRole(user: User, data: any) {
+    if (user.isOwner && (!data.isCityManager || !data.isAdmin)) {
+      throw new BadRequestException('Owner can only create City Manager or Admin');
+    } else if (user.isCityManager && !data.isMasterAgent) {
+      throw new BadRequestException('City Manager can only create Master Agent');
+    } else if (user.isMasterAgent && !data.isAgent) {
+      throw new BadRequestException('Master Agent can only create Agent');
+    } else if (user.isAgent && !data.isPlayer) {
+      throw new BadRequestException('Agent can only create player');
+    }
+  }
+
   /**
    * CM 50-100
    * MA 40-45
@@ -62,6 +74,7 @@ export class UserService extends BaseService<User> {
     const user = new User();
 
     this._validateOwner(data.isOwner);
+    this._validateRole(user, data);
 
     user.id = uuidv4();
     user.email = data.email;
@@ -111,6 +124,7 @@ export class UserService extends BaseService<User> {
     if (!user) throw new NotFoundException('User not found');
 
     this._validateOwner(data.isOwner);
+    this._validateRole(user, data);
     await this.floorAndCeilCommission(user, data.commission);
 
     user.firstName = data.firstName || user.firstName;
