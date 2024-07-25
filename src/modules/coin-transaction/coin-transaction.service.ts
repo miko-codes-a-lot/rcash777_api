@@ -295,7 +295,8 @@ export class CoinTransactionService {
       const elapsed = now - lastRebate?.createdAt?.getTime();
 
       if (!lastRebate || elapsed >= REBATE_AFTER_ELAPSED_MS) {
-        const totalRebate = amount * REBATE_PERCENT;
+        // disable rebate
+        const totalRebate = amount * REBATE_PERCENT * 0;
 
         const owner = await userRepo.findOneBy({ isOwner: true });
         if (!owner) throw new NotFoundException('Owner not found to shoulder the rebate');
