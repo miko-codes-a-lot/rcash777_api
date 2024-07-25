@@ -16,14 +16,16 @@ async function bootstrap() {
     }),
   );
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('RCash777 API')
-    .setDescription('RCash777 API. [Get JSON](/api/swagger-json)')
-    .setVersion('1.0')
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  if (config.env === 'development') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('RCash777 API')
+      .setDescription('RCash777 API. [Get JSON](/api/swagger-json)')
+      .setVersion('1.0')
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
 
-  SwaggerModule.setup('api/swagger', app, document);
+    SwaggerModule.setup('api/swagger', app, document);
+  }
 
   app.enableCors({
     allowedHeaders: [
