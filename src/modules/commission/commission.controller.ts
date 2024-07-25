@@ -23,6 +23,11 @@ export class CommissionController {
     return this.commissionService.findTopUserByCommission(query);
   }
 
+  @Get('sum')
+  findAllSum(@RequestUser() user: User, @Query() query: CommissionPaginateDTO) {
+    return this.commissionService.findAllSum(user, query);
+  }
+
   @Get('unit')
   findAllUnit(@RequestUser() user: User, @Query() query: CommissionPaginateDTO) {
     return this.commissionService.findAllCommissions(user, query);
