@@ -53,6 +53,87 @@ export class CommissionService {
       .getRawMany();
   }
 
+  async findAllSum(user: User, query: CommissionUnitPaginateDTO) {
+    const { page, pageSize, sortOrder, types, roles, startDate, endDate } = query;
+    const descendants = await this._getUserChildrenIds(user);
+
+    const roleParams = roles.reduce((a, v) => ({ ...a, [v]: true }), {});
+    const roleConditions = roles.map((role) => `user.${role} = :${role}`).join(' OR ');
+
+    const [GAIN, LOSS] = [CommissionType.GAIN, CommissionType.LOSS];
+
+    const queryBuilder = this.commissionRepo
+      .createQueryBuilder('commission')
+      .leftJoinAndSelect('commission.user', 'user')
+      .leftJoinAndSelect('commission.pool', 'pool')
+      .select([
+        'user.id as "userId"',
+        'user.email as email',
+        'user.firstName as "firstName"',
+        'user.lastName as "lastName"',
+        'user.phoneNumber as "phoneNumber"',
+        'user.isOwner as "isOwner"',
+        'user.isAdmin as "isAdmin"',
+        'user.isCityManager as "isCityManager"',
+        'user.isMasterAgent as "isMasterAgent"',
+        'user.isAgent as "isAgent"',
+        'user.isPlayer as "isPlayer"',
+        'user.address as address',
+        'SUM(CASE WHEN pool.type = :gainType THEN commission.amount ELSE 0 END) as gain',
+        'SUM(CASE WHEN pool.type = :lossType THEN commission.amount ELSE 0 END) as loss',
+        'SUM(CASE WHEN pool.type = :gainType THEN commission.amount ELSE -commission.amount END) as net',
+      ])
+      .where('user.id IN (:...descendants)', { descendants })
+      .andWhere('pool.type IN (:...types)', { types })
+      .andWhere('commission.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where(roleConditions, roleParams);
+        }),
+      )
+      .setParameter('gainType', GAIN)
+      .setParameter('lossType', LOSS)
+      .orderBy('net', sortOrder)
+      .groupBy('user.id, user.email');
+
+    const [items, total] = await Promise.all([
+      queryBuilder
+        .offset((page - 1) * pageSize)
+        .limit(pageSize)
+        .getRawMany(),
+      queryBuilder.getCount(),
+    ]);
+
+    const mappedItems = items.map((item) => ({
+      user: {
+        id: item.userId,
+        email: item.email,
+        firstName: item.firstName,
+        lastName: item.lastName,
+        phoneNumber: item.phoneNumber,
+        address: item.address,
+        isOwner: item.isOwner,
+        isAdmin: item.isAdmin,
+        isCityManager: item.isCityManager,
+        isMasterAgent: item.isMasterAgent,
+        isAgent: item.isAgent,
+        isPlayer: item.isPlayer,
+      },
+      gain: parseFloat(item.gain),
+      loss: parseFloat(item.loss),
+      net: Math.abs(parseFloat(item.net)),
+      type: parseFloat(item.net) >= 0 ? GAIN : LOSS,
+    }));
+
+    return {
+      total,
+      totalPages: Math.ceil(total / pageSize),
+      page,
+      pageSize,
+      items: mappedItems,
+    };
+  }
+
   async findAllCommissions(user: User, query: CommissionUnitPaginateDTO) {
     const { page, pageSize, sortOrder, types, roles, startDate, endDate } = query;
     const descendants = await this._getUserChildrenIds(user);
