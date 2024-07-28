@@ -535,7 +535,10 @@ export class CoinTransactionService {
       });
       if (!request) throw new NotFoundException('Transaction not found');
 
-      if (request.status !== CoinRequestStatus.PENDING)
+      if (
+        request.status === CoinRequestStatus.APPROVED ||
+        request.status === CoinRequestStatus.REJECTED
+      )
         throw new BadRequestException('Request has already been processed');
 
       const targetUser = request.requestingUser;
@@ -563,9 +566,5 @@ export class CoinTransactionService {
 
       return txCredit;
     });
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} coinTransaction`;
   }
 }
