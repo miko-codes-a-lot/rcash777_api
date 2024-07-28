@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { WalletController } from './wallet.controller';
+import { NextralWalletController } from './nextral-wallet.controller';
 import { User } from '../user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Game } from '../game/entities/game.entity';
-import { WalletService } from './wallet.service';
+import { NextralWalletService } from './nextral-wallet.service';
 import { GameSession } from '../game/entities/game-session.entity';
 import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
 import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.entity';
@@ -16,7 +16,7 @@ import { CoinRequest } from '../coin-transaction/entities/coin-request.entity';
     TypeOrmModule.forFeature([User, Game, GameSession, CoinTransaction, CoinRequest]),
     HttpModule.register({}),
   ],
-  controllers: [WalletController],
-  providers: [CoinTransactionService, WalletService, NextralService],
+  controllers: [NextralWalletController],
+  providers: [CoinTransactionService, NextralWalletService, NextralService],
 })
-export class WalletModule {}
+export class NextralWalletModule {}

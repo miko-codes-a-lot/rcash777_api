@@ -40,6 +40,14 @@ export class CoinTransactionService {
     this.treeUserRepo = dataSource.manager.getTreeRepository(User);
   }
 
+  private _checkRequestStatus(request: CoinRequest) {
+    if (
+      request.status === CoinRequestStatus.APPROVED ||
+      request.status === CoinRequestStatus.REJECTED
+    )
+      throw new BadRequestException('Request has already been processed');
+  }
+
   async findPlayerById(playerId: string) {
     const player = await this.userRepo.findOne({ where: { id: playerId } });
     if (!player) {
@@ -339,8 +347,7 @@ export class CoinTransactionService {
 
   async rejectDeposit(id: string, user: User) {
     const request = await this.findOneRequest(id);
-    if (request.status !== CoinRequestStatus.PENDING)
-      throw new BadRequestException('Request has already been processed');
+    this._checkRequestStatus(request);
 
     request.status = CoinRequestStatus.REJECTED;
     request.actionAgent = user;
@@ -363,8 +370,7 @@ export class CoinTransactionService {
       });
       if (!request) throw new NotFoundException('Transaction not found');
 
-      if (request.status !== CoinRequestStatus.PENDING)
-        throw new BadRequestException('Request has already been processed');
+      this._checkRequestStatus(request);
 
       const approverBalance = await this.computeBalance(user.id, coinRepo);
       if (!fullUser.isOwner && request.amount > approverBalance) {
@@ -479,8 +485,7 @@ export class CoinTransactionService {
       });
       if (!request) throw new NotFoundException('Request transaction not found');
 
-      if (request.status !== CoinRequestStatus.PENDING)
-        throw new BadRequestException('Request has already been processed');
+      this._checkRequestStatus(request);
 
       const oldWithdraw = { id: request.coinTransaction.id };
 
@@ -511,8 +516,7 @@ export class CoinTransactionService {
       where: { id },
     });
 
-    if (request.status !== CoinRequestStatus.PENDING)
-      throw new BadRequestException('Request has already been processed');
+    this._checkRequestStatus(request);
 
     request.reviewingUser = fullUser.parent;
     request.status = CoinRequestStatus.TRANSFERRED;
@@ -535,8 +539,7 @@ export class CoinTransactionService {
       });
       if (!request) throw new NotFoundException('Transaction not found');
 
-      if (request.status !== CoinRequestStatus.PENDING)
-        throw new BadRequestException('Request has already been processed');
+      this._checkRequestStatus(request);
 
       const targetUser = request.requestingUser;
 
@@ -563,9 +566,5 @@ export class CoinTransactionService {
 
       return txCredit;
     });
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} coinTransaction`;
   }
 }

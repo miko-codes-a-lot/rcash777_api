@@ -12,7 +12,7 @@ import { CoinTransactionModule } from './modules/coin-transaction/coin-transacti
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { GameModule } from './modules/game/game.module';
-import { WalletModule } from './modules/wallet/wallet.module';
+import { NextralWalletModule } from './modules/nextral/nextral-wallet.module';
 import { CommissionModule } from './modules/commission/commission.module';
 import { TawkToModule } from './modules/tawk-to/tawk-to.module';
 
@@ -29,7 +29,7 @@ import { TawkToModule } from './modules/tawk-to/tawk-to.module';
     CoinTransactionModule,
     CommissionModule,
     GameModule,
-    WalletModule,
+    NextralWalletModule,
     TawkToModule,
   ],
   controllers: [],

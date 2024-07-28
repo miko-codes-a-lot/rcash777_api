@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Res, Put, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Res, Put, Query } from '@nestjs/common';
 import { PaymentChannelService } from './payment-channel.service';
 import { FormPaymentChannelDTO, PaymentChannelSchema } from './dto/form-payment-channel.dto';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
@@ -55,9 +55,9 @@ export class PaymentChannelController {
     return await this.channelService.createOrUpdate(user, formData, id);
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: string, @Res() res: Response) {
-    await this.channelService.remove(id);
-    return res.status(HttpStatus.NO_CONTENT).send();
-  }
+  // @Delete(':id')
+  // async remove(@Param('id') id: string, @Res() res: Response) {
+  //   await this.channelService.remove(id);
+  //   return res.status(HttpStatus.NO_CONTENT).send();
+  // }
 }
