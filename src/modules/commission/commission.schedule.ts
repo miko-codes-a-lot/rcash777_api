@@ -55,7 +55,7 @@ export class CommissionSchedule {
           .andWhere('coin_transaction.type_category IN (:...categories)', {
             categories: [
               TransactionTypeCategory.WIN,
-              TransactionTypeCategory.LOSS,
+              TransactionTypeCategory.LOSS, // some wins are considered loss but still a WIN
               TransactionTypeCategory.ROLL_BACK,
             ],
           })

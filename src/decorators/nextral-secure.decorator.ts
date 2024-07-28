@@ -6,7 +6,7 @@ import {
   applyDecorators,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { NextralService } from 'src/modules/wallet/nextral.service';
+import { NextralService } from 'src/modules/nextral/nextral.service';
 
 import config from '../config/config';
 

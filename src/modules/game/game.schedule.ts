@@ -5,6 +5,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { GameDTO } from './dto/game.dto';
 import config from '../../config/config';
 
+const NEXTRAL_URI = config.game_api.zenith.uri;
+
 @Injectable()
 export class GameSchedule {
   private readonly logger = new Logger(GameSchedule.name);
@@ -21,7 +23,7 @@ export class GameSchedule {
   performTask() {
     this.logger.debug('Retrieving games in cron!');
     return this.http
-      .get('https://zenith-fusion-stage.nextralgaming.com/public/v1/gameList', {
+      .get(`${NEXTRAL_URI}/public/v1/gameList`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Basic ${config.game_api.zenith.operation.basic}`,

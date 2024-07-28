@@ -14,7 +14,7 @@ import { FormPayoutDTO } from './dto/form-payout.dto';
 import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
 
 @Injectable()
-export class WalletService {
+export class NextralWalletService {
   constructor(
     private dataSource: DataSource,
     private coinService: CoinTransactionService,

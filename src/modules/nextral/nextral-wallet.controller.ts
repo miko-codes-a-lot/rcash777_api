@@ -6,7 +6,7 @@ import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
 import { FormRollbackDTO } from './dto/form-rollback.dto';
 import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
 import { Validate } from 'src/decorators/validate.decorator';
-import { WalletService } from './wallet.service';
+import { NextralWalletService } from './nextral-wallet.service';
 import { NextralService } from './nextral.service';
 import { FormAuthDTO } from './dto/form-auth.dto';
 import { FormPayoutDTO, FormPayoutSchema } from './dto/form-payout.dto';
@@ -15,11 +15,11 @@ import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('provider/nextral')
 @Controller('provider/nextral')
-export class WalletController {
+export class NextralWalletController {
   constructor(
     private readonly coinService: CoinTransactionService,
     private readonly nextralService: NextralService,
-    private readonly walletService: WalletService,
+    private readonly nextralWalletService: NextralWalletService,
   ) {}
 
   @Post('authenticate')
@@ -51,7 +51,7 @@ export class WalletController {
   @Post('debit')
   @Validate({ body: FormDebitSchema })
   async debit(@Body() data: FormDebitDTO, @Res() res: Response) {
-    const balance = await this.walletService.debit(data);
+    const balance = await this.nextralWalletService.debit(data);
 
     return res.json({
       currency: 'PHP',
@@ -64,7 +64,7 @@ export class WalletController {
   @Post('credit')
   @Validate({ body: FormCreditSchema })
   async credit(@Body() data: FormCreditDTO, @Res() res: Response) {
-    const balance = await this.walletService.credit(data);
+    const balance = await this.nextralWalletService.credit(data);
 
     return res.json({
       currency: 'PHP',
@@ -77,7 +77,7 @@ export class WalletController {
   @Post('payout')
   @Validate({ body: FormPayoutSchema })
   async payout(@Body() data: FormPayoutDTO, @Res() res: Response) {
-    const balance = await this.walletService.payout(data);
+    const balance = await this.nextralWalletService.payout(data);
 
     return res.json({
       currency: 'PHP',
@@ -89,7 +89,7 @@ export class WalletController {
   @NextralSecure()
   @Post('debitAndCredit')
   async debitAndCredit(@Body() data: FormDebitAndCreditDTO, @Res() res: Response) {
-    const balance = await this.walletService.debitAndCredit(data);
+    const balance = await this.nextralWalletService.debitAndCredit(data);
 
     return res.json({
       currency: 'PHP',
@@ -101,7 +101,7 @@ export class WalletController {
   @NextralSecure()
   @Post('rollback')
   async rollback(@Body() data: FormRollbackDTO, @Res() res: Response) {
-    const balance = await this.walletService.rollback(data);
+    const balance = await this.nextralWalletService.rollback(data);
 
     return res.json({
       currency: 'PHP',

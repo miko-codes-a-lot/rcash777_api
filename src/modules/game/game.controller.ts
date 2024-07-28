@@ -4,7 +4,7 @@ import { GamePaginationDTO } from 'src/schemas/paginate-query.dto';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
 import { Validate } from 'src/decorators/validate.decorator';
 import { FormLaunchGameDTO, FormLaunchGameSchema } from './dto/form-launch-game.dto';
-import { NextralService } from '../wallet/nextral.service';
+import { NextralService } from '../nextral/nextral.service';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { Response } from 'express';
