@@ -80,6 +80,36 @@ export class CoinTransactionService {
     return parseFloat(debit || 0) - parseFloat(credit || 0);
   }
 
+  async computeCommission(coinRepo: Repository<CoinTransaction>, user: User, startDate: Date) {
+    const { bet } = await coinRepo
+      .createQueryBuilder('coin_transaction')
+      .select('SUM(coin_transaction.amount)::numeric(18, 8)', 'bet')
+      .where('coin_transaction.type = :type', { type: TransactionType.CREDIT })
+      .andWhere('coin_transaction.type_category IN (:...categories)', {
+        categories: [TransactionTypeCategory.BET_CREDIT, TransactionTypeCategory.ROLL_BACK],
+      })
+      .andWhere('coin_transaction.player = :playerId', { playerId: user.id })
+      .andWhere('coin_transaction.created_at >= :startDate', { startDate })
+      .getRawOne();
+
+    const { win } = await coinRepo
+      .createQueryBuilder('coin_transaction')
+      .select('SUM(coin_transaction.amount)::numeric(18, 8)', 'win')
+      .where('coin_transaction.type = :type', { type: TransactionType.DEBIT })
+      .andWhere('coin_transaction.type_category IN (:...categories)', {
+        categories: [
+          TransactionTypeCategory.WIN,
+          TransactionTypeCategory.LOSS, // some wins are considered loss but still a WIN
+          TransactionTypeCategory.ROLL_BACK,
+        ],
+      })
+      .andWhere('coin_transaction.player = :playerId', { playerId: user.id })
+      .andWhere('coin_transaction.created_at >= :startDate', { startDate })
+      .getRawOne();
+
+    return { bet, win };
+  }
+
   async findSelfPaginated(user: User, config: PaginationDTO) {
     const { page = 1, pageSize = 10, search, sortBy = 'createdAt', sortOrder = 'asc' } = config;
 

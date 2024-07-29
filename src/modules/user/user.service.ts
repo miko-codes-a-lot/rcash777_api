@@ -140,6 +140,7 @@ export class UserService extends BaseService<User> {
     user.isMasterAgent = data.isMasterAgent;
     user.isAgent = data.isAgent;
     user.isPlayer = data.isPlayer;
+    user.isActivated = data.isActivated
 
     if (data.tawkto) {
       await this._assignTawkTo(user, data.tawkto);
