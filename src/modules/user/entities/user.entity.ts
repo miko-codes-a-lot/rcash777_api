@@ -1,7 +1,3 @@
-import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
-import { CoinRequest } from 'src/modules/coin-transaction/entities/coin-request.entity';
-import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
-import { GameSession } from 'src/modules/game/entities/game-session.entity';
 import {
   Column,
   CreateDateColumn,
@@ -16,8 +12,13 @@ import {
   TreeParent,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserTawk } from './user-tawk.entity';
+
+import { CoinRequest } from 'src/modules/coin-transaction/entities/coin-request.entity';
+import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 import { CommissionPool } from 'src/modules/commission/entities/commission-pool.entity';
+import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
+import { GameSession } from 'src/modules/game/entities/game-session.entity';
+import { UserTawk } from './user-tawk.entity';
 
 @Index('fk_user_isOwner', ['isOwner'])
 @Index('fk_user_isAdmin', ['isAdmin'])
@@ -95,6 +96,9 @@ export class User {
 
   @Column({ name: 'is_player', default: false })
   isPlayer: boolean;
+
+  @Column({ name: 'is_activated', default: true })
+  isActivated: boolean;
 
   @ManyToOne(() => UserTawk, (tawk) => tawk.users, { nullable: true })
   @JoinColumn({ name: 'tawk_id' })
@@ -236,6 +240,11 @@ class UserBuilder {
 
   isPlayer(isPlayer: boolean) {
     this.user.isPlayer = isPlayer;
+    return this;
+  }
+
+  isActivated(isActivated: boolean) {
+    this.user.isActivated = isActivated;
     return this;
   }
 
