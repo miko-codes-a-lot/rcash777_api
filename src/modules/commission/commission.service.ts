@@ -17,13 +17,10 @@ export class CommissionService {
   constructor(
     @InjectRepository(CoinTransaction)
     private coinRepo: Repository<CoinTransaction>,
-
     @InjectRepository(CommissionPool)
     private readonly poolRepo: Repository<CommissionPool>,
-
     @InjectRepository(Commission)
     private readonly commissionRepo: Repository<Commission>,
-
     readonly dataSource: DataSource,
   ) {
     this.treeUserRepo = dataSource.manager.getTreeRepository(User);
@@ -34,7 +31,24 @@ export class CommissionService {
     return children.map((u) => u.id);
   }
 
-  async computeCommission(user: User, startDate: Date, coinRepo?: Repository<CoinTransaction>) {
+  async computeAdminCommission(user: User, startDate: Date, endDate: Date) {
+    const descendants = await this.treeUserRepo.findDescendants(user);
+    const players = descendants.filter((d) => d.isPlayer);
+    let commission = 0;
+    for (const player of players) {
+      const { bet, win } = await this.computeCommission(player, startDate, endDate, this.coinRepo);
+      if ((bet || 0) === (win || 0)) continue;
+      commission = win - bet;
+    }
+    return commission;
+  }
+
+  async computeCommission(
+    user: User,
+    startDate: Date,
+    endDate: Date,
+    coinRepo?: Repository<CoinTransaction>,
+  ) {
     const repo = coinRepo ?? this.coinRepo;
     const { bet } = await repo
       .createQueryBuilder('coin_transaction')
@@ -45,6 +59,7 @@ export class CommissionService {
       })
       .andWhere('coin_transaction.player = :playerId', { playerId: user.id })
       .andWhere('coin_transaction.created_at >= :startDate', { startDate })
+      .andWhere('coin_transaction.created_at <= :endDate', { endDate })
       .getRawOne();
 
     const { win } = await repo
@@ -60,6 +75,7 @@ export class CommissionService {
       })
       .andWhere('coin_transaction.player = :playerId', { playerId: user.id })
       .andWhere('coin_transaction.created_at >= :startDate', { startDate })
+      .andWhere('coin_transaction.created_at <= :endDate', { endDate })
       .getRawOne();
 
     return { bet, win };

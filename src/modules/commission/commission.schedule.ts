@@ -43,6 +43,7 @@ export class CommissionSchedule {
         const { bet, win } = await this.commissionService.computeCommission(
           partialPlayer,
           sevenDaysAgo,
+          now,
           coinRepo,
         );
         if ((bet || 0) === (win || 0)) continue;
