@@ -42,16 +42,41 @@ export class UserService extends BaseService<User> {
   }
 
   private _validateRole(user: User, data: any) {
-    if (user.isOwner && !data.isCityManager) {
-      throw new BadRequestException('Owner can only create City Manager or Admin');
-    } else if (user.isOwner && !data.isAdmin && !data.isCityManager) {
-      throw new BadRequestException('Owner can only create City Manager or Admin');
-    } else if (user.isCityManager && !data.isMasterAgent) {
-      throw new BadRequestException('City Manager can only create Master Agent');
-    } else if (user.isMasterAgent && !data.isAgent) {
-      throw new BadRequestException('Master Agent can only create Agent');
-    } else if (user.isAgent && !data.isPlayer) {
-      throw new BadRequestException('Agent can only create player');
+    const roles = [
+      'isOwner',
+      'isAdmin',
+      'isCityManager',
+      'isMasterAgent',
+      'isAgent',
+      'isPlayer',
+    ] as const;
+
+    const userRole = roles.find((role) => user[role]) || '';
+    const newUserRole = roles.find((role) => data[role]) || '';
+
+    switch (userRole) {
+      case 'isOwner':
+        if (!(newUserRole === 'isCityManager' || newUserRole === 'isAdmin')) {
+          throw new BadRequestException('Owner can only handle City Manager or Admin');
+        }
+        break;
+      case 'isCityManager':
+        if (newUserRole === 'isMasterAgent') {
+          throw new BadRequestException('Owner can only handle City Manager or Admin');
+        }
+        break;
+      case 'isMasterAgent':
+        if (newUserRole === 'isAgent') {
+          throw new BadRequestException('City Manager can only handle Master Agent');
+        }
+        break;
+      case 'isAgent':
+        if (newUserRole === 'isPlayer') {
+          throw new BadRequestException('Agent can only handle player');
+        }
+        break;
+      default:
+        throw new BadRequestException('Unknown role');
     }
   }
 
@@ -126,7 +151,7 @@ export class UserService extends BaseService<User> {
     if (!user) throw new NotFoundException('User not found');
 
     this._validateOwner(data.isOwner);
-    this._validateRole(user, data);
+    this._validateRole(updater, data);
     await this.floorAndCeilCommission(user, data.commission);
 
     user.firstName = data.firstName || user.firstName;
