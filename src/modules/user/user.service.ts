@@ -161,7 +161,8 @@ export class UserService extends BaseService<User> {
     user.updatedBy = updater;
     user.commission = data.isPlayer ? 0 : data.commission || user.commission;
     user.rebate = !data.isPlayer ? 0 : data.rebate || user.rebate;
-
+    user.isActivated = data.isActivated;
+    
     // user.isAdmin = data.isAdmin;
     // user.isCityManager = data.isCityManager;
     // user.isMasterAgent = data.isMasterAgent;
