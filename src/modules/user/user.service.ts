@@ -61,17 +61,17 @@ export class UserService extends BaseService<User> {
         }
         break;
       case 'isCityManager':
-        if (newUserRole === 'isMasterAgent') {
+        if (newUserRole !== 'isMasterAgent') {
           throw new BadRequestException('Owner can only handle City Manager or Admin');
         }
         break;
       case 'isMasterAgent':
-        if (newUserRole === 'isAgent') {
+        if (newUserRole !== 'isAgent') {
           throw new BadRequestException('City Manager can only handle Master Agent');
         }
         break;
       case 'isAgent':
-        if (newUserRole === 'isPlayer') {
+        if (newUserRole !== 'isPlayer') {
           throw new BadRequestException('Agent can only handle player');
         }
         break;
