@@ -2,17 +2,20 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DataSource } from 'typeorm';
 import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.entity';
-import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 import { User } from '../user/entities/user.entity';
 import { CommissionPool } from './entities/commission-pool.entity';
 import { Commission } from './entities/commission.entity';
 import { CommissionType } from 'src/enums/commission.enum';
+import { CommissionService } from './commission.service';
 
 @Injectable()
 export class CommissionSchedule {
   private readonly logger = new Logger(CommissionSchedule.name);
 
-  constructor(private dataSource: DataSource) {}
+  constructor(
+    private dataSource: DataSource,
+    private commissionService: CommissionService,
+  ) {}
 
   @Cron(CronExpression.EVERY_WEEK, {
     name: 'compute_commission',
@@ -37,32 +40,12 @@ export class CommissionSchedule {
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
       for (const partialPlayer of players) {
-        const { bet } = await coinRepo
-          .createQueryBuilder('coin_transaction')
-          .select('SUM(coin_transaction.amount)::numeric(18, 8)', 'bet')
-          .where('coin_transaction.type = :type', { type: TransactionType.CREDIT })
-          .andWhere('coin_transaction.type_category IN (:...categories)', {
-            categories: [TransactionTypeCategory.BET_CREDIT, TransactionTypeCategory.ROLL_BACK],
-          })
-          .andWhere('coin_transaction.player = :playerId', { playerId: partialPlayer.id })
-          .andWhere('coin_transaction.created_at >= :sevenDaysAgo', { sevenDaysAgo })
-          .getRawOne();
-
-        const { win } = await coinRepo
-          .createQueryBuilder('coin_transaction')
-          .select('SUM(coin_transaction.amount)::numeric(18, 8)', 'win')
-          .where('coin_transaction.type = :type', { type: TransactionType.DEBIT })
-          .andWhere('coin_transaction.type_category IN (:...categories)', {
-            categories: [
-              TransactionTypeCategory.WIN,
-              TransactionTypeCategory.LOSS, // some wins are considered loss but still a WIN
-              TransactionTypeCategory.ROLL_BACK,
-            ],
-          })
-          .andWhere('coin_transaction.player = :playerId', { playerId: partialPlayer.id })
-          .andWhere('coin_transaction.created_at >= :sevenDaysAgo', { sevenDaysAgo })
-          .getRawOne();
-
+        const { bet, win } = await this.commissionService.computeCommission(
+          partialPlayer,
+          sevenDaysAgo,
+          now,
+          coinRepo,
+        );
         if ((bet || 0) === (win || 0)) continue;
 
         const commission = win - bet;

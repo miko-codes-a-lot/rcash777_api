@@ -7,18 +7,20 @@ import { User } from '../user/entities/user.entity';
 import { Commission } from './entities/commission.entity';
 import { CommissionType } from 'src/enums/commission.enum';
 import { UserTopCommissionDTO } from './dto/user-top-commission';
+import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.entity';
+import { TransactionType, TransactionTypeCategory } from 'src/enums/transaction.enum';
 
 @Injectable()
 export class CommissionService {
   private treeUserRepo: TreeRepository<User>;
 
   constructor(
+    @InjectRepository(CoinTransaction)
+    private coinRepo: Repository<CoinTransaction>,
     @InjectRepository(CommissionPool)
     private readonly poolRepo: Repository<CommissionPool>,
-
     @InjectRepository(Commission)
     private readonly commissionRepo: Repository<Commission>,
-
     readonly dataSource: DataSource,
   ) {
     this.treeUserRepo = dataSource.manager.getTreeRepository(User);
@@ -27,6 +29,56 @@ export class CommissionService {
   private async _getUserChildrenIds(user: User) {
     const children = await this.treeUserRepo.findDescendants(user);
     return children.map((u) => u.id);
+  }
+
+  async computeAdminCommission(user: User, startDate: Date, endDate: Date) {
+    const descendants = await this.treeUserRepo.findDescendants(user);
+    const players = descendants.filter((d) => d.isPlayer);
+    let commission = 0;
+    for (const player of players) {
+      const { bet, win } = await this.computeCommission(player, startDate, endDate, this.coinRepo);
+      if ((bet || 0) === (win || 0)) continue;
+      commission = win - bet;
+    }
+    return commission;
+  }
+
+  async computeCommission(
+    user: User,
+    startDate: Date,
+    endDate: Date,
+    coinRepo?: Repository<CoinTransaction>,
+  ) {
+    const repo = coinRepo ?? this.coinRepo;
+    const { bet } = await repo
+      .createQueryBuilder('coin_transaction')
+      .select('SUM(coin_transaction.amount)::numeric(18, 8)', 'bet')
+      .where('coin_transaction.type = :type', { type: TransactionType.CREDIT })
+      .andWhere('coin_transaction.type_category IN (:...categories)', {
+        categories: [TransactionTypeCategory.BET_CREDIT, TransactionTypeCategory.ROLL_BACK],
+      })
+      .andWhere('coin_transaction.player = :playerId', { playerId: user.id })
+      .andWhere('coin_transaction.created_at >= :startDate', { startDate })
+      .andWhere('coin_transaction.created_at <= :endDate', { endDate })
+      .getRawOne();
+
+    const { win } = await repo
+      .createQueryBuilder('coin_transaction')
+      .select('SUM(coin_transaction.amount)::numeric(18, 8)', 'win')
+      .where('coin_transaction.type = :type', { type: TransactionType.DEBIT })
+      .andWhere('coin_transaction.type_category IN (:...categories)', {
+        categories: [
+          TransactionTypeCategory.WIN,
+          TransactionTypeCategory.LOSS, // some wins are considered loss but still a WIN
+          TransactionTypeCategory.ROLL_BACK,
+        ],
+      })
+      .andWhere('coin_transaction.player = :playerId', { playerId: user.id })
+      .andWhere('coin_transaction.created_at >= :startDate', { startDate })
+      .andWhere('coin_transaction.created_at <= :endDate', { endDate })
+      .getRawOne();
+
+    return { bet, win };
   }
 
   async findTopUserByCommission(query: UserTopCommissionDTO) {

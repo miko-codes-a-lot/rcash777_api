@@ -42,14 +42,41 @@ export class UserService extends BaseService<User> {
   }
 
   private _validateRole(user: User, data: any) {
-    if (user.isOwner && (!data.isCityManager || !data.isAdmin)) {
-      throw new BadRequestException('Owner can only create City Manager or Admin');
-    } else if (user.isCityManager && !data.isMasterAgent) {
-      throw new BadRequestException('City Manager can only create Master Agent');
-    } else if (user.isMasterAgent && !data.isAgent) {
-      throw new BadRequestException('Master Agent can only create Agent');
-    } else if (user.isAgent && !data.isPlayer) {
-      throw new BadRequestException('Agent can only create player');
+    const roles = [
+      'isOwner',
+      'isAdmin',
+      'isCityManager',
+      'isMasterAgent',
+      'isAgent',
+      'isPlayer',
+    ] as const;
+
+    const userRole = roles.find((role) => user[role]) || '';
+    const newUserRole = roles.find((role) => data[role]) || '';
+
+    switch (userRole) {
+      case 'isOwner':
+        if (!(newUserRole === 'isCityManager' || newUserRole === 'isAdmin')) {
+          throw new BadRequestException('Owner can only handle City Manager or Admin');
+        }
+        break;
+      case 'isCityManager':
+        if (newUserRole !== 'isMasterAgent') {
+          throw new BadRequestException('Owner can only handle City Manager or Admin');
+        }
+        break;
+      case 'isMasterAgent':
+        if (newUserRole !== 'isAgent') {
+          throw new BadRequestException('City Manager can only handle Master Agent');
+        }
+        break;
+      case 'isAgent':
+        if (newUserRole !== 'isPlayer') {
+          throw new BadRequestException('Agent can only handle player');
+        }
+        break;
+      default:
+        throw new BadRequestException('Unknown role');
     }
   }
 
@@ -74,7 +101,7 @@ export class UserService extends BaseService<User> {
     const user = new User();
 
     this._validateOwner(data.isOwner);
-    this._validateRole(user, data);
+    this._validateRole(creator, data);
 
     user.id = uuidv4();
     user.email = data.email;
@@ -87,7 +114,7 @@ export class UserService extends BaseService<User> {
     user.password = bcrypt.hashSync(data.password, 10);
     user.parent = creator;
 
-    await this.floorAndCeilCommission(user, data.commission);
+    await this.floorAndCeilCommission(creator, data.commission);
 
     user.isAdmin = data.isAdmin;
     user.isCityManager = data.isCityManager;
@@ -124,8 +151,8 @@ export class UserService extends BaseService<User> {
     if (!user) throw new NotFoundException('User not found');
 
     this._validateOwner(data.isOwner);
-    this._validateRole(user, data);
-    await this.floorAndCeilCommission(user, data.commission);
+    this._validateRole(updater, data);
+    await this.floorAndCeilCommission(updater, data.commission);
 
     user.firstName = data.firstName || user.firstName;
     user.lastName = data.lastName || user.lastName;
@@ -134,12 +161,13 @@ export class UserService extends BaseService<User> {
     user.updatedBy = updater;
     user.commission = data.isPlayer ? 0 : data.commission || user.commission;
     user.rebate = !data.isPlayer ? 0 : data.rebate || user.rebate;
+    user.isActivated = data.isActivated;
 
-    user.isAdmin = data.isAdmin;
-    user.isCityManager = data.isCityManager;
-    user.isMasterAgent = data.isMasterAgent;
-    user.isAgent = data.isAgent;
-    user.isPlayer = data.isPlayer;
+    // user.isAdmin = data.isAdmin;
+    // user.isCityManager = data.isCityManager;
+    // user.isMasterAgent = data.isMasterAgent;
+    // user.isAgent = data.isAgent;
+    // user.isPlayer = data.isPlayer;
 
     if (data.tawkto) {
       await this._assignTawkTo(user, data.tawkto);

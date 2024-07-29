@@ -6,12 +6,22 @@ import { AuthIsNot } from 'src/decorators/auth-is-not';
 import { RequestUser } from 'src/decorators/request-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { UserTopCommissionDTO } from './dto/user-top-commission';
+import { SelfCommissionDTO } from './dto/self-commission.dto';
 
 @AuthRequired()
 @AuthIsNot(['isPlayer'])
 @Controller('commission')
 export class CommissionController {
   constructor(private readonly commissionService: CommissionService) {}
+
+  @Get('/self')
+  async selfCommission(@RequestUser() user: User, @Query() query: SelfCommissionDTO) {
+    return await this.commissionService.computeAdminCommission(
+      user,
+      query.startDate,
+      query.endDate,
+    );
+  }
 
   @Get()
   findAll(@RequestUser() user: User, @Query() query: CommissionPaginateDTO) {
