@@ -6,7 +6,7 @@ import { User } from '../user/entities/user.entity';
 import { CommissionPool } from './entities/commission-pool.entity';
 import { Commission } from './entities/commission.entity';
 import { CommissionType } from 'src/enums/commission.enum';
-import { CoinTransactionService } from '../coin-transaction/coin-transaction.service';
+import { CommissionService } from './commission.service';
 
 @Injectable()
 export class CommissionSchedule {
@@ -14,7 +14,7 @@ export class CommissionSchedule {
 
   constructor(
     private dataSource: DataSource,
-    private coinService: CoinTransactionService,
+    private commissionService: CommissionService,
   ) {}
 
   @Cron(CronExpression.EVERY_WEEK, {
@@ -40,10 +40,10 @@ export class CommissionSchedule {
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
       for (const partialPlayer of players) {
-        const { bet, win } = await this.coinService.computeCommission(
-          coinRepo,
+        const { bet, win } = await this.commissionService.computeCommission(
           partialPlayer,
           sevenDaysAgo,
+          coinRepo,
         );
         if ((bet || 0) === (win || 0)) continue;
 
