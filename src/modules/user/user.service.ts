@@ -74,7 +74,7 @@ export class UserService extends BaseService<User> {
     const user = new User();
 
     this._validateOwner(data.isOwner);
-    this._validateRole(user, data);
+    this._validateRole(creator, data);
 
     user.id = uuidv4();
     user.email = data.email;
@@ -135,11 +135,11 @@ export class UserService extends BaseService<User> {
     user.commission = data.isPlayer ? 0 : data.commission || user.commission;
     user.rebate = !data.isPlayer ? 0 : data.rebate || user.rebate;
 
-    user.isAdmin = data.isAdmin;
-    user.isCityManager = data.isCityManager;
-    user.isMasterAgent = data.isMasterAgent;
-    user.isAgent = data.isAgent;
-    user.isPlayer = data.isPlayer;
+    // user.isAdmin = data.isAdmin;
+    // user.isCityManager = data.isCityManager;
+    // user.isMasterAgent = data.isMasterAgent;
+    // user.isAgent = data.isAgent;
+    // user.isPlayer = data.isPlayer;
 
     if (data.tawkto) {
       await this._assignTawkTo(user, data.tawkto);
