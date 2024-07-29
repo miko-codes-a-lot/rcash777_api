@@ -13,6 +13,7 @@ export const PutUserUpdateRequestSchema = Joi.object({
   isMasterAgent: Joi.boolean().allow(null).default(false),
   isAgent: Joi.boolean().allow(null).default(false),
   isPlayer: Joi.boolean().allow(null).default(false),
+  isActivated: Joi.boolean().allow(null).default(true),
   tawkto: Joi.object({
     propertyId: Joi.string().allow('').optional(),
     widgetId: Joi.string().allow('').optional(),
@@ -33,6 +34,7 @@ export interface PostUserUpdateRequest {
   isMasterAgent: boolean;
   isAgent: boolean;
   isPlayer: boolean;
+  isActivated: boolean;
   tawkto?: {
     propertyId: string;
     widgetId: string;
