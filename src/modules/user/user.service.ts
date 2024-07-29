@@ -42,7 +42,9 @@ export class UserService extends BaseService<User> {
   }
 
   private _validateRole(user: User, data: any) {
-    if (user.isOwner && (!data.isCityManager || !data.isAdmin)) {
+    if (user.isOwner && !data.isCityManager) {
+      throw new BadRequestException('Owner can only create City Manager or Admin');
+    } else if (user.isOwner && !data.isAdmin && !data.isCityManager) {
       throw new BadRequestException('Owner can only create City Manager or Admin');
     } else if (user.isCityManager && !data.isMasterAgent) {
       throw new BadRequestException('City Manager can only create Master Agent');
