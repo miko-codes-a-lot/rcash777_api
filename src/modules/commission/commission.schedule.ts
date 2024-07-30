@@ -49,7 +49,7 @@ export class CommissionSchedule {
         if ((bet || 0) === (win || 0)) continue;
 
         const commission = win - bet;
-        const commissionStatus = commission < 0 ? CommissionType.GAIN : CommissionType.LOSS;
+        const commissionStatus = commission > 0 ? CommissionType.GAIN : CommissionType.LOSS;
 
         const parents = await userTreeRepo.findAncestors(partialPlayer);
 
