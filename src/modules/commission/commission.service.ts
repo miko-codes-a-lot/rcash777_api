@@ -114,6 +114,25 @@ export class CommissionService {
 
     const [GAIN, LOSS] = [CommissionType.GAIN, CommissionType.LOSS];
 
+    const countQuery = this.commissionRepo
+      .createQueryBuilder('commission')
+      .select('COUNT(DISTINCT user.id)', 'count')
+      .leftJoin('commission.user', 'user')
+      .leftJoin('commission.pool', 'pool')
+      .where('user.id IN (:...descendants)', { descendants })
+      .andWhere('pool.type IN (:...types)', { types })
+      .andWhere('commission.createdAt BETWEEN :startDate AND :endDate', { startDate, endDate })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where(roleConditions, roleParams);
+        }),
+      )
+      .setParameter('gainType', GAIN)
+      .setParameter('lossType', LOSS);
+
+    const countResult = await countQuery.getRawOne();
+    const totalOrNil = countResult ? parseInt(countResult.count, 10) : 0;
+
     const queryBuilder = this.commissionRepo
       .createQueryBuilder('commission')
       .leftJoinAndSelect('commission.user', 'user')
@@ -148,13 +167,10 @@ export class CommissionService {
       .orderBy('net', sortOrder)
       .groupBy('user.id, user.email');
 
-    const [items, total] = await Promise.all([
-      queryBuilder
-        .offset((page - 1) * pageSize)
-        .limit(pageSize)
-        .getRawMany(),
-      queryBuilder.getCount(),
-    ]);
+    const items = await queryBuilder
+      .offset((page - 1) * pageSize)
+      .limit(pageSize)
+      .getRawMany();
 
     const mappedItems = items.map((item) => ({
       user: {
@@ -178,8 +194,8 @@ export class CommissionService {
     }));
 
     return {
-      total,
-      totalPages: Math.ceil(total / pageSize),
+      total: totalOrNil,
+      totalPages: Math.ceil(totalOrNil / pageSize),
       page,
       pageSize,
       items: mappedItems,

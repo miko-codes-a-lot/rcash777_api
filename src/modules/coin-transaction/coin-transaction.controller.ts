@@ -12,6 +12,7 @@ import {
 } from './dto/coin-request.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthIsNot } from 'src/decorators/auth-is-not';
+import { AuthHasAccess } from 'src/decorators/auth-has-access';
 
 @AuthRequired()
 @ApiTags('coin-transaction')
@@ -67,6 +68,12 @@ export class CoinTransactionController {
   @Validate({ body: WithdrawRequestSchema })
   async requestWithdraw(@RequestUser() user: User, @Body() data: CoinRequestDTO) {
     return await this.coinService.requestWithdraw(user, data);
+  }
+
+  @AuthHasAccess(['isOwner'])
+  @Put('self/deposit')
+  async selfDeposit(@RequestUser() user: User, @Body() data: any) {
+    return await this.coinService.selfDeposit(user, data);
   }
 
   @AuthIsNot(['isPlayer'])
