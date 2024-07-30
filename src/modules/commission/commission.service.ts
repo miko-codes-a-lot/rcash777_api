@@ -34,13 +34,41 @@ export class CommissionService {
   async computeAdminCommission(user: User, startDate: Date, endDate: Date) {
     const descendants = await this.treeUserRepo.findDescendants(user);
     const players = descendants.filter((d) => d.isPlayer);
-    let commission = 0;
+
+    const roleOrder = ['isOwner', 'isCityManager', 'isMasterAgent', 'isAgent'];
+    const userRole = roleOrder.find((role) => user[role] === true);
+    const nextLineIndex = roleOrder.findIndex((role) => role === userRole);
+    const nextRole = roleOrder[nextLineIndex + 1];
+
+    let totalCommission = 0;
     for (const player of players) {
-      const { bet, win } = await this.computeCommission(player, startDate, endDate, this.coinRepo);
-      if ((bet || 0) === (win || 0)) continue;
-      commission = win - bet;
+      const { bet: betRaw, win: winRaw } = await this.computeCommission(
+        player,
+        startDate,
+        endDate,
+        this.coinRepo,
+      );
+      const win = winRaw || 0;
+      const bet = betRaw || 0;
+      if (win === bet) continue;
+
+      const commission = win - bet;
+      const commissionStatus = commission > 0 ? CommissionType.GAIN : CommissionType.LOSS;
+      if (commissionStatus === CommissionType.GAIN) {
+        const parents = await this.treeUserRepo.findAncestors(player);
+        const nextUser = parents.find((parent) => parent[nextRole]);
+        const nextCommission = nextUser?.commission || 0;
+
+        user.rate = (user.commission - nextCommission) / 100;
+        totalCommission += commission * user.rate;
+      } else {
+        if (user.isCityManager) {
+          totalCommission += commission;
+        }
+      }
     }
-    return commission;
+
+    return totalCommission;
   }
 
   async computeCommission(
