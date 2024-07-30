@@ -16,11 +16,6 @@ const REBATE_AFTER_ELAPSED_MS = 24 * 60 * 60 * 1000;
 const PLAYER_MAX_DEPOSIT_PER_REQUEST = 50000;
 const PLAYER_MAX_WITHDRAWAL_PER_DAY = 200000;
 
-/**
- * Commission of internal users are saved in another table
- * Non player can request credits withdrawal without the need to bet it
- * Cash In of player must Credit away from Agent or other admin
- */
 @Injectable()
 export class CoinTransactionService {
   private treeUserRepo: TreeRepository<User>;
