@@ -355,6 +355,43 @@ export class CoinTransactionService {
     return await this.requestRepo.save(request);
   }
 
+  async selfDeposit(user: User, data: any) {
+    return this.dataSource.transaction(async (manager) => {
+      const userRepo = manager.getRepository(User);
+      const coinRepo = manager.getRepository(CoinTransaction);
+      const paymentRepo = manager.getRepository(PaymentChannel);
+
+      const payment = await paymentRepo.findOneBy({ id: data.paymentChannelId });
+
+      if (!payment) throw new NotFoundException('Payment channel not found');
+
+      if (!user.isOwner) {
+        throw new BadRequestException('You must be the Owner to self deposit');
+      }
+
+      const txDepositData = CoinTransaction.builder()
+        .amount(data.amount)
+        .type(TransactionType.DEBIT)
+        .typeCategory(TransactionTypeCategory.DEPOSIT)
+        .paymentChannel(payment)
+        .player(user)
+        .createdBy(user)
+        .build();
+
+      const txDeposit = await coinRepo.save(txDepositData);
+
+      const coinMasterBalance = await this.computeBalance(user.id);
+
+      if (!user.isOwner && data.amount > coinMasterBalance) {
+        throw new BadRequestException('Not enough balance to topup the user');
+      }
+
+      await userRepo.save(user);
+
+      return txDeposit;
+    });
+  }
+
   async approveDeposit(id: string, user: User) {
     return this.dataSource.transaction(async (manager) => {
       const userRepo = manager.getRepository(User);
@@ -373,7 +410,7 @@ export class CoinTransactionService {
       this._checkRequestStatus(request);
 
       const approverBalance = await this.computeBalance(user.id, coinRepo);
-      if (!fullUser.isOwner && request.amount > approverBalance) {
+      if (request.amount > approverBalance) {
         throw new BadRequestException('Not enough balance to aprove the deposit');
       }
 
