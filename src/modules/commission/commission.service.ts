@@ -56,10 +56,10 @@ export class CommissionService {
       const commissionStatus = commission > 0 ? CommissionType.GAIN : CommissionType.LOSS;
       if (commissionStatus === CommissionType.GAIN) {
         const parents = await this.treeUserRepo.findAncestors(player);
-        const parent = parents.find((parent) => parent[nextRole]);
-        const parentCommission = parent?.commission || 0;
+        const nextUser = parents.find((parent) => parent[nextRole]);
+        const nextCommission = nextUser?.commission || 0;
 
-        user.rate = (user.commission - parentCommission) / 100;
+        user.rate = (user.commission - nextCommission) / 100;
         totalCommission += commission * user.rate;
       } else {
         if (user.isCityManager) {
