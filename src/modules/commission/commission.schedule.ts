@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { DataSource } from 'typeorm';
 import { CoinTransaction } from '../coin-transaction/entities/coin-transaction.entity';
 import { User } from '../user/entities/user.entity';
@@ -17,7 +17,7 @@ export class CommissionSchedule {
     private commissionService: CommissionService,
   ) {}
 
-  @Cron(CronExpression.EVERY_WEEK, {
+  @Cron('59 23 * * 0', {
     name: 'compute_commission',
     timeZone: 'Asia/Singapore',
   })
