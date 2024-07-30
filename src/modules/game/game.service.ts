@@ -6,6 +6,8 @@ import { Game } from './entities/game.entity';
 import { GameImage } from './entities/game-image.entity';
 import { GamePaginationDTO } from 'src/schemas/paginate-query.dto';
 import { HttpService } from '@nestjs/axios';
+import { ProviderDTO } from './dto/provider.dto';
+import { Provider } from './entities/provider.entity';
 
 @Injectable()
 export class GameService {
@@ -17,7 +19,28 @@ export class GameService {
 
     @InjectRepository(Game)
     private gameRepo: Repository<Game>,
+
+    @InjectRepository(Provider)
+    private providerRepo: Repository<Provider>,
   ) {}
+
+  createManyProviders(providers: ProviderDTO[]) {
+    return this.dataSource.transaction(async (manager) => {
+      const providerRepo = manager.getRepository(Provider);
+      for (const providerDTO of providers) {
+        this.logger.debug(`saving provider ${providerDTO.clientCode}`);
+        const provider =
+          (await providerRepo.findOne({ where: { id: providerDTO.id } })) || new Provider();
+
+        provider.id = providerDTO.id;
+        provider.code = providerDTO.clientCode;
+        provider.name = providerDTO.displayName;
+        provider.icon = providerDTO.icon;
+
+        await providerRepo.save(provider);
+      }
+    });
+  }
 
   createMany(games: GameDTO[]) {
     return this.dataSource.transaction(async (manager) => {
@@ -91,18 +114,8 @@ export class GameService {
     });
   }
 
-  async findAllProviders(category?: string) {
-    const queryBuilder = this.gameRepo
-      .createQueryBuilder('game')
-      .select('DISTINCT game.providerCode', 'providerCode');
-
-    if (category && category !== '') {
-      queryBuilder.where('game.category = :category', { category });
-    }
-
-    const items = await queryBuilder.getRawMany();
-
-    return items.map((item) => item.providerCode);
+  async findAllProviders() {
+    return this.providerRepo.find();
   }
 
   async findAllPaginated(config: GamePaginationDTO) {
