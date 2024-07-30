@@ -178,6 +178,7 @@ export class CoinTransactionService {
       sortOrder = 'asc',
     } = config;
 
+    // // Pag gusto mo tumalon ng approval like CM to Player, gamitin mo lang tong descendants ID
     // const ids = await this._getUserChildrenIds(user);
 
     const [tx, count] = await this.requestRepo.findAndCount({
@@ -187,9 +188,10 @@ export class CoinTransactionService {
           status: In(status),
           type,
         },
+        // // Uncomment pag gusto mo tumalon ung approval example CM to Player
         // {
         //   requestingUser: { id: In(ids) },
-        //   status,
+        //   status: In(status),
         //   type,
         // },
       ],
