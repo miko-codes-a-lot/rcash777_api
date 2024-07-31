@@ -1,6 +1,7 @@
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { GameImage } from './game-image.entity';
 import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
+import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
 
 @Index('idx_game_name_category', ['name', 'category'])
 @Index('idx_game_category', ['category'])
@@ -28,7 +29,15 @@ export class Game {
   @Column({ name: 'jackpot_class' })
   jackpotClass: string;
 
-  @Column({ name: 'jackpot_contribution', nullable: true })
+  @Column({
+    name: 'jackpot_contribution',
+    type: 'decimal',
+    default: 0,
+    precision: 5,
+    scale: 2,
+    nullable: true,
+    transformer: new DecimalColumnTransformer(),
+  })
   jackpotContribution: number;
 
   @Column({ name: 'is_demo_allowed' })
@@ -40,7 +49,13 @@ export class Game {
   @OneToMany(() => CoinTransaction, (cointx) => cointx.game)
   coinTransactions: CoinTransaction[];
 
-  @Column()
+  @Column({
+    type: 'decimal',
+    default: 0,
+    precision: 5,
+    scale: 2,
+    transformer: new DecimalColumnTransformer(),
+  })
   rtp: number;
 
   @OneToMany(() => GameImage, (image) => image.game)
