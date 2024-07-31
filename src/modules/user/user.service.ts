@@ -10,6 +10,7 @@ import { PostUserUpdateRequest } from './schemas/put-user-update.schema';
 import { UserPaginateDTO } from 'src/schemas/paginate-query.dto';
 import { UserTawk } from './entities/user-tawk.entity';
 import { v4 as uuidv4 } from 'uuid';
+import * as generatePassword from 'generate-password';
 
 @Injectable()
 export class UserService extends BaseService<User> {
@@ -33,6 +34,20 @@ export class UserService extends BaseService<User> {
     user.tawkto = tawk;
 
     return tawk;
+  }
+
+  private async _generatePassword(): Promise<string> {
+    const passwordOptions = {
+      length: 10,
+      numbers: true,
+      symbols: true, 
+      uppercase: true,
+      excludeSimilarCharacters: true
+    };
+
+    const password = generatePassword.generate(passwordOptions);
+    
+    return password;
   }
 
   private _validateOwner(isOwner: boolean) {
@@ -102,6 +117,7 @@ export class UserService extends BaseService<User> {
 
     this._validateOwner(data.isOwner);
     this._validateRole(creator, data);
+    const randomPassword = await this._generatePassword();
 
     user.id = uuidv4();
     user.email = data.email;
@@ -111,7 +127,7 @@ export class UserService extends BaseService<User> {
     user.address = data.address;
     user.commission = data.isPlayer ? 0 : data.commission;
     user.rebate = !data.isPlayer ? 0 : data.rebate;
-    user.password = bcrypt.hashSync(data.password, 10);
+    user.password = bcrypt.hashSync(randomPassword, 10);
     user.parent = creator;
 
     await this.floorAndCeilCommission(user, data.commission);

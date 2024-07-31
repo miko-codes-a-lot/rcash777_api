@@ -100,6 +100,12 @@ export class User {
   @Column({ name: 'is_activated', default: true })
   isActivated: boolean;
 
+  @Column({ name: 'is_ghost', default: false })
+  isGhost: boolean;
+
+  @Column({ name: 'is_direct_line', default: false })
+  isDirectLine: boolean;
+
   @ManyToOne(() => UserTawk, (tawk) => tawk.users, { nullable: true })
   @JoinColumn({ name: 'tawk_id' })
   tawkto: UserTawk;
@@ -245,6 +251,16 @@ class UserBuilder {
 
   isActivated(isActivated: boolean) {
     this.user.isActivated = isActivated;
+    return this;
+  }
+
+  isGhost(isGhost: boolean) {
+    this.user.isGhost = isGhost;
+    return this;
+  }
+
+  isDirectLine(isDirectLine: boolean) {
+    this.user.isDirectLine = isDirectLine;
     return this;
   }
 
