@@ -406,9 +406,11 @@ export class CoinTransactionService {
 
       this._checkRequestStatus(request);
 
-      const approverBalance = await this.computeBalance(user.id, coinRepo);
-      if (request.amount > approverBalance) {
-        throw new BadRequestException('Not enough balance to aprove the deposit');
+      if (!fullUser.isOwner) {
+        const approverBalance = await this.computeBalance(user.id, coinRepo);
+        if (request.amount > approverBalance) {
+          throw new BadRequestException('Not enough balance to aprove the deposit');
+        }
       }
 
       const targetUser = request.requestingUser;
