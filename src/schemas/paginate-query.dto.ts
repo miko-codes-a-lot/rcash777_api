@@ -1,4 +1,5 @@
-import { CoinRequestType } from 'src/enums/coin-request.enum';
+import { CoinRequestStatus, CoinRequestType } from 'src/enums/coin-request.enum';
+
 import { CommissionType } from 'src/enums/commission.enum';
 
 export class PaginationDTO {
@@ -24,6 +25,7 @@ export class CommissionUnitPaginateDTO extends CommissionPaginateDTO {
 }
 
 export class CoinRequestPaginateDTO extends PaginationDTO {
+  status: CoinRequestStatus[] = [CoinRequestStatus.PENDING, CoinRequestStatus.TRANSFERRED];
   type: CoinRequestType;
 }
 
