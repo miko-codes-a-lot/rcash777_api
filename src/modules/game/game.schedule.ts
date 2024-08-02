@@ -8,6 +8,7 @@ import { zip } from 'rxjs';
 import { ProviderDTO } from './dto/provider.dto';
 
 const NEXTRAL_URI = config.game_api.zenith.uri;
+const exclusions = ['PRAGMATICPLAY', 'PLAYNGO'];
 
 @Injectable()
 export class GameSchedule {
@@ -34,7 +35,9 @@ export class GameSchedule {
         })
         .subscribe({
           next: async (response) => {
-            const providers: ProviderDTO[] = response.data;
+            const providers: ProviderDTO[] = response.data.filter(
+              (provider: ProviderDTO) => !exclusions.includes(provider.clientCode),
+            );
             await this.gameService.createManyProviders(providers);
           },
           error: (err) => console.error(err, 'error'),
@@ -48,7 +51,9 @@ export class GameSchedule {
         })
         .subscribe({
           next: async (response) => {
-            const games: GameDTO[] = response.data;
+            const games: GameDTO[] = response.data.filter(
+              (game: GameDTO) => !exclusions.includes(game.providerCode),
+            );
             await this.gameService.createMany(games);
           },
         }),
