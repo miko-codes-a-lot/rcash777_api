@@ -167,7 +167,6 @@ export class CoinTransactionService {
     const {
       page = 1,
       pageSize = 10,
-      status,
       type,
       sortBy = 'createdAt',
       sortOrder = 'asc',
@@ -180,7 +179,7 @@ export class CoinTransactionService {
       where: [
         {
           reviewingUser: { id: user.id },
-          status: In(status),
+          status: In([CoinRequestStatus.PENDING, CoinRequestStatus.TRANSFERRED]),
           type,
         },
         // // Uncomment pag gusto mo tumalon ung approval example CM to Player
