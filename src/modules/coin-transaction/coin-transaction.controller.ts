@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Query, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Put,
+  NotImplementedException,
+} from '@nestjs/common';
 import { CoinTransactionService } from './coin-transaction.service';
 import { CoinRequestPaginateDTO, PaginationDTO } from 'src/schemas/paginate-query.dto';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
@@ -73,6 +82,7 @@ export class CoinTransactionController {
   @AuthHasAccess(['isOwner'])
   @Put('self/deposit')
   async selfDeposit(@RequestUser() user: User, @Body() data: any) {
+    if (true) throw new NotImplementedException('This is not available');
     return await this.coinService.selfDeposit(user, data);
   }
 
