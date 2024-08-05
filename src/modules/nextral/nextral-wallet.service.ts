@@ -12,6 +12,7 @@ import { FormCreditDTO } from './dto/form-credit.dto';
 import { FormRollbackDTO } from './dto/form-rollback.dto';
 import { FormPayoutDTO } from './dto/form-payout.dto';
 import { FormDebitAndCreditDTO } from './dto/form-debit-n-credit.dto';
+import { NextralUtil } from './nextral.util';
 
 @Injectable()
 export class NextralWalletService {
@@ -29,7 +30,13 @@ export class NextralWalletService {
     private gameRepo: Repository<Game>,
   ) {}
 
-  private async _getPlayerAndGame(playerId: string, gameCode: string) {
+  private isUUIDv4(id: string, error: { errorCode: string; errorMessage: string }) {
+    if (NextralUtil.isUUIDv4(id) === null) {
+      throw new HttpException({ error }, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getPlayerAndGame(playerId: string, gameCode: string) {
     return Promise.all([
       this._findOne<User>(
         this.userRepo,
@@ -82,13 +89,38 @@ export class NextralWalletService {
     });
   }
 
+  private requirePlayerAndGame(playerId: string, gameId: string) {
+    if (!playerId || !NextralUtil.isUUIDv4(playerId)) {
+      throw new HttpException(
+        {
+          error: {
+            errorCode: 'PLAYER_NOT_FOUND',
+            errorMessage: 'Player ID must not be empty or a UUIDv4 format',
+          },
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    } else if (!gameId) {
+      throw new HttpException(
+        {
+          error: {
+            errorCode: 'GAME_NOT_FOUND',
+            errorMessage: 'Game ID must have a value',
+          },
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
   // remove money from player balance (credit on our DB)
   // @TODO: 2024-06-24 - Implement later "ROUND_NOT_FOUND", "ROUND_ENDED"
   async debit(data: FormDebitDTO) {
+    this.requirePlayerAndGame(data.player, data.game);
     this.isValidCurrency(data.currency);
 
     const remainingBalance = await this.coinService.computeBalance(data.player);
-    const [player, game] = await this._getPlayerAndGame(data.player, data.game);
+    const [player, game] = await this.getPlayerAndGame(data.player, data.game);
 
     return this.dataSource.transaction(async (manager) => {
       const coinRepo = manager.getRepository(CoinTransaction);
@@ -129,6 +161,11 @@ export class NextralWalletService {
   // rolling back a player deposit from the game
   // which means we undo player credit to debit in our DB
   async rollback(data: FormRollbackDTO) {
+    this.isUUIDv4(data.player || '', {
+      errorCode: 'PLAYER_NOT_FOUND',
+      errorMessage: 'Player not found',
+    });
+
     const player = await this._findOne<User>(
       this.userRepo,
       { id: data.player },
@@ -184,8 +221,9 @@ export class NextralWalletService {
   // remove money from game and add it to player balance (debit on our DB)
   // @TODO: 2024-06-24 - Implement later "ROUND_NOT_FOUND", "ROUND_ENDED"
   async credit(data: FormCreditDTO) {
+    this.requirePlayerAndGame(data.player, data.game);
     this.isValidCurrency(data.currency);
-    const [player, game] = await this._getPlayerAndGame(data.player, data.game);
+    const [player, game] = await this.getPlayerAndGame(data.player, data.game);
 
     const txCredit = await this.coinRepo.findOne({ where: { roundId: data.roundId } });
     if (!txCredit) {
@@ -219,7 +257,7 @@ export class NextralWalletService {
 
   // remove money from game and add it to player balance (debit on our DB)
   async payout(data: FormPayoutDTO) {
-    const [player, game] = await this._getPlayerAndGame(data.player, data.game);
+    const [player, game] = await this.getPlayerAndGame(data.player, data.game);
 
     const txDebit = CoinTransaction.builder()
       .player(player)
@@ -238,7 +276,8 @@ export class NextralWalletService {
   }
 
   async debitAndCredit(data: FormDebitAndCreditDTO) {
-    const [player, game] = await this._getPlayerAndGame(data.player, data.game);
+    this.requirePlayerAndGame(data.player, data.game);
+    const [player, game] = await this.getPlayerAndGame(data.player, data.game);
     const balance = await this.coinService.computeBalance(data.player);
 
     if (balance - data.bet <= 0) {
