@@ -69,6 +69,19 @@ export class NextralWalletService {
       );
   }
 
+  private isTxIdempotency(
+    coinRepo: Repository<CoinTransaction>,
+    roundId: string,
+    transactionId: string,
+  ) {
+    return coinRepo.findOne({
+      where: {
+        transactionId,
+        roundId,
+      },
+    });
+  }
+
   // remove money from player balance (credit on our DB)
   // @TODO: 2024-06-24 - Implement later "ROUND_NOT_FOUND", "ROUND_ENDED"
   async debit(data: FormDebitDTO) {
@@ -88,23 +101,28 @@ export class NextralWalletService {
         );
       }
 
-      const txCredit = CoinTransaction.builder()
-        .player(player)
-        .transactionId(data.transId)
-        .roundId(data.roundId)
-        .game(game)
-        .type(TransactionType.CREDIT)
-        .typeCategory(data.reason)
-        .amount(data.amount)
-        .createdBy(player)
-        .build();
+      const isIdempotency = await this.isTxIdempotency(coinRepo, data.roundId, data.transId);
 
-      player.coinDeposit = Math.max(0, player.coinDeposit - data.amount);
+      if (!isIdempotency) {
+        const txCredit = CoinTransaction.builder()
+          .player(player)
+          .transactionId(data.transId)
+          .roundId(data.roundId)
+          .game(game)
+          .type(TransactionType.CREDIT)
+          .typeCategory(data.reason)
+          .amount(data.amount)
+          .createdBy(player)
+          .build();
+        player.coinDeposit = Math.max(0, player.coinDeposit - data.amount);
 
-      await userRepo.save(player);
-      await coinRepo.save(txCredit);
+        await userRepo.save(player);
+        await coinRepo.save(txCredit);
 
-      return remainingBalance - txCredit.amount;
+        return remainingBalance - txCredit.amount;
+      }
+
+      return remainingBalance;
     });
   }
 
@@ -119,7 +137,7 @@ export class NextralWalletService {
 
     await this.dataSource.transaction(async (manager) => {
       const coinRepo = manager.getRepository(CoinTransaction);
-      // in game's perspective we are undoing a debit (this means CREDIT in our DB)
+      // in game's perspective swe are undoing a debit (this means CREDIT in our DB)
       const txCredit = await this._findOne<CoinTransaction>(
         coinRepo,
         { transactionId: data.originalTransId, type: TransactionType.CREDIT },
@@ -174,23 +192,27 @@ export class NextralWalletService {
       throw new NotFoundException(`Credit counterpart not found: roundId=${data.roundId}`);
     }
 
-    const WIN_OR_LOSS =
-      data.amount - txCredit.amount >= 0
-        ? TransactionTypeCategory.WIN
-        : TransactionTypeCategory.LOSS;
+    const isIdempotency = await this.isTxIdempotency(this.coinRepo, data.roundId, data.transId);
 
-    const txDebit = CoinTransaction.builder()
-      .player(player)
-      .transactionId(data.transId)
-      .roundId(data.roundId)
-      .game(game)
-      .type(TransactionType.DEBIT)
-      .typeCategory(WIN_OR_LOSS)
-      .amount(data.amount)
-      .createdBy(player)
-      .build();
+    if (!isIdempotency) {
+      const WIN_OR_LOSS =
+        data.amount - txCredit.amount >= 0
+          ? TransactionTypeCategory.WIN
+          : TransactionTypeCategory.LOSS;
 
-    await this.coinRepo.save(txDebit);
+      const txDebit = CoinTransaction.builder()
+        .player(player)
+        .transactionId(data.transId)
+        .roundId(data.roundId)
+        .game(game)
+        .type(TransactionType.DEBIT)
+        .typeCategory(WIN_OR_LOSS)
+        .amount(data.amount)
+        .createdBy(player)
+        .build();
+
+      await this.coinRepo.save(txDebit);
+    }
 
     return this.coinService.computeBalance(data.player);
   }
