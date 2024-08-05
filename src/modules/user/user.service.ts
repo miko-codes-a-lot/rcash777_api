@@ -11,6 +11,8 @@ import { UserPaginateDTO } from 'src/schemas/paginate-query.dto';
 import { UserTawk } from './entities/user-tawk.entity';
 import { v4 as uuidv4 } from 'uuid';
 import * as generatePassword from 'generate-password';
+import { UserRole } from 'src/enums/user-role.enum';
+import { use } from 'passport';
 
 @Injectable()
 export class UserService extends BaseService<User> {
@@ -46,8 +48,53 @@ export class UserService extends BaseService<User> {
     };
 
     const password = generatePassword.generate(passwordOptions);
-    
     return password;
+  }
+
+  private async _getGhostUsers(descendantIds: string[]) {
+    const user = await this.userRepository.findOne({
+      where: [
+        {
+          isGhost: true,
+          isAgent: true,
+          parent: { id: In(descendantIds) },
+        },
+      ],
+    });
+    return user;
+  }
+
+  private async _createGhostUser(creator: User, role: UserRole, email: string): Promise<User> {
+    const user = new User();
+    let prefix;
+    switch(role) {
+      case UserRole.isMasterAgent:
+        user.isMasterAgent = true;
+        user.commission = 10;
+        prefix = 'Ghost MA '
+        break;
+      case UserRole.isAgent:
+        user.isAgent = true;
+        user.commission = 10;
+        prefix = 'Ghost Agent '
+        break
+      default:
+        throw new BadRequestException('Unknown role');
+    }
+
+    user.id = uuidv4();
+    user.firstName = prefix+creator.firstName;
+    user.lastName = creator.lastName;
+    user.email = email;
+    user.phoneNumber = creator.phoneNumber;
+    user.address = creator.address;
+    user.rebate = creator.rebate;
+    user.password = bcrypt.hashSync( await this._generatePassword(), 10);
+    user.parent = creator;
+    user.isGhost = true;
+
+    this.treeUserRepo.save(user);
+    return user;
   }
 
   private _validateOwner(isOwner: boolean) {
@@ -76,13 +123,13 @@ export class UserService extends BaseService<User> {
         }
         break;
       case 'isCityManager':
-        if (newUserRole !== 'isMasterAgent') {
-          throw new BadRequestException('Owner can only handle City Manager or Admin');
+        if (!(newUserRole === 'isMasterAgent' || newUserRole === 'isPlayer')) {
+          throw new BadRequestException('City Manager can only handle Master Agent or Player');
         }
         break;
       case 'isMasterAgent':
-        if (newUserRole !== 'isAgent') {
-          throw new BadRequestException('City Manager can only handle Master Agent');
+        if (!(newUserRole === 'isAgent' || newUserRole === 'isPlayer')) {
+          throw new BadRequestException('Master Agent can only handle Agent or Player');
         }
         break;
       case 'isAgent':
@@ -117,7 +164,42 @@ export class UserService extends BaseService<User> {
 
     this._validateOwner(data.isOwner);
     this._validateRole(creator, data);
-    const randomPassword = await this._generatePassword();
+    const userPassword = data.password || await this._generatePassword();
+    let parentDetails = creator;
+
+    if ((creator.isCityManager && data.isPlayer) || (creator.isMasterAgent && data.isPlayer)) {
+
+      const descendantIds = await this._findDescendantsId(creator);
+      const haveGhostAgent = await this._getGhostUsers(descendantIds);
+      let prefix;
+      let userEmail;
+      const [address, domain] = creator.email.split('@');
+
+      if (!haveGhostAgent) {
+        if (creator.isCityManager) {
+          prefix = 'ma.ghost.'
+          userEmail = prefix + address + '+1@' + domain;
+          const masterAgent = await this._createGhostUser(creator, UserRole.isMasterAgent,userEmail);
+          if (!masterAgent) {
+            throw new BadRequestException('Failed to Create Ghost Master Agent',);
+          }
+          prefix = 'agent.ghost.'
+          userEmail =  prefix + address + '+2@' + domain;
+          const agent = await this._createGhostUser(masterAgent, UserRole.isAgent, userEmail);
+          parentDetails = agent;
+        } else if (creator.isMasterAgent) {
+          prefix = 'agent.ghost.'
+          userEmail =  prefix + address + '+1@' + domain;
+          const agent = await this._createGhostUser(creator, UserRole.isAgent, userEmail);
+          parentDetails = agent;
+        }
+        creator.isDirectLine = true;
+        return this.treeUserRepo.save(creator);
+      } else {
+        parentDetails = haveGhostAgent;
+      }
+      user.isDirectLine = true;
+    }
 
     user.id = uuidv4();
     user.email = data.email;
@@ -127,8 +209,8 @@ export class UserService extends BaseService<User> {
     user.address = data.address;
     user.commission = data.isPlayer ? 0 : data.commission;
     user.rebate = !data.isPlayer ? 0 : data.rebate;
-    user.password = bcrypt.hashSync(randomPassword, 10);
-    user.parent = creator;
+    user.password = bcrypt.hashSync(userPassword, 10);
+    user.parent = parentDetails;
 
     await this.floorAndCeilCommission(user, data.commission);
 

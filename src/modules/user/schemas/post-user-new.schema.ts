@@ -2,7 +2,7 @@ import * as Joi from 'joi';
 
 export const PostUserNewRequestSchema = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(),
+  password: Joi.string().min(6),
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
   phoneNumber: Joi.string().required(),
