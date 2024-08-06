@@ -33,9 +33,10 @@ export class NextralWalletController {
         httpStatus.NOT_FOUND,
       );
     }
+    await this.nextralWalletService.getGame(data.game);
     const details = await this.nextralService.authenticate(data);
 
-    return res.json(details);
+    return res.status(200).json(details);
   }
 
   @NextralBasicSecure()

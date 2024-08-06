@@ -36,6 +36,14 @@ export class NextralWalletService {
     }
   }
 
+  async getGame(gameCode: string) {
+    return this._findOne<Game>(
+      this.gameRepo,
+      { code: gameCode },
+      { errorCode: 'GAME_NOT_FOUND', errorMessage: 'Game not found' },
+    );
+  }
+
   async getPlayerAndGame(playerId: string, gameCode: string) {
     return Promise.all([
       this._findOne<User>(
@@ -43,11 +51,7 @@ export class NextralWalletService {
         { id: playerId },
         { errorCode: 'PLAYER_NOT_FOUND', errorMessage: 'Player not found' },
       ),
-      this._findOne<Game>(
-        this.gameRepo,
-        { code: gameCode },
-        { errorCode: 'GAME_NOT_FOUND', errorMessage: 'Game not found' },
-      ),
+      this.getGame(gameCode),
     ]);
   }
 
