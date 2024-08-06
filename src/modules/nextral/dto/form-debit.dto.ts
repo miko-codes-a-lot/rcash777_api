@@ -4,10 +4,10 @@ import { Platform } from 'src/enums/platform.enum';
 import { TransactionTypeCategory } from 'src/enums/transaction.enum';
 
 export const FormDebitSchema = Joi.object({
-  player: Joi.string().guid().required(),
+  player: Joi.string().allow(null).optional(),
   clientToken: Joi.string().allow('').optional(),
   roundId: Joi.string().required(),
-  game: Joi.string().required(),
+  game: Joi.string().allow(null).optional(),
   platform: Joi.string()
     .valid(...Object.values(Platform))
     .optional(),
