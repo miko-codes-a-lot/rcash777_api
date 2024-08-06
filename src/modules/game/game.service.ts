@@ -118,6 +118,36 @@ export class GameService {
     return this.providerRepo.find();
   }
 
+  async findTop(config: TopGameDTO) {
+    const { category } = config;
+    const games = {
+      SLOT: [
+        'MNP_FORTUNE_LUCKY_JP',
+        'MNP_FA_CHOI_TREE_JP',
+        'MNP_FORTUNE_DRAGON_2',
+        'MNP_DRAGON_X_TIGER',
+        'MNP_BIKINI_QUEENS_XMAS',
+        'MNP_LEGEND_OF_PIGGIES_ROYAL_EDITION',
+        'MNP_PIRATES_GOLD_JP',
+        'MNP_LEGEND_OF_ATLANTIS',
+        'MNP_LEGACY_OF_EGYPT_JP',
+        'MNP_DIAMOND_STORM',
+      ],
+    }[category];
+
+    if (!games) throw new BadRequestException('Category is not supported');
+
+    return this.gameRepo.find({
+      where: {
+        code: In(games),
+        category,
+      },
+      relations: { images: true },
+      take: games.length,
+      order: { name: 1 },
+    });
+  }
+
   async findAllPaginated(config: GamePaginationDTO) {
     const {
       page = 1,
