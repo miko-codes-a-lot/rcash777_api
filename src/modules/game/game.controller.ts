@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
 import { GameService } from './game.service';
-import { GamePaginationDTO } from 'src/schemas/paginate-query.dto';
+import { GamePaginationDTO, TopGameDTO } from 'src/schemas/paginate-query.dto';
 import { AuthRequired } from 'src/decorators/auth-required.decorator';
 import { Validate } from 'src/decorators/validate.decorator';
 import { FormLaunchGameDTO, FormLaunchGameSchema } from './dto/form-launch-game.dto';
@@ -29,6 +29,11 @@ export class GameController {
       next: (response) => res.json(response),
       error: (err) => console.error(err, 'error'),
     });
+  }
+
+  @Get('top')
+  async findTop(@Query() query: TopGameDTO) {
+    return await this.gameService.findTop(query);
   }
 
   @Get()
