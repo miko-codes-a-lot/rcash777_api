@@ -34,6 +34,10 @@ export class GamePaginationDTO extends PaginationDTO {
   providerCode?: string;
 }
 
+export class TopGameDTO {
+  category: string;
+}
+
 export type PaginationResponse<T> = {
   list: T[];
   total: number;
