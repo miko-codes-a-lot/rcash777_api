@@ -41,11 +41,9 @@ export class GameSchedule {
         })
         .subscribe({
           next: async (response) => {
-            console.log(response);
             const providers: ProviderDTO[] = response.data.filter(
               (provider: ProviderDTO) => !exclusions.includes(provider.clientCode),
             );
-            console.log(providers);
             await this.gameService.createManyProviders(providers);
           },
           error: (err) => console.error(err, 'error'),
