@@ -1,29 +1,35 @@
-import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
-import { GameService } from './game.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Injectable, Logger } from '@nestjs/common';
+
 import { GameDTO } from './dto/game.dto';
+import { GameService } from './game.service';
+import { HttpService } from '@nestjs/axios';
+import { ProviderDTO } from './dto/provider.dto';
 import config from '../../config/config';
 import { zip } from 'rxjs';
-import { ProviderDTO } from './dto/provider.dto';
 
 const NEXTRAL_URI = config.game_api.zenith.uri;
-const exclusions = ['PRAGMATICPLAY', 'PLAYNGO'];
+const exclusions = [ 'PLAYNGO'];
 
 @Injectable()
 export class GameSchedule {
   private readonly logger = new Logger(GameSchedule.name);
-
+  private debounce = false;
   constructor(
     private readonly http: HttpService,
     private gameService: GameService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+  @Cron(CronExpression.EVERY_SECOND, {
     name: 'get_games',
     timeZone: 'Asia/Singapore',
   })
   async performTask() {
+    if(!this.debounce){
+      this.debounce = true;
+    } else {
+      return
+    }
     this.logger.debug('Retrieving games in cron!');
     return zip([
       this.http
