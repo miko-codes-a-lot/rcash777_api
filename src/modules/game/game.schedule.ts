@@ -9,7 +9,7 @@ import config from '../../config/config';
 import { zip } from 'rxjs';
 
 const NEXTRAL_URI = config.game_api.zenith.uri;
-const exclusions = [];
+const exclusions = ['PLAYNGO'];
 
 @Injectable()
 export class GameSchedule {
