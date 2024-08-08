@@ -4750,11 +4750,6 @@ queue-microtask@^1.2.2:
   resolved "https://registry.npmjs.org/queue-microtask/-/queue-microtask-1.2.3.tgz"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
 
-random-password@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/random-password/-/random-password-0.1.2.tgz#128f1302c65bfeef2ab5094c3e6da63b852e7be6"
-  integrity sha512-O01uMDIVHaePjyQKpktHSKwQCQykhRaxCIp1nMnD5043ufW6Sw8TVMrkiHmcIOB/FGvJ0y0BbDWiikMwjEbhLQ==
-
 randombytes@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/randombytes/-/randombytes-2.1.0.tgz"

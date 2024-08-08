@@ -15,4 +15,7 @@ export class Provider {
 
   @Column({ nullable: true })
   icon: string;
+
+  @Column({ name: 'is_active', default: true })
+  isActive: boolean;
 }
