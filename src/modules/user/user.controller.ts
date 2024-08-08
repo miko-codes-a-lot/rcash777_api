@@ -49,24 +49,6 @@ export class UserController {
   }
 
   @AuthIsNot(['isPlayer'])
-  @AuthIsNot(['isOwner'])
-  @Post('admin/direct-player')
-  @Validate({ body: PostUserNewRequestSchema })
-  async addDirectPlayer(
-    @Body() payload: PostUserNewRequest,
-    @RequestUser() admin: User,
-    @Res() res: Response,
-  ) {
-    if (await this.userService.findByEmail(payload.email)) {
-      throw new BadRequestException('Email already exist');
-    }
-    
-    const user = await this.userService.create(admin, payload);
-
-    return res.status(HttpStatus.SUCCESS).json(user);
-  }
-
-  @AuthIsNot(['isPlayer'])
   @Get('admin/:id')
   async findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
