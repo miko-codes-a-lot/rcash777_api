@@ -14,21 +14,26 @@ const exclusions = ['PLAYNGO'];
 @Injectable()
 export class GameSchedule {
   private readonly logger = new Logger(GameSchedule.name);
-
+  private debounce = false;
   constructor(
     private readonly http: HttpService,
     private gameService: GameService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+  @Cron(CronExpression.EVERY_SECOND, {
     name: 'get_games',
     timeZone: 'Asia/Singapore',
   })
   async performTask() {
+    if(!this.debounce){
+      this.debounce = true;
+    } else {
+      return
+    }
     this.logger.debug('Retrieving games in cron!');
     return zip([
       this.http
-        .get(`${NEXTRAL_URI}/lobby/v1/clients`, {
+        .get(`${NEXTRAL_URI}/lobby/v2/clients`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Basic ${config.game_api.zenith.operation.basic}`,

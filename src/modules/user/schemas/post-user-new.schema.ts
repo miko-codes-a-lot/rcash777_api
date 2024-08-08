@@ -2,7 +2,7 @@ import * as Joi from 'joi';
 
 export const PostUserNewRequestSchema = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(),
+  password: Joi.string().min(6),
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
   phoneNumber: Joi.string().required(),
@@ -15,6 +15,8 @@ export const PostUserNewRequestSchema = Joi.object({
   isMasterAgent: Joi.boolean().allow(null).default(false),
   isAgent: Joi.boolean().allow(null).default(false),
   isPlayer: Joi.boolean().allow(null).default(false),
+  isGhost: Joi.boolean().allow(null).default(false),
+  isDirectLine: Joi.boolean().allow(null).default(false),
   tawkto: Joi.object({
     propertyId: Joi.string().optional().allow(null),
     widgetId: Joi.string().optional().allow(null),
@@ -36,6 +38,8 @@ export interface PostUserNewRequest {
   isMasterAgent: boolean;
   isAgent: boolean;
   isPlayer: boolean;
+  isGhost: boolean;
+  isDirectLine: boolean;
   tawkto?: {
     propertyId: string;
     widgetId: string;

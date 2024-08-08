@@ -1,7 +1,8 @@
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { GameImage } from './game-image.entity';
+
 import { CoinTransaction } from 'src/modules/coin-transaction/entities/coin-transaction.entity';
 import { DecimalColumnTransformer } from 'src/helper/decimal-column-transformer';
+import { GameImage } from './game-image.entity';
 
 @Index('idx_game_name_category', ['name', 'category'])
 @Index('idx_game_category', ['category'])
@@ -25,6 +26,9 @@ export class Game {
 
   @Column({ name: 'is_provider_in_maintenance' })
   isProviderInMaintenance: boolean;
+
+  @Column({ name: 'is_active', default: true })
+  isActive: boolean;
 
   @Column({ name: 'jackpot_class' })
   jackpotClass: string;
