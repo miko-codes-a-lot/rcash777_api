@@ -70,12 +70,12 @@ export class UserService extends BaseService<User> {
     switch(role) {
       case UserRole.isMasterAgent:
         user.isMasterAgent = true;
-        user.commission = 10;
+        user.commission = 40;
         prefix = 'Ghost MA '
         break;
       case UserRole.isAgent:
         user.isAgent = true;
-        user.commission = 10;
+        user.commission = 30;
         prefix = 'Ghost Agent '
         break
       default:
