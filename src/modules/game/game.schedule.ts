@@ -1,14 +1,15 @@
-import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
-import { GameService } from './game.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Injectable, Logger } from '@nestjs/common';
+
 import { GameDTO } from './dto/game.dto';
+import { GameService } from './game.service';
+import { HttpService } from '@nestjs/axios';
+import { ProviderDTO } from './dto/provider.dto';
 import config from '../../config/config';
 import { zip } from 'rxjs';
-import { ProviderDTO } from './dto/provider.dto';
 
 const NEXTRAL_URI = config.game_api.zenith.uri;
-const exclusions = ['PRAGMATICPLAY', 'PLAYNGO'];
+const exclusions = ['PLAYNGO'];
 
 @Injectable()
 export class GameSchedule {
