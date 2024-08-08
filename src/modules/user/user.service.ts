@@ -92,7 +92,7 @@ export class UserService extends BaseService<User> {
     user.parent = creator;
     user.isGhost = true;
 
-    this.treeUserRepo.save(user);
+    await this.treeUserRepo.save(user);
     return user;
   }
 
@@ -210,7 +210,6 @@ export class UserService extends BaseService<User> {
     user.rebate = !data.isPlayer ? 0 : data.rebate;
     user.password = bcrypt.hashSync(userPassword, 10);
     user.parent = parentDetails;
-
     await this.floorAndCeilCommission(user, data.commission);
 
     user.isAdmin = data.isAdmin;
@@ -220,10 +219,9 @@ export class UserService extends BaseService<User> {
     user.isPlayer = data.isPlayer;
 
     try {
-      // if (data.tawkto && data.tawkto?.propertyId) {
-      //   await this._assignTawkTo(user, data.tawkto);
-      // }
-      console.log(user);
+      if (data.tawkto && data.tawkto?.propertyId) {
+        await this._assignTawkTo(user, data.tawkto);
+      }
       await this.treeUserRepo.save(user);
       return user;
     } catch (error) {
