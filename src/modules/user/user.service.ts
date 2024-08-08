@@ -193,7 +193,7 @@ export class UserService extends BaseService<User> {
           parentDetails = agent;
         }
         creator.isDirectLine = true;
-        return this.treeUserRepo.save(creator);
+        this.treeUserRepo.save(creator);
       } else {
         parentDetails = haveGhostAgent;
       }
@@ -220,10 +220,10 @@ export class UserService extends BaseService<User> {
     user.isPlayer = data.isPlayer;
 
     try {
-      if (data.tawkto && data.tawkto?.propertyId) {
-        await this._assignTawkTo(user, data.tawkto);
-      }
-
+      // if (data.tawkto && data.tawkto?.propertyId) {
+      //   await this._assignTawkTo(user, data.tawkto);
+      // }
+      console.log(user);
       await this.treeUserRepo.save(user);
       return user;
     } catch (error) {
@@ -310,24 +310,15 @@ export class UserService extends BaseService<User> {
     const [users, count] = await this.userRepository.findAndCount({
       where: [
         {
-          email: ILike(`%${search}%`),
-          ...(role && { [role]: true }),
+          isGhost: false,
           parent: { id: In(ids) },
-        },
-        {
-          firstName: ILike(`%${search}%`),
+          ...(search && {
+            email: ILike(`%${search}%`),
+            firstName: ILike(`%${search}%`),
+            lastName: ILike(`%${search}%`),
+            phoneNumber: ILike(`%${search}%`),
+          }),
           ...(role && { [role]: true }),
-          parent: { id: In(ids) },
-        },
-        {
-          lastName: ILike(`%${search}%`),
-          ...(role && { [role]: true }),
-          parent: { id: In(ids) },
-        },
-        {
-          phoneNumber: ILike(`%${search}%`),
-          ...(role && { [role]: true }),
-          parent: { id: In(ids) },
         },
       ],
       skip: (page - 1) * pageSize,
