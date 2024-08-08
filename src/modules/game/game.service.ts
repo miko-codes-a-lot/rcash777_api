@@ -35,7 +35,7 @@ export class GameService {
         provider.id = providerDTO.id;
         provider.code = providerDTO.clientCode;
         provider.name = providerDTO.displayName;
-        provider.icon = providerDTO.icon;
+        provider.icon = providerDTO.logos.base;
 
         await providerRepo.save(provider);
       }
@@ -122,17 +122,48 @@ export class GameService {
     const { category } = config;
     const games = {
       SLOT: [
-        'MNP_FORTUNE_LUCKY_JP',
-        'MNP_FA_CHOI_TREE_JP',
-        'MNP_FORTUNE_DRAGON_2',
-        'MNP_DRAGON_X_TIGER',
-        'MNP_BIKINI_QUEENS_XMAS',
-        'MNP_LEGEND_OF_PIGGIES_ROYAL_EDITION',
-        'MNP_PIRATES_GOLD_JP',
-        'MNP_LEGEND_OF_ATLANTIS',
-        'MNP_LEGACY_OF_EGYPT_JP',
-        'MNP_DIAMOND_STORM',
+        'JIL_SUPER_ACE',
+        'JIL_FORTUNE_GEMS',
+        'FCI_LUCKY_FORTUNES',
+        'PP_SWEET_BONANZA_1000',
+        'PP_SUGAR_RUSH_1000',
+        'PP_GATES_OF_OLYMPUS_1000',
+        'PP_SWEET_BONANZA',
+        'PP_STARLIGHT_PRINCESS_1000',
+        'JIL_SUPER_ACE',
+        'JIL_SUPER_ACE_DELUXE',
+        'JIL_MEGA_ACE',
+        'JIL_FORTUNE_GEMS_2',
+        'JIL_GOLDEN_EMPIRE',
+        'PGS_WILD_BOUNTY_SHOWDOWN',
+        'PGS_PINATA_WINS',
+        'PGS_SHARK_HUNTER',
+        'FCI_SUGAR_BANG_BANG',
+        'FCI_LUCKY_FORTUNES',
+        'FCI_CHINESE_NEW_YEAR_2',
+        'FCI_LUCKY_FORTUNES_3X3',
+        'FCI_GOLDEN_GENIE'
       ],
+      POKER: [
+        'JIL_BLACKJACK',
+        'JIL_TONGITS',
+        'JIL_TONGITS_GO',
+        'HBN_THREE_CARD_POKER',
+        'HBN_CARIBBEAN_HOLDEM',
+        'JIL_BLACKJACK_LUCKY_LADIES',
+        'JIL_VIDEO_POKER',
+        'JIL_CARIBBEAN_STUD_POKER',
+        'JIL_PUSOY_GO',
+        'JIL_POKER_LOBBY',
+      ],
+      LIVE_CASINO_TABLE: [
+        'EVO_CRAZY_TIME',
+        'EVO_LIGHTNING_STORM'
+      ],
+      GAME_SHOWS: [
+        'EVO_MEGA_BALL',
+        'EVO_MONOPOLY_LIVE'
+      ]
     }[category];
 
     if (!games) throw new BadRequestException('Category is not supported');
