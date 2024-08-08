@@ -172,11 +172,9 @@ export class CoinTransactionService {
       sortBy = 'createdAt',
       sortOrder = 'asc',
     } = config;
-    let ids = [user.id];
+
     // // Pag gusto mo tumalon ng approval like CM to Player, gamitin mo lang tong descendants ID
-    if(!user.isOwner){
-      ids = await this._getUserChildrenIds(user);
-    }
+    // const ids = await this._getUserChildrenIds(user);
 
     const [tx, count] = await this.requestRepo.findAndCount({
       where: [
@@ -186,11 +184,11 @@ export class CoinTransactionService {
           type,
         },
         // // Uncomment pag gusto mo tumalon ung approval example CM to Player
-        {
-          requestingUser: { id: In(ids) },
-          status: In(status),
-          type,
-        },
+        // {
+        //   requestingUser: { id: In(ids) },
+        //   status: In(status),
+        //   type,
+        // },
       ],
       relations: { requestingUser: true },
       select: {

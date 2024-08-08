@@ -10,8 +10,6 @@ import { PostUserUpdateRequest } from './schemas/put-user-update.schema';
 import { UserPaginateDTO } from 'src/schemas/paginate-query.dto';
 import { UserTawk } from './entities/user-tawk.entity';
 import { v4 as uuidv4 } from 'uuid';
-import * as generatePassword from 'generate-password';
-import { UserRole } from 'src/enums/user-role.enum';
 
 @Injectable()
 export class UserService extends BaseService<User> {
@@ -35,65 +33,6 @@ export class UserService extends BaseService<User> {
     user.tawkto = tawk;
 
     return tawk;
-  }
-
-  private async _generatePassword(): Promise<string> {
-    const passwordOptions = {
-      length: 10,
-      numbers: true,
-      symbols: true, 
-      uppercase: true,
-      excludeSimilarCharacters: true
-    };
-
-    const password = generatePassword.generate(passwordOptions);
-    return password;
-  }
-
-  private async _getGhostUsers(descendantIds: string[]) {
-    const user = await this.userRepository.findOne({
-      where: [
-        {
-          isGhost: true,
-          isAgent: true,
-          parent: { id: In(descendantIds) },
-        },
-      ],
-    });
-    return user;
-  }
-
-  private async _createGhostUser(creator: User, role: UserRole, email: string): Promise<User> {
-    const user = new User();
-    let prefix;
-    switch(role) {
-      case UserRole.isMasterAgent:
-        user.isMasterAgent = true;
-        user.commission = 40;
-        prefix = 'Ghost MA '
-        break;
-      case UserRole.isAgent:
-        user.isAgent = true;
-        user.commission = 30;
-        prefix = 'Ghost Agent '
-        break
-      default:
-        throw new BadRequestException('Unknown role');
-    }
-
-    user.id = uuidv4();
-    user.firstName = prefix+creator.firstName;
-    user.lastName = creator.lastName;
-    user.email = email;
-    user.phoneNumber = creator.phoneNumber;
-    user.address = creator.address;
-    user.rebate = creator.rebate;
-    user.password = bcrypt.hashSync( await this._generatePassword(), 10);
-    user.parent = creator;
-    user.isGhost = true;
-
-    await this.treeUserRepo.save(user);
-    return user;
   }
 
   private _validateOwner(isOwner: boolean) {
@@ -122,13 +61,13 @@ export class UserService extends BaseService<User> {
         }
         break;
       case 'isCityManager':
-        if (!(newUserRole === 'isMasterAgent' || newUserRole === 'isPlayer')) {
-          throw new BadRequestException('City Manager can only handle Master Agent or Player');
+        if (newUserRole !== 'isMasterAgent') {
+          throw new BadRequestException('Owner can only handle City Manager or Admin');
         }
         break;
       case 'isMasterAgent':
-        if (!(newUserRole === 'isAgent' || newUserRole === 'isPlayer')) {
-          throw new BadRequestException('Master Agent can only handle Agent or Player');
+        if (newUserRole !== 'isAgent') {
+          throw new BadRequestException('City Manager can only handle Master Agent');
         }
         break;
       case 'isAgent':
@@ -163,42 +102,6 @@ export class UserService extends BaseService<User> {
 
     this._validateOwner(data.isOwner);
     this._validateRole(creator, data);
-    const userPassword = data.password || await this._generatePassword();
-    let parentDetails = creator;
-
-    if ((creator.isCityManager && data.isPlayer) || (creator.isMasterAgent && data.isPlayer)) {
-
-      const descendantIds = await this._findDescendantsId(creator);
-      const haveGhostAgent = await this._getGhostUsers(descendantIds);
-      let prefix;
-      let userEmail;
-      const [address, domain] = creator.email.split('@');
-
-      if (!haveGhostAgent) {
-        if (creator.isCityManager) {
-          prefix = 'ma.ghost.'
-          userEmail = prefix + address + '+1@' + domain;
-          const masterAgent = await this._createGhostUser(creator, UserRole.isMasterAgent,userEmail);
-          if (!masterAgent) {
-            throw new BadRequestException('Failed to Create Ghost Master Agent',);
-          }
-          prefix = 'agent.ghost.'
-          userEmail =  prefix + address + '+2@' + domain;
-          const agent = await this._createGhostUser(masterAgent, UserRole.isAgent, userEmail);
-          parentDetails = agent;
-        } else if (creator.isMasterAgent) {
-          prefix = 'agent.ghost.'
-          userEmail =  prefix + address + '+1@' + domain;
-          const agent = await this._createGhostUser(creator, UserRole.isAgent, userEmail);
-          parentDetails = agent;
-        }
-        creator.isDirectLine = true;
-        this.treeUserRepo.save(creator);
-      } else {
-        parentDetails = haveGhostAgent;
-      }
-      user.isDirectLine = true;
-    }
 
     user.id = uuidv4();
     user.email = data.email;
@@ -208,8 +111,9 @@ export class UserService extends BaseService<User> {
     user.address = data.address;
     user.commission = data.isPlayer ? 0 : data.commission;
     user.rebate = !data.isPlayer ? 0 : data.rebate;
-    user.password = bcrypt.hashSync(userPassword, 10);
-    user.parent = parentDetails;
+    user.password = bcrypt.hashSync(data.password, 10);
+    user.parent = creator;
+
     await this.floorAndCeilCommission(user, data.commission);
 
     user.isAdmin = data.isAdmin;
@@ -222,6 +126,7 @@ export class UserService extends BaseService<User> {
       if (data.tawkto && data.tawkto?.propertyId) {
         await this._assignTawkTo(user, data.tawkto);
       }
+
       await this.treeUserRepo.save(user);
       return user;
     } catch (error) {
@@ -308,15 +213,24 @@ export class UserService extends BaseService<User> {
     const [users, count] = await this.userRepository.findAndCount({
       where: [
         {
-          isGhost: false,
-          parent: { id: In(ids) },
-          ...(search && {
-            email: ILike(`%${search}%`),
-            firstName: ILike(`%${search}%`),
-            lastName: ILike(`%${search}%`),
-            phoneNumber: ILike(`%${search}%`),
-          }),
+          email: ILike(`%${search}%`),
           ...(role && { [role]: true }),
+          parent: { id: In(ids) },
+        },
+        {
+          firstName: ILike(`%${search}%`),
+          ...(role && { [role]: true }),
+          parent: { id: In(ids) },
+        },
+        {
+          lastName: ILike(`%${search}%`),
+          ...(role && { [role]: true }),
+          parent: { id: In(ids) },
+        },
+        {
+          phoneNumber: ILike(`%${search}%`),
+          ...(role && { [role]: true }),
+          parent: { id: In(ids) },
         },
       ],
       skip: (page - 1) * pageSize,
