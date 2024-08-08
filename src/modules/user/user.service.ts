@@ -12,7 +12,6 @@ import { UserTawk } from './entities/user-tawk.entity';
 import { v4 as uuidv4 } from 'uuid';
 import * as generatePassword from 'generate-password';
 import { UserRole } from 'src/enums/user-role.enum';
-import { use } from 'passport';
 
 @Injectable()
 export class UserService extends BaseService<User> {
