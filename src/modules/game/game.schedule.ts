@@ -25,10 +25,10 @@ export class GameSchedule {
     timeZone: 'Asia/Singapore',
   })
   async performTask() {
-    if(!this.debounce){
+    if (!this.debounce) {
       this.debounce = true;
     } else {
-      return
+      return;
     }
     this.logger.debug('Retrieving games in cron!');
     return zip([
@@ -44,7 +44,11 @@ export class GameSchedule {
             const providers: ProviderDTO[] = response.data.filter(
               (provider: ProviderDTO) => !exclusions.includes(provider.clientCode),
             );
+
             await this.gameService.createManyProviders(providers);
+
+            const activeProviderCodes = response.data.map((item) => item.clientCode);
+            await this.gameService.cleanupProviders(activeProviderCodes);
           },
           error: (err) => console.error(err, 'error'),
         }),
@@ -61,6 +65,9 @@ export class GameSchedule {
               (game: GameDTO) => !exclusions.includes(game.providerCode),
             );
             await this.gameService.createMany(games);
+
+            const activeGameCodes = response.data.map((item) => item.gameCode);
+            await this.gameService.cleanupGames(activeGameCodes);
           },
         }),
     ]);

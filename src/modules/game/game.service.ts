@@ -36,6 +36,7 @@ export class GameService {
         provider.code = providerDTO.clientCode;
         provider.name = providerDTO.displayName;
         provider.icon = providerDTO.logos.base;
+        provider.isActive = true;
 
         await providerRepo.save(provider);
       }
@@ -65,6 +66,7 @@ export class GameService {
         game.isDemoAllowed = gameDTO.isDemoAllowed;
         game.isFreeroundSupported = gameDTO.isFreeroundSupported;
         game.rtp = gameDTO.rtp;
+        game.isActive = true;
 
         await gameRepo.save(game);
 
@@ -115,7 +117,7 @@ export class GameService {
   }
 
   async findAllProviders() {
-    return this.providerRepo.find();
+    return this.providerRepo.find({ where: { isActive: true } });
   }
 
   async findTop(config: TopGameDTO) {
@@ -142,7 +144,7 @@ export class GameService {
         'FCI_LUCKY_FORTUNES',
         'FCI_CHINESE_NEW_YEAR_2',
         'FCI_LUCKY_FORTUNES_3X3',
-        'FCI_GOLDEN_GENIE'
+        'FCI_GOLDEN_GENIE',
       ],
       POKER: [
         'JIL_BLACKJACK',
@@ -156,20 +158,16 @@ export class GameService {
         'JIL_PUSOY_GO',
         'JIL_POKER_LOBBY',
       ],
-      LIVE_CASINO_TABLE: [
-        'EVO_CRAZY_TIME',
-        'EVO_LIGHTNING_STORM'
-      ],
-      GAME_SHOWS: [
-        'EVO_MEGA_BALL',
-        'EVO_MONOPOLY_LIVE'
-      ]
+      LIVE_CASINO_TABLE: ['EVO_CRAZY_TIME', 'EVO_LIGHTNING_STORM'],
+      GAME_SHOWS: ['EVO_MEGA_BALL', 'EVO_MONOPOLY_LIVE'],
     }[category];
 
     if (!games) throw new BadRequestException('Category is not supported');
 
     return this.gameRepo.find({
       where: {
+        isActive: true,
+        isProviderInMaintenance: true,
         code: In(games),
         category,
       },
@@ -192,6 +190,8 @@ export class GameService {
 
     const [items, count] = await this.gameRepo.findAndCount({
       where: {
+        isActive: true,
+        isProviderInMaintenance: false,
         name: ILike(`%${search}%`),
         ...(category && { category }),
         ...(providerCode && { providerCode }),
@@ -212,10 +212,48 @@ export class GameService {
   }
 
   async findOne(id: string) {
-    const game = await this.gameRepo.findOne({ where: { id } });
+    const game = await this.gameRepo.findOne({
+      where: { id, isActive: true, isProviderInMaintenance: false },
+    });
     if (!game) {
       throw new NotFoundException('Game not found');
     }
     return game;
+  }
+
+  async cleanupProviders(activeProviderCodes: string[]) {
+    const providers = await this.findAllProviders();
+    const currentProviderCodes = providers.map((provider) => provider.code);
+
+    const codesToDeactivate = currentProviderCodes.filter(
+      (code) => !activeProviderCodes.includes(code),
+    );
+
+    if (codesToDeactivate.length > 0) {
+      await this.providerRepo.update(
+        { code: In(codesToDeactivate), isActive: true },
+        { isActive: false },
+      );
+    }
+
+    return true;
+  }
+
+  async cleanupGames(activeProviderCodes: string[]) {
+    const games = await this.gameRepo.find();
+    const currentGameCodes = games.map((provider) => provider.code);
+
+    const codesToDeactivate = currentGameCodes.filter(
+      (code) => !activeProviderCodes.includes(code),
+    );
+
+    if (codesToDeactivate.length > 0) {
+      await this.gameRepo.update(
+        { code: In(codesToDeactivate), isActive: true },
+        { isActive: false },
+      );
+    }
+
+    return true;
   }
 }
